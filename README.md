@@ -664,8 +664,6 @@ of this software and associated documentation files...
 
 **📞 +91 93567 07688** · **📧 sarthakmathapati4@gmail.com**  
 **📍 Newton School of Technology, Delhi**  
-**🌐 [sarthakmathapati.com](https://sarthakmathapati.com)**
-
 </div>
 
 ---
