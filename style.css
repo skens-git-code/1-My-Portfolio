@@ -459,7 +459,7 @@
      /* Premium Cursor Styles */
      @media (min-width: 1025px) {
          body {
-             cursor: none;
+             cursor: auto;
          }
      }
 
@@ -1376,7 +1376,7 @@
          gap: var(--space-xl);
          animation: scroll-skills 30s linear infinite;
          padding: var(--space-sm) 0;
-        
+
      }
 
      .skill-item {
@@ -6060,4 +6060,47 @@
          color: var(--text-secondary);
      }
 
-     /* =====================================================
+     /* ==========================================================================
+     MOBILE PERFORMANCE ENHANCEMENTS
+     ========================================================================== */
+     @media (max-width: 768px) {
+
+         /* Disable heavy animated background elements on mobile */
+         .gradients-container,
+         .particles,
+         .falling-stars,
+         .spotlight {
+             display: none !important;
+         }
+
+         /* Simplify the background gradient shift */
+         .gradient-bg {
+             animation: none !important;
+             background-size: auto !important;
+             background-position: center !important;
+         }
+
+         /* Reduce backdrop-filter performance hit */
+         .glass-card {
+             backdrop-filter: blur(10px) !important;
+             -webkit-backdrop-filter: blur(10px) !important;
+             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+         }
+
+         .dark-theme .glass-card {
+             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+         }
+
+         /* Ensure custom cursors are completely disabled on mobile layout */
+         .cursor-dot,
+         .cursor-outline,
+         .cursor-trail {
+             display: none !important;
+         }
+
+         /* Allow normal scrolling and hide 3D container if it's lagging */
+         .hero-3d-container {
+             display: none !important;
+             /* Three.js is very heavy on mobile */
+         }
+     }
