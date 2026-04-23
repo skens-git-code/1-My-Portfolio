@@ -164,48 +164,11 @@
         <i class="fas fa-chevron-up" aria-hidden="true"></i>
     </button>
 
-    <!-- Chat Widget -->
-    <button class="chat-widget" id="chatWidget" aria-label="Open chat widget">
-        <i class="fas fa-comments" aria-hidden="true"></i>
-    </button>
-
-    <!-- Voice Navigation Widget -->
-    <button class="voice-widget" id="voiceWidget" aria-label="Activate voice navigation">
-        <i class="fas fa-microphone" aria-hidden="true"></i>
-        <div class="voice-pulse-ring"></div>
-    </button>
-
-    <!-- Voice Listening Overlay -->
-    <div class="voice-overlay" id="voiceOverlay">
-        <div class="voice-content">
-            <!-- <div class="voice-waves">
-                <span></span><span></span><span></span><span></span><span></span>
-            </div> -->
-            <!-- <p id="voiceStatus">Listening...</p>
-            <p class="voice-hint">Try saying "Go to Projects" or "Open Chat"</p> -->
-        </div>
-    </div>
-
-    <div class="chat-box glass-card" id="chatBox">
-        <div class="chat-header">
-            <h3>Quick Chat</h3>
-            <button class="modal-close" id="closeChat" aria-label="Close chat">
-                <i class="fas fa-times" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message bot-message">
-                <p>Hi there! 👋 How can I help you today?</p>
-            </div>
-        </div>
-        <div class="chat-input">
-            <input type="text" class="form-control" placeholder="Type your message..." id="chatInput">
-        </div>
-    </div>
+    <!-- Chat, Voice widgets removed — features disabled -->
 
     <!-- Header -->
     <header role="banner">
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mainNav">
             <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
         <nav class="nav-container glass-card" id="mainNav" role="navigation" aria-label="Main navigation">
@@ -1632,6 +1595,7 @@
                     </div>
                 </div>
             </div> -->
+            </div>
         </section>
 
 
@@ -1868,8 +1832,8 @@ function InteractiveButton({ children, onClick }) {
     return (
         &lt;button 
             className={`btn ${isHovered ? 'btn-hover' : ''}`}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={() =&gt; setIsHovered(true)}
+            onMouseLeave={() =&gt; setIsHovered(false)}
             onClick={onClick}
         &gt;
             {children}
@@ -1878,7 +1842,7 @@ function InteractiveButton({ children, onClick }) {
 }
 
 // Usage
-&lt;InteractiveButton onClick={() => alert('Hello!')}&gt;
+&lt;InteractiveButton onClick={() =&gt; alert('Hello!')}&gt;
     Click Me!
 &lt;/InteractiveButton&gt;</code></pre>
                         </div>
@@ -2072,6 +2036,7 @@ function InteractiveButton({ children, onClick }) {
                     </div> -->
                     </div>
                 </div>
+            </div>
         </section>
     </main>
 
@@ -2177,6 +2142,7 @@ function InteractiveButton({ children, onClick }) {
                     </p>
                 </div>
             </div>
+        </div>
     </footer>
 
     Voice Control Widget
