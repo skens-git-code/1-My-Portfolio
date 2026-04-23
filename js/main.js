@@ -165,7 +165,7 @@
 
         async init() {
             if (!this.loadingScreen) {
-                console.error('Loading screen element not found');
+                // Loading screen element is intentionally absent — skip gracefully
                 return;
             }
 
@@ -187,7 +187,7 @@
                 const remaining = Math.max(0, this.minDisplayTime - elapsed);
 
                 if (remaining > 0) {
-                    await this.delay(remaining);
+                    await this.timeoutPromise(remaining);
                 }
 
                 // Hide loading screen
@@ -216,9 +216,7 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
+
 
         waitForCriticalAssets() {
             return new Promise(resolve => {
@@ -349,7 +347,7 @@
             }
 
             // Wait a moment to show completion
-            await this.delay(500);
+            await this.timeoutPromise(500);
 
             // Fade out animation
             if (this.loadingScreen) {
@@ -434,13 +432,7 @@
             // Start loading manager with timeout protection
             const initPromise = loadingManager.init();
 
-            // Add timeout for initialization itself
-            setTimeout(() => {
-                if (!loadingManager.isHidden) {
-                    console.warn('Loading manager initialization timeout - forcing hide');
-                    loadingManager.forceHide();
-                }
-            }, 12000); // 12 second max for everything
+            // Note: LoadingManager.setupForceHide() already handles the 12s max timeout internally.
 
         } catch (error) {
             console.error('Failed to initialize loading manager:', error);
@@ -628,6 +620,9 @@
             this.backToTop = document.getElementById('backToTop');
             this.navIndicator = document.querySelector('.nav-indicator');
             this.navLinks = document.querySelectorAll('.nav-link');
+            // Store bound scroll handlers so they can be removed in destroy()
+            this.boundHandlers = { updateBackToTop: null, updateHeader: null };
+            this.sectionObserver = null;
 
             // Close mobile menu when clicking links & Magnetic Effect
             this.navLinks.forEach(link => {
@@ -716,7 +711,7 @@
                 rootMargin: "-10% 0px -10% 0px"
             };
 
-            const observer = new IntersectionObserver((entries) => {
+            this.sectionObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         this.setActiveSection(entry.target.id);
@@ -725,7 +720,7 @@
             }, observerOptions);
 
             document.querySelectorAll('section[id]').forEach(section => {
-                observer.observe(section);
+                this.sectionObserver.observe(section);
             });
         }
 
@@ -810,19 +805,14 @@
         initBackToTop() {
             if (!this.backToTop) return;
 
-            const updateBackToTop = Utils.throttle(() => {
+            this.boundHandlers.updateBackToTop = Utils.throttle(() => {
                 this.backToTop.classList.toggle('visible', window.pageYOffset > 300);
             }, CONFIG.animations.scrollThrottle);
 
-            window.addEventListener('scroll', updateBackToTop);
-            AppState.scrollListeners.add(updateBackToTop);
+            window.addEventListener('scroll', this.boundHandlers.updateBackToTop);
 
-            // Scroll to top when clicked
             this.backToTop.addEventListener('click', () => {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
 
@@ -830,12 +820,23 @@
             const header = document.querySelector('header');
             if (!header) return;
 
-            const updateHeader = Utils.throttle(() => {
+            this.boundHandlers.updateHeader = Utils.throttle(() => {
                 header.classList.toggle('scrolled', window.scrollY > 50);
             }, CONFIG.animations.scrollThrottle);
 
-            window.addEventListener('scroll', updateHeader);
-            AppState.scrollListeners.add(updateHeader);
+            window.addEventListener('scroll', this.boundHandlers.updateHeader);
+        }
+
+        destroy() {
+            if (this.boundHandlers.updateBackToTop) {
+                window.removeEventListener('scroll', this.boundHandlers.updateBackToTop);
+            }
+            if (this.boundHandlers.updateHeader) {
+                window.removeEventListener('scroll', this.boundHandlers.updateHeader);
+            }
+            if (this.sectionObserver) {
+                this.sectionObserver.disconnect();
+            }
         }
     }
 
@@ -854,17 +855,15 @@
             const scrollIndicator = document.getElementById('scrollIndicator');
             if (!scrollIndicator) return;
 
-            const updateScrollIndicator = Utils.throttle(() => {
+            this.scrollIndicatorHandler = Utils.throttle(() => {
                 const windowHeight = window.innerHeight;
                 const documentHeight = document.documentElement.scrollHeight;
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
-
                 scrollIndicator.style.width = `${scrollPercent}%`;
             }, CONFIG.animations.scrollThrottle);
 
-            window.addEventListener('scroll', updateScrollIndicator, { passive: true });
-            AppState.scrollListeners.add(updateScrollIndicator);
+            window.addEventListener('scroll', this.scrollIndicatorHandler, { passive: true });
         }
 
         initIntersectionObserver() {
@@ -884,6 +883,15 @@
             }, observerOptions);
 
             this.setupAnimationElements();
+        }
+
+        destroy() {
+            if (this.scrollIndicatorHandler) {
+                window.removeEventListener('scroll', this.scrollIndicatorHandler);
+            }
+            if (this.observer) {
+                this.observer.disconnect();
+            }
         }
 
         setupAnimationElements() {
@@ -949,13 +957,11 @@
     // Interactive Elements Manager
     class InteractiveElementsManager {
         constructor() {
-            this.chatWidget = document.getElementById('chatWidget');
-            this.chatBox = document.getElementById('chatBox');
+            // chatWidget and chatBox removed — chat feature disabled
             this.caseStudyModal = document.getElementById('caseStudyModal');
         }
 
         init() {
-            this.initChatWidget();
             this.initProjectFilters();
             this.initCaseStudies();
             this.initInteractiveCards();
@@ -1030,207 +1036,6 @@
                     card.style.transition = 'transform 0.5s ease';
                 });
             });
-        }
-
-        initChatWidget() {
-            if (!this.chatWidget || !this.chatBox) return;
-
-            const chatMessages = document.getElementById('chatMessages');
-            const closeChat = document.getElementById('closeChat');
-            const chatInput = document.getElementById('chatInput');
-
-            // Add initial greeting message
-            let hasGreeted = false;
-
-            this.chatWidget.addEventListener('click', () => {
-                this.chatBox.classList.toggle('active');
-                if (this.chatBox.classList.contains('active')) {
-                    setTimeout(() => chatInput?.focus(), 300);
-
-                    // Show welcome message on first open
-                    if (!hasGreeted && chatMessages.children.length === 0) {
-                        hasGreeted = true;
-                        this.addBotMessage(chatMessages, "Hi! 👋 I'm Sarthak's AI assistant. Feel free to ask me anything about Sarthak's skills, projects, or experience!");
-                    }
-                }
-            });
-
-            closeChat?.addEventListener('click', () => {
-                this.chatBox.classList.remove('active');
-            });
-
-            chatInput?.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter') {
-                    const message = chatInput.value.trim();
-
-                    // Input validation
-                    if (!message) return;
-                    if (message.length > 1000) {
-                        console.warn('Message too long. Please keep it under 1000 characters.');
-                        return;
-                    }
-
-                    // Add user message
-                    this.addUserMessage(chatMessages, message);
-                    chatInput.value = '';
-
-                    // Visual loading state
-                    const loadingId = 'loading-' + Date.now();
-                    this.addBotMessage(chatMessages, 'Thinking...', loadingId);
-
-                    try {
-                        const response = await this.callGeminiAPI(message);
-                        const loadingEl = document.getElementById(loadingId);
-                        if (loadingEl) loadingEl.remove();
-                        this.addBotMessage(chatMessages, response);
-                    } catch (error) {
-                        console.error('Chat Error:', error);
-                        const loadingEl = document.getElementById(loadingId);
-                        if (loadingEl) loadingEl.remove();
-                        // Display the actual error message
-                        const errorMsg = error.message || "Sorry, I'm having trouble connecting to the AI right now. Please try again later.";
-                        this.addBotMessage(chatMessages, errorMsg);
-                    }
-                }
-            });
-        }
-
-        async callGeminiAPI(prompt) {
-            // TODO: Replace with your actual Gemini API key. WARNING: Exposing API keys in frontend code is insecure. Use a backend proxy for production.
-            const API_KEY = 'YOUR_API_KEY_HERE';
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
-
-            // Personalized system context for Sarthak's portfolio
-            const systemContext = `You are Sarthak Mathapati's AI portfolio assistant. Be friendly, professional, and enthusiastic about Sarthak's work. Always provide accurate contact information when asked.
-
-**About Sarthak:**
-- Full Name: Sarthak Mathapati
-- Role: AI Software Engineer & Full Stack Web Developer
-- Location: India
-- Motto: "Disciplina - Execucao - Foco" (Discipline - Execution - Focus)
-- Availability: Available for freelance projects and collaborations (24×7)
-
-**Contact Information:**
-- 📧 Email: sarthakmathapati4@gmail.com
-- 📱 Phone: +91 93567 07688
-- 💼 GitHub: skens-git-code
-- 🌐 Portfolio: This website (touch.html)
-
-**Skills & Expertise:**
-- **Frontend:** React.js, JavaScript, HTML/CSS, Responsive Design
-- **Backend:** Node.js, Python, Express.js
-- **Database:** MongoDB, MySQL
-- **Cloud & DevOps:** AWS, Docker
-- **AI/ML:** Working with AI technologies and integrations
-
-**Key Projects:**
-1. **E-commerce Platform** 
-   - Full-featured online store with product catalog, shopping cart, and secure payment processing
-   - Tech: React, Node.js, MySQL
-   - Features: Real-time inventory, user authentication, admin dashboard
-
-2. **Task Management App**
-   - Productivity application for managing tasks, projects, and team collaboration
-   - Tech: JavaScript, MySQL, ReactJS
-   - Features: Real-time updates, intuitive interface, team sync
-
-3. **Social Media Dashboard**
-   - Analytics dashboard with interactive data visualization
-   - Features: Data insights, performance tracking, user engagement metrics
-
-**Certifications:**
-- Full Stack Development (Udemy, 2024)
-- React Specialist (Coursera, 2023)
-- AWS Cloud (AWS, 2023)
-- MongoDB Atlas (MongoDB, 2023)
-
-**Hobbies & Interests:** 
-Badminton, traveling to new places, reading books that broaden perspectives, taking on challenging programming tasks, continuous learning and exploration
-
-**Services Offered:**
-- Web Development (full stack)
-- Responsive Design (mobile-first approach)
-- UI/UX Design (user-centered solutions)
-- Performance Optimization (faster, better websites)
-
-**How to Contact:**
-When someone asks how to contact Sarthak:
-1. Provide the email: sarthakmathapati4@gmail.com
-2. Provide the phone: +91 93567 07688
-3. Mention he's available 24×7 (Monday to Sunday) to help with anything
-4. Encourage them to use the contact form on this portfolio page
-5. You can also mention checking out his GitHub profile: skens-git-code
-
-Always be helpful, provide specific information from this context, and encourage visitors to explore the portfolio or reach out for collaborations. When asked about projects, mention the tech stack and key features. When asked about contact, always provide the email and phone number clearly.`;
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        system_instruction: {
-                            parts: [{ text: systemContext }]
-                        },
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }]
-                    })
-                });
-
-                if (!response.ok) {
-                    // Handle specific error codes
-                    if (response.status === 429) {
-                        throw new Error('Rate limit exceeded. Please wait a few moments and try again.');
-                    } else if (response.status === 403) {
-                        throw new Error('API key error. Please check your API key configuration.');
-                    } else if (response.status === 400) {
-                        throw new Error('Invalid request. Please try rephrasing your message.');
-                    }
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                    return data.candidates[0].content.parts[0].text;
-                } else {
-                    throw new Error('Invalid API response format');
-                }
-            } catch (error) {
-                console.error('Gemini API Error:', error);
-                throw error;
-            }
-        }
-
-        addUserMessage(container, message) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message user-message';
-            messageElement.innerHTML = `<p>${Utils.escapeHtml(message)}</p>`;
-            container.appendChild(messageElement);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        addBotMessage(container, message, id = null) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message bot-message';
-            if (id) messageElement.id = id;
-
-            // Simple markdown parsing for bold/italic/code
-            let formattedMessage = Utils.escapeHtml(message);
-
-            // Restore markdown (basic) - BE CAREFUL with XSS here, but Utils.escapeHtml should handle base tags
-            // We can re-enable some tags or use a proper parser. For now, just simplistic formatting.
-            formattedMessage = formattedMessage
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\n/g, '<br>');
-
-            messageElement.innerHTML = `<p>${formattedMessage}</p>`;
-            container.appendChild(messageElement);
-            container.scrollTop = container.scrollHeight;
         }
 
         initProjectFilters() {
@@ -1354,26 +1159,43 @@ Always be helpful, provide specific information from this context, and encourage
                 }
             });
 
-            // Keyboard trap for modal
+            // Improved keyboard trap: uses comprehensive selector, handles disabled elements
+            // and single-focusable-element edge cases
+            const FOCUSABLE_SELECTORS = [
+                'a[href]',
+                'button:not([disabled])',
+                'input:not([disabled])',
+                'select:not([disabled])',
+                'textarea:not([disabled])',
+                '[tabindex]:not([tabindex="-1"])'
+            ].join(',');
+
             this.caseStudyModal?.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     this.caseStudyModal.classList.remove('active');
+                    return;
                 }
 
-                // Focus trap logic
                 if (e.key === 'Tab') {
-                    const focusableElements = this.caseStudyModal.querySelectorAll(
-                        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                    const focusable = Array.from(
+                        this.caseStudyModal.querySelectorAll(FOCUSABLE_SELECTORS)
                     );
-                    const firstElement = focusableElements[0];
-                    const lastElement = focusableElements[focusableElements.length - 1];
+                    if (focusable.length === 0) return;
 
-                    if (e.shiftKey && document.activeElement === firstElement) {
+                    const first = focusable[0];
+                    const last = focusable[focusable.length - 1];
+
+                    if (focusable.length === 1) {
+                        e.preventDefault(); // trap on single element
+                        return;
+                    }
+
+                    if (e.shiftKey && document.activeElement === first) {
                         e.preventDefault();
-                        lastElement.focus();
-                    } else if (!e.shiftKey && document.activeElement === lastElement) {
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
                         e.preventDefault();
-                        firstElement.focus();
+                        first.focus();
                     }
                 }
             });
@@ -1844,6 +1666,7 @@ Always be helpful, provide specific information from this context, and encourage
             this.cursorDot = document.querySelector('[data-cursor-dot]');
             this.cursorOutline = document.querySelector('[data-cursor-outline]');
             this.scrollProgress = document.getElementById('scrollProgress');
+            this.ticking = false; // Initialize to prevent undefined-check race conditions
 
             // Custom cursor disabled by user request
             // if (window.innerWidth > 1024) {
@@ -1954,20 +1777,24 @@ Always be helpful, provide specific information from this context, and encourage
         initScrollProgress() {
             if (!this.scrollProgress) return;
 
-            window.addEventListener('scroll', () => {
+            this.scrollProgressHandler = () => {
                 if (this.ticking) return;
-
+                this.ticking = true;
                 window.requestAnimationFrame(() => {
                     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
                     const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                    const scrolled = (scrollTop / scrollHeight) * 100;
-
-                    this.scrollProgress.style.width = `${scrolled}%`;
+                    this.scrollProgress.style.width = `${(scrollTop / scrollHeight) * 100}%`;
                     this.ticking = false;
                 });
+            };
 
-                this.ticking = true;
-            });
+            window.addEventListener('scroll', this.scrollProgressHandler);
+        }
+
+        destroy() {
+            if (this.scrollProgressHandler) {
+                window.removeEventListener('scroll', this.scrollProgressHandler);
+            }
         }
     }
 
@@ -1976,6 +1803,7 @@ Always be helpful, provide specific information from this context, and encourage
         constructor() {
             this.container = document.querySelector('.profile-container');
             this.element = document.querySelector('.image-carousel');
+            this.ticking = false; // Initialize to prevent undefined-check race conditions
 
             if (this.container && this.element) {
                 this.init();
@@ -2020,229 +1848,7 @@ Always be helpful, provide specific information from this context, and encourage
         }
     }
 
-    // Enhanced Chat Widget Manager
-    class ChatWidget {
-        constructor() {
-            this.widget = document.getElementById('chatWidget');
-            this.chatBox = document.getElementById('chatBox');
-            this.closeBtn = document.getElementById('closeChat');
-            this.input = document.getElementById('chatInput');
-            this.messagesContainer = document.getElementById('chatMessages');
-            this.isOpen = false;
-            this.API_KEY = 'AIzaSyAvQdl7Q3cIrxgUipK9RhmPsIMBJQadpFM'; // Free tier key
-            this.context = "";
-            this.suggestions = [
-                "Tell me about your projects",
-                "What is your tech stack?",
-                "How can I contact you?",
-                "Do you have experience with AI?"
-            ];
-        }
-
-        init() {
-            if (!this.widget || !this.chatBox) return;
-
-            // Build context from page content
-            this.buildContext();
-
-            // Render suggestion chips
-            this.renderSuggestions();
-
-            // Event Listeners
-            this.widget.addEventListener('click', () => this.toggleChat());
-            this.closeBtn?.addEventListener('click', () => this.toggleChat());
-
-            this.input?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.handleSendMessage();
-                }
-            });
-
-            // Auto-resize input
-            this.input?.addEventListener('input', function () {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-        }
-
-        buildContext() {
-            // scrape text from important sections
-            const about = document.querySelector('#about')?.innerText || "";
-            const projects = document.querySelector('#projects')?.innerText || "";
-            const experience = document.querySelector('#experience')?.innerText || "";
-            const skills = document.querySelector('#tech-stack')?.innerText || "";
-
-            this.context = `
-                        Portfolio Context:
-                        ABOUT: ${about.substring(0, 1000)}...
-                        SKILLS: ${skills.substring(0, 1000)}...
-                        PROJECTS: ${projects.substring(0, 1500)}...
-                        EXPERIENCE: ${experience.substring(0, 1000)}...
-                    `.replace(/\s+/g, ' ').trim();
-        }
-
-        renderSuggestions() {
-            const existingChips = this.chatBox.querySelector('.suggestion-chips');
-            if (existingChips) existingChips.remove();
-
-            const chipsContainer = document.createElement('div');
-            chipsContainer.className = 'suggestion-chips';
-
-            this.suggestions.forEach(text => {
-                const chip = document.createElement('button');
-                chip.className = 'chat-chip';
-                chip.textContent = text;
-                chip.onclick = () => {
-                    this.input.value = text;
-                    this.handleSendMessage();
-                };
-                chipsContainer.appendChild(chip);
-            });
-
-            // Insert before messages or append to specific area
-            // For this design, we'll append it to messages container initially
-            // or strictly, let's put it at the bottom of messages container
-            this.messagesContainer.appendChild(chipsContainer);
-        }
-
-        toggleChat() {
-            this.isOpen = !this.isOpen;
-            this.chatBox.classList.toggle('active', this.isOpen);
-            if (this.isOpen) {
-                this.input?.focus();
-                // Scroll to bottom
-                this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-            }
-        }
-
-        async handleSendMessage() {
-            const message = this.input.value.trim();
-            if (!message) return;
-
-            // Remove suggestions if they exist
-            const suggestions = this.chatBox.querySelector('.suggestion-chips');
-            if (suggestions) suggestions.style.display = 'none';
-
-            this.addMessage(message, 'user-message');
-            this.input.value = '';
-            this.input.style.height = 'auto';
-
-            const typingId = this.showTypingIndicator();
-
-            try {
-                const response = await this.callGeminiAPI(message);
-                this.removeTypingIndicator(typingId);
-                this.addMessage(response, 'bot-message');
-            } catch (error) {
-                console.error('Chat Error:', error);
-                this.removeTypingIndicator(typingId);
-                this.addMessage('Hi there! My AI is currently resting. Please feel free to reach out to Sarthak directly using the contact methods below! ✨', 'bot-message error');
-            }
-        }
-
-        showTypingIndicator() {
-            const id = `typing-${Date.now()}`;
-            const div = document.createElement('div');
-            div.className = 'message bot-message typing-indicator-container';
-            div.id = id;
-            div.innerHTML = `
-                        <div class="typing-indicator">
-                            <span></span><span></span><span></span>
-                        </div>
-                    `;
-            this.messagesContainer.appendChild(div);
-            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-            return id;
-        }
-
-        removeTypingIndicator(id) {
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
-
-        addMessage(text, className) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${className}`;
-
-            if (className.includes('bot-message') && !className.includes('error')) {
-                msgDiv.innerHTML = this.parseMarkdown(text);
-            } else {
-                msgDiv.textContent = text;
-            }
-
-            this.messagesContainer.appendChild(msgDiv);
-            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
-        }
-
-        parseMarkdown(text) {
-            // robust markdown parsing
-            let html = Utils.escapeHtml(text);
-
-            // Bold
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-            // Italic
-            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-            // Code blocks
-            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-
-            // Inline code
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-            // Lists
-            html = html.replace(/^\s*-\s+(.*)/gm, '<li>$1</li>');
-            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>'); // basic wrapper attempt
-
-            // Paragraphs / Newlines
-            html = html.replace(/\n/g, '<br>');
-
-            return html;
-        }
-
-        async callGeminiAPI(prompt) {
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.API_KEY}`;
-
-            const systemPrompt = `
-                        You are Sarthak Mathapati's Portfolio AI Assistant.
-                        Your goal is to answer visitor questions specifically about Sarthak using the context below.
-                        
-                        CONTEXT:
-                        ${this.context}
-                        
-                        RULES:
-                        1. Be friendly, professional, and enthusiastic.
-                        2. Keep answers concise (under 3 sentences) unless asked for details.
-                        3. If you don't know something based on the context, say "I don't see that on the portfolio, but you can contact Sarthak directly!"
-                        4. Use emoji occasionally ✨.
-                        5. Format key skills or lists with markdown bullets.
-                    `;
-
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: `${systemPrompt}\n\nUser Question: ${prompt}`
-                    }]
-                }]
-            };
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) throw new Error(response.statusText);
-
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (error) {
-                throw error;
-            }
-        }
-    }
+    // ChatWidget removed — chat feature disabled
 
 
 
@@ -2256,6 +1862,7 @@ Always be helpful, provide specific information from this context, and encourage
             this.particles = null;
             this.mouseX = 0;
             this.mouseY = 0;
+            this.animationId = null; // Store RAF ID so it can be cancelled
             this.animate = this.animate.bind(this);
         }
 
@@ -2297,6 +1904,33 @@ Always be helpful, provide specific information from this context, and encourage
 
             // Start Loop
             this.animate();
+
+            // Clean up GPU resources on page unload to prevent memory leaks
+            window.addEventListener('beforeunload', () => this.dispose());
+        }
+
+        dispose() {
+            // Cancel the animation loop first
+            if (this.animationId !== null) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
+            if (this.renderer) {
+                this.renderer.dispose();
+                if (this.renderer.domElement && this.renderer.domElement.parentNode) {
+                    this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
+                }
+            }
+            if (this.particles) {
+                if (this.particles.geometry) this.particles.geometry.dispose();
+                if (this.particles.material) this.particles.material.dispose();
+                this.scene?.remove(this.particles);
+            }
+            if (this.scene) this.scene.clear();
+            this.scene = null;
+            this.camera = null;
+            this.renderer = null;
+            this.particles = null;
         }
 
         onMouseMove(event) {
@@ -2312,7 +1946,7 @@ Always be helpful, provide specific information from this context, and encourage
         }
 
         animate() {
-            requestAnimationFrame(this.animate);
+            this.animationId = requestAnimationFrame(this.animate);
 
             if (this.particles) {
                 // Rotation
@@ -2383,157 +2017,9 @@ Always be helpful, provide specific information from this context, and encourage
         }
     }
 
-    // Voice Control Feature
-    class VoiceControl {
-        constructor() {
-            this.btn = document.getElementById('voiceWidget');
-            this.overlay = document.getElementById('voiceOverlay');
-            this.status = document.getElementById('voiceStatus');
-            this.isListening = false;
-            this.recognition = null;
-        }
-
-        init() {
-            if (!this.btn) return;
-
-            // Check browser support
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                this.btn.style.display = 'none'; // Hide if not supported
-                console.warn('Speech Recognition not supported in this browser.');
-                return;
-            }
-
-            this.recognition = new SpeechRecognition();
-            this.recognition.continuous = false;
-            this.recognition.lang = 'en-US';
-            this.recognition.interimResults = false;
-
-            this.recognition.onstart = () => {
-                this.isListening = true;
-                this.updateUI(true);
-                this.status.textContent = "Listening...";
-            };
-
-            this.recognition.onend = () => {
-                this.isListening = false;
-                this.updateUI(false);
-            };
-
-            this.recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.toLowerCase();
-                console.log('Voice Command:', transcript);
-                this.handleCommand(transcript);
-            };
-
-            this.recognition.onerror = (event) => {
-                console.error('Speech recognition error', event.error);
-                this.status.textContent = "Error. Try again.";
-                setTimeout(() => this.updateUI(false), 2000);
-            };
-
-            this.btn.addEventListener('click', () => this.toggleListening());
-            // Close overlay on click
-            this.overlay.addEventListener('click', (e) => {
-                if (e.target === this.overlay) this.stopListening();
-            });
-        }
-
-        toggleListening() {
-            if (this.isListening) {
-                this.stopListening();
-            } else {
-                this.startListening();
-            }
-        }
-
-        startListening() {
-            try {
-                this.recognition.start();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        stopListening() {
-            try {
-                this.recognition.stop();
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        updateUI(active) {
-            if (active) {
-                this.overlay.classList.add('active');
-                this.btn.classList.add('recording');
-            } else {
-                this.overlay.classList.remove('active');
-                this.btn.classList.remove('recording');
-            }
-        }
-
-        handleCommand(cmd) {
-            this.status.textContent = `Recognized: "${cmd}"`;
-
-            // Delay slightly to let user read
-            setTimeout(() => {
-                this.stopListening(); // Close UI
-                this.executeAction(cmd);
-            }, 800);
-        }
-
-        executeAction(cmd) {
-            const nav = window.portfolioApp.navigationManager;
-            const chat = window.portfolioApp.chatWidget;
-
-            // Navigation Commands
-            if (cmd.includes('home')) nav.navigateTo('home');
-            else if (cmd.includes('about')) nav.navigateTo('about');
-            else if (cmd.includes('skills') || cmd.includes('tech')) nav.navigateTo('tech-stack');
-            else if (cmd.includes('project') || cmd.includes('work')) nav.navigateTo('projects');
-            else if (cmd.includes('contact') || cmd.includes('touch')) nav.navigateTo('contact');
-            else if (cmd.includes('service')) nav.navigateTo('services'); // Fixed bug: 'service' -> 'services'
-
-            // Interaction Commands
-            else if (cmd.includes('chat') || cmd.includes('message')) {
-                if (!chat.isOpen) chat.toggleChat();
-            }
-            else if (cmd.includes('close')) {
-                if (chat.isOpen) chat.toggleChat();
-            }
-
-            // Theme/Scroll
-            else if (cmd.includes('dark') || cmd.includes('light') || cmd.includes('theme')) {
-                document.body.classList.toggle('dark-theme');
-            }
-            else if (cmd.includes('top') || cmd.includes('up')) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            else if (cmd.includes('bottom') || cmd.includes('down')) {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            }
-
-            else {
-                // Fallback
-                this.showFeedback(`Unknown command: ${cmd}`);
-            }
-        }
-
-        showFeedback(msg) {
-            // Simple toast or alert replacement
-            const toast = document.createElement('div');
-            toast.className = 'voice-toast';
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-    }
-
     // Main Portfolio App
     class PortfolioApp {
         constructor() {
-            // Reuse existing loading manager to avoid conflicts
             this.loadingManager = window.loadingManager || new LoadingManager();
             this.backgroundEffects = new BackgroundEffects();
             this.navigationManager = new NavigationManager();
@@ -2544,8 +2030,7 @@ Always be helpful, provide specific information from this context, and encourage
             this.commandPaletteManager = new CommandPaletteManager();
             this.tiltEffect = new TiltEffect();
             this.proFeaturesManager = new ProFeaturesManager();
-            this.chatWidget = new ChatWidget();
-            this.voiceControl = new VoiceControl();
+            // chatWidget and voiceControl removed — features disabled
             this.threeDHero = new ThreeDHero();
             this.projectManager = new ProjectManager();
         }
@@ -2581,8 +2066,7 @@ Always be helpful, provide specific information from this context, and encourage
                 this.swiperManager.init();
                 this.phase2Manager.init();
                 this.commandPaletteManager.init();
-                this.chatWidget.init();
-                this.voiceControl.init();
+                // chatWidget.init() and voiceControl.init() removed
                 this.threeDHero.init();
                 this.projectManager.init();
 
@@ -2622,10 +2106,19 @@ Always be helpful, provide specific information from this context, and encourage
             document.body.appendChild(errorElement);
             setTimeout(() => document.body.removeChild(errorElement), 5000);
         }
+
+        /* Cleanup all resources — call on page unload or SPA route change */
+        destroy() {
+            this.navigationManager?.destroy();
+            this.animationManager?.destroy();
+            this.proFeaturesManager?.destroy();
+            this.threeDHero?.dispose();
+            AppState.isInitialized = false;
+            console.log('PortfolioApp destroyed — all listeners removed');
+        }
     }
     // Initialize application when DOM is ready
     const initApp = () => {
-        // Prevent multiple capitalizations
         if (window.portfolioApp) return;
         window.portfolioApp = new PortfolioApp();
         window.portfolioApp.init();
@@ -2640,6 +2133,8 @@ Always be helpful, provide specific information from this context, and encourage
     } else {
         initApp();
     }
+    // Clean up all resources on page unload
+    window.addEventListener('beforeunload', () => window.portfolioApp?.destroy(), { once: true });
     // Export for debugging
     window.AppState = AppState;
     window.Utils = Utils;
