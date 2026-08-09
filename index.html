@@ -61,6 +61,18 @@
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://generativelanguage.googleapis.com; img-src 'self' https: data: blob:; font-src 'self' https: data:;">
 
+    <!-- Apply the saved theme before the stylesheet paints to avoid a flash. -->
+    <script>
+        (() => {
+            let theme = 'dark';
+            try {
+                theme = localStorage.getItem('theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            } catch (_) { /* Use the dark fallback when storage is unavailable. */ }
+            document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+        })();
+    </script>
+
     <!-- Performance: Preload Critical Assets -->
     <link rel="preload" as="image"
         href="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg">
@@ -93,23 +105,45 @@
     <!-- Custom cursor disabled -->
 
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loader-container">
-            <div class="portfolio-logo interactive-card">
-                <span class="bouncing-text">
-                    <span lang="hi">Namaste</span>🙏🏻<br>Welcome To My Profile
+    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Loading portfolio">
+        <div class="loader-ambient loader-ambient-one" aria-hidden="true"></div>
+        <div class="loader-ambient loader-ambient-two" aria-hidden="true"></div>
+        <div class="loader-shell">
+            <div class="loader-brand">
+                <span class="loader-monogram" aria-hidden="true">SM</span>
+                <span class="loader-brand-copy">
+                    <small>PORTFOLIO / 2026</small>
+                    <strong>Sarthak Mathapati</strong>
                 </span>
             </div>
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-            <div class="loading-percentage" id="loadingPercentage">
-                ✨ If You Want To Know Me — Hold On, It's Coming. ✨
-            </div>
-            <button class="hero-btn btn-3d loading" disabled>
-                <i class="fas fa-spinner fa-spin"></i>&nbsp;Wait It’s Loading...
-            </button>
 
+            <p class="loader-kicker">Designing digital experiences with intent</p>
+            <h1 class="loader-title">Building <span>what comes next.</span></h1>
+            <p class="loader-subtitle">Preparing a thoughtful space for ideas, code, and meaningful work.</p>
+
+            <div class="loader-progress-row">
+                <div class="loader-progress-ring" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" role="presentation">
+                        <circle class="loader-ring-track" cx="50" cy="50" r="43"></circle>
+                        <circle class="loader-ring-value" id="progressRing" cx="50" cy="50" r="43"></circle>
+                    </svg>
+                    <span id="progressNumber">0%</span>
+                </div>
+                <div class="loader-progress-copy">
+                    <div class="loading-percentage" id="loadingPercentage">
+                        <span>0%</span>
+                        <div>Warming up the experience…</div>
+                    </div>
+                    <div class="loader-progress-track" aria-hidden="true">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader-footer">
+                <span><i class="fas fa-sparkles" aria-hidden="true"></i> A small universe is loading</span>
+                <span>v1.0.0</span>
+            </div>
         </div>
     </div>
 
@@ -144,13 +178,13 @@
         </div>
         <div class="section-dot" data-section="tech-stack" data-label="Tech Stack" aria-label="Navigate to Tech Stack"
             role="button" tabindex="0"></div>
-        <div class="section-dot" data-section="process" data-label="Process" aria-label="Navigate to Process"
+        <div class="section-dot" data-section="routine" data-label="Routine" aria-label="Navigate to Routine"
             role="button" tabindex="0">
         </div>
         <div class="section-dot" data-section="projects" data-label="Projects" aria-label="Navigate to Projects"
             role="button" tabindex="0">
         </div>
-        <div class="section-dot" data-section="opensource" data-label="Open Source" aria-label="Navigate to Open Source"
+        <div class="section-dot" data-section="open-source" data-label="Open Source" aria-label="Navigate to Open Source"
             role="button" tabindex="0"></div>
         <div class="section-dot" data-section="experience" data-label="Journey" aria-label="Navigate to Experience"
             role="button" tabindex="0"></div>
@@ -176,9 +210,9 @@
             <a href="#home" class="port">Portfolio</a>
             <a href="#about" class="nav-link">About</a>
             <a href="#tech-stack" class="nav-link">Stack</a>
-            <a href="#process" class="nav-link">Process</a>
+            <a href="#routine" class="nav-link">Routine</a>
             <a href="#projects" class="nav-link">Projects</a>
-            <a href="#opensource" class="nav-link">Open Source</a>
+            <a href="#open-source" class="nav-link">Open Source</a>
             <a href="#experience" class="nav-link">Journey</a>
             <a href="#contact" class="nav-link">Contact</a>
             <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
@@ -1001,7 +1035,7 @@
                                             https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80 800w,
                                             https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80 1200w"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    alt="E-commerce Platform" class="responsive-img">
+                                    alt="E-commerce Platform" class="responsive-img" loading="lazy" decoding="async">
                                 <div class="slide-content">
                                     <h3 class="slide-title">E-commerce Platform</h3>
                                     <p class="slide-desc">Full-featured online store with modern technologies</p>
@@ -1015,7 +1049,7 @@
                                             https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80 800w,
                                             https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80 1200w"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    alt="Task Management App" class="responsive-img">
+                                    alt="Task Management App" class="responsive-img" loading="lazy" decoding="async">
                                 <div class="slide-content">
                                     <h3 class="slide-title">Task Management App</h3>
                                     <p class="slide-desc">Productivity application for team collaboration</p>
@@ -1029,7 +1063,7 @@
                                             https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80 800w,
                                             https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80 1200w"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    alt="Social Media Dashboard" class="responsive-img">
+                                    alt="Social Media Dashboard" class="responsive-img" loading="lazy" decoding="async">
                                 <div class="slide-content">
                                     <h3 class="slide-title">Social Media Dashboard</h3>
                                     <p class="slide-desc">Analytics dashboard with interactive data visualization</p>
@@ -1965,7 +1999,6 @@ function InteractiveButton({ children, onClick }) {
                                 <p><a href="tel:9356707688">+91 93567 07688</a></p>
                             </div>
                         </div>
-                        <!-- Combined Location+Map Container -->
                         <div class="contact-item glass-card interactive-card location-container">
                             <i class="fas fa-map-marker-alt"></i>
                             <div>
@@ -1977,63 +2010,42 @@ function InteractiveButton({ children, onClick }) {
                                     </a>
                                 </p>
                             </div>
-                            <!-- Embedded Google Map -->
-                            <!-- <div class="location-map glass-card">
-                                <div class="embed-map-responsive">
-                                    <div class="embed-map-container">
-                                        <iframe class="embed-map-frame" frameborder="0" scrolling="no" marginheight="0"
-                                            marginwidth="0"
-                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d144.9537353153169!3d-37.8173234420211!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b98808d%3A0x29cc72715890860!2sMelbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1645678912345!5m2!1sen!2sus">
-                                        </iframe>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="contact-item glass-card interactive-card availability-container">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h3>Always Available To Help</h3>
+                                <p>Here to help anytime: 24 × 7, Monday to Sunday.</p>
+                                <div class="note">Feel free to reach out. 💬</div>
                             </div>
-                        </div> -->
-                            <!-- <div class="location-map glass-card"> -->
-                            <!-- <div class="embed-map-responsive">
-        <div class="embed-map-container">
-            <iframe
-                class="embed-map-frame"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509374!2d144.9537353153169!3d-37.8173234420211!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b98808d%3A0x29cc72715890860!2sMelbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1645678912345!5m2!1sen!2sus"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                allowfullscreen>
-            </iframe>
-        </div>
-    </div>
-</div> -->
-
-                            <div class="contact-item glass-card interactive-card">
-                                <i class="fas fa-clock"></i>
-                                <div>
-                                    <h3>I'm Always Available To Help You With Anything.</h3>
-                                    <p class="glass-card">Here To Help Anytime : 24 × 7, Monday To Sunday!</p>
-                                    <div class="note">Feel Free To Reach Out.💬</div>
-                                </div>
-                            </div>
+                        </div>
                         </div>
 
                         <!-- Contact Form -->
-                        <!-- <div class="contact-form-container glass-card interactive-card stagger-animation">
+                        <div class="contact-form-container glass-card interactive-card stagger-animation">
                         <form id="contactForm">
                             <div class="form-group">
+                                <label for="name">Your Name</label>
                                 <input type="text" id="name" class="form-input" placeholder="Your Name" required
-                                    minlength="2" autocomplete="name" aria-label="Your Name">
+                                    minlength="2" autocomplete="name">
                             </div>
                             <div class="form-group">
+                                <label for="email">Email Address</label>
                                 <input type="email" id="email" class="form-input" placeholder="Your Email" required
                                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" autocomplete="email"
-                                    aria-label="Your Email">
+                                    inputmode="email">
                             </div>
                             <div class="form-group">
+                                <label for="message">How can I help?</label>
                                 <textarea id="message" class="form-input" placeholder="Your Message" required rows="5"
-                                    aria-label="Your Message"></textarea>
+                                    minlength="10"></textarea>
                             </div>
                             <button type="submit" class="hero-btn btn-3d primary">
                                 <span>Send Message <i class="fas fa-paper-plane"></i></span>
                             </button>
+                            <p class="form-status" id="contactStatus" role="status" aria-live="polite"></p>
                         </form>
-                    </div> -->
+                    </div>
                     </div>
                 </div>
             </div>
@@ -2103,21 +2115,7 @@ function InteractiveButton({ children, onClick }) {
                     </ul>
                 </div>
 
-                <!-- Newsletter Section -->
-                <!-- <div class="footer-links testimonial-card glass-card interactive-card newsletter-section-footer">
-                    <h3>Newsletter</h3>
-                    <p class="elegant-text" style="font-size: 0.9em; margin-bottom: 1rem;">Subscribe for latest updates
-                        and tech insights.</p>
-                    <form id="newsletterForm" class="newsletter-form">
-                        <input type="email" class="newsletter-input" placeholder="Enter your email" required
-                            aria-label="Email for newsletter">
-                        <button type="submit" class="hero-btn" style="padding: 0.5rem 1rem; font-size: 0.9em;"
-                            aria-label="Subscribe">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </div> -->
+            </div>
 
                 <!-- Additional Footer Info -->
                 <div class="trust-badges">

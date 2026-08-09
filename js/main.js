@@ -27,8 +27,7 @@
     const CONFIG = {
         loading: {
             minDisplayTime: 800,
-            maxDisplayTime: 4000,
-            progressStep: 20
+            maxDisplayTime: 4500
         },
         animations: {
             scrollThrottle: 16,
@@ -47,13 +46,23 @@
         }
     };
 
+    // Storage can be unavailable in private mode or locked-down browsers.
+    const Storage = {
+        get(key) {
+            try { return window.localStorage.getItem(key); } catch (_) { return null; }
+        },
+        set(key, value) {
+            try { window.localStorage.setItem(key, String(value)); } catch (_) { /* no-op */ }
+        }
+    };
+
     // State management
     const AppState = {
         isInitialized: false,
         isMobile: window.innerWidth <= 768,
         prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         prefersDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-        currentTheme: localStorage.getItem('theme') ||
+        currentTheme: Storage.get('theme') ||
             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
         activeSection: '',
         scrollListeners: new Set()
@@ -148,15 +157,17 @@
             this.loadingScreen = document.getElementById('loadingScreen');
             this.progressBar = document.getElementById('progressBar');
             this.loadingPercentage = document.getElementById('loadingPercentage');
+            this.progressRing = document.getElementById('progressRing');
+            this.progressNumber = document.getElementById('progressNumber');
             this.progress = 0;
             this.startTime = performance.now();
-            this.minDisplayTime = 10000; // Strictly 10 seconds
-            this.maxDisplayTime = 12000; // Max fallback
+            this.minDisplayTime = CONFIG.loading.minDisplayTime;
+            this.maxDisplayTime = CONFIG.loading.maxDisplayTime;
             this.loadingMessages = [
-                "✨ If You Want To Know Me — Hold On, It's Coming. ✨",
-                "🎨 Crafting something special for you...",
-                "⚡ Almost there, preparing the magic...",
-                "🌟 Good things take time, including this..."
+                'Warming up the experience…',
+                'Loading the visual system…',
+                'Connecting the details…',
+                'Almost ready to explore.'
             ];
             this.currentMessageIndex = 0;
             this.isHidden = false;
@@ -179,7 +190,7 @@
                 // Wait for window load OR timeout
                 await Promise.race([
                     this.waitForCriticalAssets(),
-                    this.timeoutPromise(3000) // Max 3 seconds wait
+                    this.timeoutPromise(1400)
                 ]);
 
                 // Ensure minimum display time
@@ -200,13 +211,13 @@
         }
 
         setupForceHide() {
-            // Force hide after 12 seconds max
+            // Always fail open if a third-party asset stalls.
             this.forceHideTimeout = setTimeout(() => {
                 if (!this.isHidden) {
                     console.warn('Force hiding loading screen after timeout');
                     this.forceHide();
                 }
-            }, 12000);
+            }, this.maxDisplayTime);
 
             // Add global escape hatch for debugging
             // window.forceHideLoading = () => this.forceHide();
@@ -242,46 +253,33 @@
         simulateLoadingProgress() {
             return new Promise((resolve) => {
                 let lastProgress = 0;
+                const duration = AppState.prefersReducedMotion ? 0 : 1350;
+                const startedAt = performance.now();
 
                 const updateProgress = () => {
-                    if (this.progress >= 100) {
-                        resolve();
-                        return;
-                    }
-
-                    // Optimized progress simulation for 10s duration
-                    let increment;
-                    if (this.progress < 30) {
-                        increment = 0.5; // Slow initial progress (60 steps @ 50ms = 3s)
-                    } else if (this.progress < 70) {
-                        increment = 0.4; // Steady speed (100 steps @ 50ms = 5s)
-                    } else if (this.progress < 90) {
-                        increment = 0.5; // (40 steps @ 50ms = 2s)
-                    } else {
-                        increment = 0.2; // Finishing touches
-                    }
-
-                    this.progress = Math.min(this.progress + increment, 100);
+                    const elapsed = performance.now() - startedAt;
+                    this.progress = duration === 0 ? 100 : Math.min(100, (elapsed / duration) * 100);
                     this.updateProgressElements();
 
-                    // Change message at intervals
-                    if (this.progress - lastProgress >= 25) {
+                    if (this.progress - lastProgress >= 25 || this.progress >= 100) {
                         lastProgress = this.progress;
                         this.currentMessageIndex = Math.min(
-                            this.currentMessageIndex + 1,
+                            Math.floor(this.progress / 25),
                             this.loadingMessages.length - 1
                         );
                         this.updateMessage();
                     }
 
-                    // Consistent delay for smoother 10s animation
-                    const delay = 50;
-                    setTimeout(updateProgress, delay);
+                    if (this.progress >= 100) {
+                        resolve();
+                        return;
+                    }
+
+                    setTimeout(updateProgress, 32);
                 };
 
-                // Start with initial message
-                this.updateMessage();
-                setTimeout(updateProgress, 100);
+                this.updateProgressElements();
+                updateProgress();
             });
         }
 
@@ -289,12 +287,17 @@
             if (this.progressBar) {
                 this.progressBar.style.width = `${this.progress}%`;
             }
+            if (this.progressRing) {
+                const circumference = 2 * Math.PI * 43;
+                this.progressRing.style.strokeDashoffset = `${circumference * (1 - this.progress / 100)}`;
+            }
+            if (this.progressNumber) {
+                this.progressNumber.textContent = `${Math.floor(this.progress)}%`;
+            }
             if (this.loadingPercentage) {
                 this.loadingPercentage.innerHTML = `
-                <span style="font-size: 1.2em; margin-bottom: 10px; display: block;">
-                    ${Math.floor(this.progress)}%
-                </span>
-                <div style="font-size: 0.9em; opacity: 0.8;">
+                <span>${Math.floor(this.progress)}%</span>
+                <div>
                     ${this.loadingMessages[this.currentMessageIndex]}
                 </div>`;
             }
@@ -335,23 +338,22 @@
                 this.forceHideTimeout = null;
             }
 
+            this.progress = 100;
+            this.updateProgressElements();
+
             // Final message
             if (this.loadingPercentage) {
                 this.loadingPercentage.innerHTML = `
-                <span style="font-size: 1.2em; display: block; animation: bounce 0.5s;">
-                    100%
-                </span>
-                <div style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
-                    🎉 Ready! Here we go... 🎉
-                </div>`;
+                <span>100%</span>
+                <div>Ready to explore.</div>`;
             }
 
-            // Wait a moment to show completion
-            await this.timeoutPromise(500);
+            // Give the completion state a brief moment to register.
+            await this.timeoutPromise(AppState.prefersReducedMotion ? 0 : 220);
 
             // Fade out animation
             if (this.loadingScreen) {
-                this.loadingScreen.style.transition = 'opacity 0.5s ease, visibility 0.5s ease';
+                this.loadingScreen.style.transition = 'opacity 0.45s ease, visibility 0.45s ease';
                 this.loadingScreen.style.opacity = '0';
                 this.loadingScreen.style.visibility = 'hidden';
 
@@ -368,7 +370,7 @@
                             this.loadingScreen.style.display = 'none';
                         }
                     }
-                }, 600);
+                }, 480);
 
                 // Dispatch custom event
                 window.dispatchEvent(new CustomEvent('loadingComplete'));
@@ -414,7 +416,7 @@
     const initLoadingManager = () => {
         try {
             // Check if we should skip loading (for development/debugging)
-            const skipLoading = localStorage.getItem('skipLoading') === 'true' ||
+            const skipLoading = Storage.get('skipLoading') === 'true' ||
                 window.location.search.includes('skipLoading');
 
             if (skipLoading) {
@@ -457,9 +459,7 @@
         constructor() {
             this.particlesContainer = document.getElementById('particles');
             this.fallingStarsContainer = document.getElementById('fallingStars');
-            this.animatedBackground = document.querySelector('.animated-background');
-
-            this.init();
+            this.animatedBackground = document.querySelector('.animated-background, .animated-bg');
 
             if (!AppState.isMobile) {
                 this.initCursorInteractions();
@@ -620,8 +620,9 @@
             this.backToTop = document.getElementById('backToTop');
             this.navIndicator = document.querySelector('.nav-indicator');
             this.navLinks = document.querySelectorAll('.nav-link');
+            this.sectionDots = document.querySelectorAll('.section-dot');
             // Store bound scroll handlers so they can be removed in destroy()
-            this.boundHandlers = { updateBackToTop: null, updateHeader: null };
+            this.boundHandlers = { updateBackToTop: null, updateHeader: null, resetMobileMenu: null };
             this.sectionObserver = null;
 
             // Close mobile menu when clicking links & Magnetic Effect
@@ -638,6 +639,20 @@
                 }
             });
 
+            this.sectionDots.forEach(dot => {
+                const navigate = () => {
+                    const target = document.getElementById(dot.dataset.section);
+                    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                };
+                dot.addEventListener('click', navigate);
+                dot.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        navigate();
+                    }
+                });
+            });
+
             // Reset indicator when leaving nav
             this.mainNav.addEventListener('mouseleave', () => {
                 this.resetIndicator();
@@ -651,6 +666,19 @@
                     this.closeMobileMenu();
                 }
             });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.mainNav.classList.contains('active')) {
+                    this.closeMobileMenu();
+                    this.mobileMenuToggle.focus();
+                }
+            });
+            this.boundHandlers.resetMobileMenu = () => {
+                AppState.isMobile = window.innerWidth <= 768;
+                if (!AppState.isMobile && this.mainNav.classList.contains('active')) {
+                    this.closeMobileMenu();
+                }
+            };
+            window.addEventListener('resize', this.boundHandlers.resetMobileMenu, { passive: true });
         }
 
         init() {
@@ -748,17 +776,22 @@
         toggleMobileMenu() {
             this.mainNav.classList.toggle('active');
             this.mobileMenuToggle.classList.toggle('active');
+            const isOpen = this.mainNav.classList.contains('active');
+            document.body.classList.toggle('nav-open', isOpen);
+            this.mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
 
             const icon = this.mobileMenuToggle.querySelector('i');
             if (icon) {
-                icon.classList.toggle('fa-bars', !this.mainNav.classList.contains('active'));
-                icon.classList.toggle('fa-times', this.mainNav.classList.contains('active'));
+                icon.classList.toggle('fa-bars', !isOpen);
+                icon.classList.toggle('fa-times', isOpen);
             }
         }
 
         closeMobileMenu() {
             this.mainNav.classList.remove('active');
             this.mobileMenuToggle.classList.remove('active');
+            document.body.classList.remove('nav-open');
+            this.mobileMenuToggle.setAttribute('aria-expanded', 'false');
 
             const icon = this.mobileMenuToggle.querySelector('i');
             if (icon) {
@@ -770,27 +803,27 @@
         initThemeToggle() {
             if (!this.themeToggle) return;
 
-            // Apply initial theme based on AppState
-            if (AppState.currentTheme === 'dark') {
-                document.body.classList.add('dark-theme');
-                this.updateThemeIcon('sun');
-            } else {
-                document.body.classList.remove('dark-theme');
-                this.updateThemeIcon('moon');
-            }
+            this.applyTheme(AppState.currentTheme, false);
 
             this.themeToggle.addEventListener('click', this.toggleTheme.bind(this));
         }
 
         toggleTheme() {
-            document.body.classList.toggle('dark-theme');
+            const nextTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+            this.applyTheme(nextTheme);
+        }
 
-            if (document.body.classList.contains('dark-theme')) {
-                localStorage.setItem('theme', 'dark');
-                this.updateThemeIcon('sun');
-            } else {
-                localStorage.setItem('theme', 'light');
-                this.updateThemeIcon('moon');
+        applyTheme(theme, persist = true) {
+            const isDark = theme === 'dark';
+            AppState.currentTheme = isDark ? 'dark' : 'light';
+            document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+            document.body.classList.toggle('dark-theme', isDark);
+            this.themeToggle.setAttribute('aria-pressed', String(isDark));
+            this.themeToggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+            this.updateThemeIcon(isDark ? 'sun' : 'moon');
+
+            if (persist) {
+                Storage.set('theme', isDark ? 'dark' : 'light');
             }
         }
 
@@ -833,6 +866,9 @@
             }
             if (this.boundHandlers.updateHeader) {
                 window.removeEventListener('scroll', this.boundHandlers.updateHeader);
+            }
+            if (this.boundHandlers.resetMobileMenu) {
+                window.removeEventListener('resize', this.boundHandlers.resetMobileMenu);
             }
             if (this.sectionObserver) {
                 this.sectionObserver.disconnect();
@@ -966,6 +1002,36 @@
             this.initCaseStudies();
             this.initInteractiveCards();
             this.initContactForm();
+            this.initPlaceholderLinks();
+        }
+
+        initPlaceholderLinks() {
+            document.querySelectorAll('a[href="#"]').forEach(link => {
+                // Swiper project CTAs are handled by ProjectManager and open the project view.
+                if (link.classList.contains('cta-button') && link.closest('#projects')) return;
+
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    this.showNotice('This link is being prepared. Use the contact form for project details.');
+                });
+            });
+        }
+
+        showNotice(message) {
+            let notice = document.getElementById('siteNotice');
+            if (!notice) {
+                notice = document.createElement('div');
+                notice.id = 'siteNotice';
+                notice.className = 'site-notice';
+                notice.setAttribute('role', 'status');
+                notice.setAttribute('aria-live', 'polite');
+                document.body.appendChild(notice);
+            }
+
+            notice.textContent = message;
+            notice.classList.add('show');
+            clearTimeout(this.noticeTimer);
+            this.noticeTimer = setTimeout(() => notice.classList.remove('show'), 4200);
         }
 
         initContactForm() {
@@ -975,18 +1041,22 @@
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const btn = form.querySelector('button[type="submit"]');
+                const status = document.getElementById('contactStatus');
+                if (!btn) return;
                 const originalContent = btn.innerHTML;
 
                 // Loading state
                 btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending...</span>';
                 btn.disabled = true;
                 btn.style.opacity = '0.8';
+                if (status) status.textContent = 'Preparing your message…';
 
                 // Simulate request
                 setTimeout(() => {
                     btn.innerHTML = '<span><i class="fas fa-check"></i> Sent!</span>';
                     btn.style.backgroundColor = '#00C851';
                     btn.style.borderColor = '#00C851';
+                    if (status) status.textContent = 'Thanks — your message is ready to send.';
 
                     // Reset form
                     form.reset();
@@ -1007,6 +1077,7 @@
                         btn.style.backgroundColor = '';
                         btn.style.borderColor = '';
                         btn.style.opacity = '1';
+                        if (status) status.textContent = '';
                     }, 3000);
                 }, 1500);
             });
@@ -1014,7 +1085,7 @@
 
         initInteractiveCards() {
             document.querySelectorAll('.interactive-card').forEach(card => {
-                if (AppState.isMobile) return;
+                if (AppState.isMobile || AppState.prefersReducedMotion) return;
 
                 card.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
@@ -1287,14 +1358,14 @@
 
             if (!banner) return;
 
-            if (!localStorage.getItem('cookieConsent')) {
+            if (!Storage.get('cookieConsent')) {
                 setTimeout(() => {
                     banner.classList.add('show');
                 }, 2000);
             }
 
             acceptBtn?.addEventListener('click', () => {
-                localStorage.setItem('cookieConsent', 'true');
+                Storage.set('cookieConsent', 'true');
                 banner.classList.remove('show');
             });
 
@@ -1318,14 +1389,14 @@
             const toggle = document.getElementById('highContrastToggle');
             if (!toggle) return;
 
-            if (localStorage.getItem('highContrast') === 'true') {
+            if (Storage.get('highContrast') === 'true') {
                 document.body.classList.add('high-contrast');
             }
 
             toggle.addEventListener('click', () => {
                 document.body.classList.toggle('high-contrast');
                 const isHighContrast = document.body.classList.contains('high-contrast');
-                localStorage.setItem('highContrast', isHighContrast);
+                Storage.set('highContrast', isHighContrast);
             });
         }
     }
@@ -1590,13 +1661,16 @@
         }
 
         createDots() {
+            if (!this.dotsContainer) return;
             this.dotsContainer.innerHTML = '';
 
             this.tracks.forEach((_, index) => {
-                const dot = document.createElement('div');
+                const dot = document.createElement('button');
+                dot.type = 'button';
                 dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
                 dot.dataset.index = index;
                 dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+                dot.setAttribute('aria-current', index === 0 ? 'true' : 'false');
                 this.dotsContainer.appendChild(dot);
             });
         }
@@ -1621,7 +1695,11 @@
             // Update dots
             const dots = this.dotsContainer.querySelectorAll('.carousel-dot');
             dots.forEach(dot => dot.classList.remove('active'));
-            if (dots[index]) dots[index].classList.add('active');
+            dots.forEach(dot => dot.setAttribute('aria-current', 'false'));
+            if (dots[index]) {
+                dots[index].classList.add('active');
+                dots[index].setAttribute('aria-current', 'true');
+            }
 
             this.currentIndex = index;
         }
@@ -1636,6 +1714,7 @@
 
         startAutoScroll() {
             this.stopAutoScroll();
+            if (AppState.prefersReducedMotion || document.hidden) return;
             this.interval = setInterval(() => this.nextSlide(), this.autoScrollDelay);
         }
 
@@ -1646,6 +1725,7 @@
             }
         }
         addEventListeners() {
+            if (!this.dotsContainer) return;
             this.dotsContainer.addEventListener('click', (e) => {
                 if (e.target.classList.contains('carousel-dot')) {
                     const index = parseInt(e.target.dataset.index);
@@ -1655,8 +1735,13 @@
 
             // Keyboard nav
             document.addEventListener('keydown', (e) => {
+                if (!this.container.contains(document.activeElement)) return;
                 if (e.key === 'ArrowLeft') this.prevSlide();
                 if (e.key === 'ArrowRight') this.nextSlide();
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) this.stopAutoScroll();
+                else this.startAutoScroll();
             });
         }
     }
@@ -1782,13 +1867,17 @@
                 this.ticking = true;
                 window.requestAnimationFrame(() => {
                     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-                    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                    this.scrollProgress.style.width = `${(scrollTop / scrollHeight) * 100}%`;
+                    const scrollHeight = Math.max(
+                        document.documentElement.scrollHeight - document.documentElement.clientHeight,
+                        1
+                    );
+                    const progress = Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100));
+                    this.scrollProgress.style.width = `${progress}%`;
                     this.ticking = false;
                 });
             };
 
-            window.addEventListener('scroll', this.scrollProgressHandler);
+            window.addEventListener('scroll', this.scrollProgressHandler, { passive: true });
         }
 
         destroy() {
@@ -1867,7 +1956,7 @@
         }
 
         init() {
-            if (!this.container || !window.THREE) return;
+            if (!this.container || !window.THREE || AppState.isMobile || AppState.prefersReducedMotion) return;
 
             // Scene setup
             this.scene = new THREE.Scene();
