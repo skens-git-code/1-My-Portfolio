@@ -151,6 +151,53 @@
         }
     };
 
+    // Analytics & Microsoft Clarity Telemetry Helper
+    const AnalyticsTracker = {
+        init() {
+            // Set initial telemetry tags in Microsoft Clarity
+            this.setTag('theme', AppState.currentTheme || 'dark');
+            this.setTag('device_type', AppState.isMobile ? 'mobile' : 'desktop');
+            this.setTag('reduced_motion', AppState.prefersReducedMotion ? 'true' : 'false');
+            this.setTag('viewport', `${window.innerWidth}x${window.innerHeight}`);
+        },
+
+        // Set custom tag in Microsoft Clarity
+        setTag(key, value) {
+            try {
+                if (typeof window.clarity === 'function') {
+                    window.clarity('set', key, String(value));
+                }
+            } catch (err) {
+                // Fail silently without disrupting UI
+            }
+        },
+
+        // Fire custom smart event in Clarity & GA4
+        sendEvent(eventName, params = {}) {
+            try {
+                if (typeof window.clarity === 'function') {
+                    window.clarity('event', eventName);
+                }
+                if (typeof window.gtag === 'function') {
+                    window.gtag('event', eventName, params);
+                }
+            } catch (err) {
+                // Fail silently
+            }
+        },
+
+        // Upgrade session priority in Clarity for high-value interactions
+        upgradeSession(reason) {
+            try {
+                if (typeof window.clarity === 'function') {
+                    window.clarity('upgrade', reason);
+                }
+            } catch (err) {
+                // Fail silently
+            }
+        }
+    };
+
     // Loading Manager
     class LoadingManager {
         constructor() {
@@ -753,6 +800,12 @@
         }
 
         setActiveSection(sectionId) {
+            if (AppState.activeSection !== sectionId) {
+                AppState.activeSection = sectionId;
+                AnalyticsTracker.setTag('active_section', sectionId);
+                AnalyticsTracker.sendEvent('section_view', { section: sectionId });
+            }
+
             this.navLinks.forEach(link => {
                 const href = link.getAttribute('href');
                 if (href === `#${sectionId}`) {
@@ -815,15 +868,18 @@
 
         applyTheme(theme, persist = true) {
             const isDark = theme === 'dark';
-            AppState.currentTheme = isDark ? 'dark' : 'light';
-            document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+            const themeStr = isDark ? 'dark' : 'light';
+            AppState.currentTheme = themeStr;
+            document.documentElement.dataset.theme = themeStr;
             document.body.classList.toggle('dark-theme', isDark);
             this.themeToggle.setAttribute('aria-pressed', String(isDark));
             this.themeToggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
             this.updateThemeIcon(isDark ? 'sun' : 'moon');
 
             if (persist) {
-                Storage.set('theme', isDark ? 'dark' : 'light');
+                Storage.set('theme', themeStr);
+                AnalyticsTracker.setTag('theme', themeStr);
+                AnalyticsTracker.sendEvent('theme_toggle', { theme: themeStr });
             }
         }
 
@@ -1045,6 +1101,10 @@
                 if (!btn) return;
                 const originalContent = btn.innerHTML;
 
+                // Track contact form submission and prioritize Clarity session recording
+                AnalyticsTracker.sendEvent('contact_form_submit', { timestamp: Date.now() });
+                AnalyticsTracker.upgradeSession('contact_form_submission');
+
                 // Loading state
                 btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending...</span>';
                 btn.disabled = true;
@@ -1118,7 +1178,8 @@
                     filterButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
 
-                    const filter = button.getAttribute('data-filter');
+                    const filter = button.getAttribute('data-filter') || 'all';
+                    AnalyticsTracker.sendEvent('project_filter_click', { filter });
                     this.filterProjects(projectCards, filter);
                 });
             });
@@ -1574,7 +1635,11 @@
             // Add click handlers
             this.resultsContainer.querySelectorAll('.cmd-item').forEach((item, index) => {
                 item.addEventListener('click', () => {
-                    commands[index].action();
+                    const cmd = commands[index];
+                    if (cmd) {
+                        AnalyticsTracker.sendEvent('command_palette_action', { command: cmd.name });
+                        cmd.action();
+                    }
                     this.close();
                 });
             });
@@ -2092,6 +2157,10 @@
             const desc = card.querySelector('.slide-desc').innerText;
             const img = card.querySelector('img').src;
 
+            // Track project interaction in Clarity & upgrade session priority
+            AnalyticsTracker.sendEvent('project_modal_open', { project: title });
+            AnalyticsTracker.upgradeSession('project_modal_opened');
+
             this.modalTitle.innerText = title;
             this.modalDesc.innerText = desc + " - This project represents a deep dive into modern web technologies, focusing on user experience and performance efficiency. Built with clean code and scalability in mind.";
             this.modalImage.src = img;
@@ -2146,6 +2215,9 @@
 
                     // Providing we don't call init() again, we are safe.
                 }
+
+                // Initialize telemetry & analytics tracker
+                AnalyticsTracker.init();
 
                 // Initialize all components
                 this.backgroundEffects.init();

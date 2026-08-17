@@ -2,13 +2,14 @@
 <html lang="en">
 
 <head>
+    <!-- Microsoft Clarity Tracking -->
     <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "y3pmrdcb5x");
-</script>
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "y3pmrdcb5x");
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio.inc</title>
@@ -25,7 +26,6 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sarthakmathapati.com">
 
-    <!-- Structured Data -->
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
@@ -57,16 +57,22 @@
     }
     </script>
 
-    <!-- Preload critical resources -->
+    <!-- Preload & Preconnect Critical Resources -->
+    <link rel="preconnect" href="https://www.clarity.ms">
+    <link rel="preconnect" href="https://c.clarity.ms" crossorigin>
+    <link rel="dns-prefetch" href="https://www.clarity.ms">
+    <link rel="dns-prefetch" href="https://c.clarity.ms">
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.google-analytics.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Monoton&family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&family=Saira+Stencil+One&family=Zalando+Sans+Expanded:ital,wght@0,200..900;1,200..900&family=Zen+Dots&display=swap"
         rel="stylesheet">
 
-    <!-- Security: Content Security Policy -->
+    <!-- Security: Content Security Policy (Optimized for MS Clarity & GA4 Telemetry) -->
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://generativelanguage.googleapis.com; img-src 'self' https: data: blob:; font-src 'self' https: data:;">
+        content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://generativelanguage.googleapis.com https://*.clarity.ms https://c.clarity.ms https://k.clarity.ms https://z.clarity.ms https://*.bing.com https://www.google-analytics.com https://*.google-analytics.com https://region1.google-analytics.com https://analytics.google.com; img-src 'self' https: data: blob: https://c.clarity.ms https://*.clarity.ms https://*.bing.com https://www.google-analytics.com; font-src 'self' https: data:;">
 
     <!-- Apply the saved theme before the stylesheet paints to avoid a flash. -->
     <script>
@@ -2034,20 +2040,20 @@ function InteractiveButton({ children, onClick }) {
                             <div class="form-group">
                                 <label for="name">Your Name</label>
                                 <input type="text" id="name" class="form-input" placeholder="Your Name" required
-                                    minlength="2" autocomplete="name">
+                                    minlength="2" autocomplete="name" data-clarity-mask="true">
                             </div>
                             <div class="form-group">
                                 <label for="email">Email Address</label>
                                 <input type="email" id="email" class="form-input" placeholder="Your Email" required
                                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" autocomplete="email"
-                                    inputmode="email">
+                                    inputmode="email" data-clarity-mask="true">
                             </div>
                             <div class="form-group">
                                 <label for="message">How can I help?</label>
                                 <textarea id="message" class="form-input" placeholder="Your Message" required rows="5"
-                                    minlength="10"></textarea>
+                                    minlength="10" data-clarity-mask="true"></textarea>
                             </div>
-                            <button type="submit" class="hero-btn btn-3d primary">
+                            <button type="submit" class="hero-btn btn-3d primary" data-clarity-unmask="true">
                                 <span>Send Message <i class="fas fa-paper-plane"></i></span>
                             </button>
                             <p class="form-status" id="contactStatus" role="status" aria-live="polite"></p>
