@@ -224,6 +224,16 @@ button { cursor:pointer; }
     overflow:hidden; pointer-events:none;
 }
 
+/* 3D Cinematic WebGL Canvas */
+.webgl-3d-canvas {
+    position:absolute; inset:0;
+    width:100% !important; height:100% !important;
+    z-index:2;
+    pointer-events:none;
+    will-change:transform;
+    display:block;
+}
+
 /* Aurora gradient blobs */
 .gradients-container {
     position:absolute; inset:0;
