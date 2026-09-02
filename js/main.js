@@ -753,22 +753,26 @@
     }
 
     moveIndicator(targetElement) {
-      if (!this.navIndicator || !targetElement) return;
+      if (!this.navIndicator || !targetElement || AppState.isMobile) return;
 
-      const rect = targetElement.getBoundingClientRect();
-      const navRect = this.mainNav.getBoundingClientRect();
+      const containerRect = this.mainNav.getBoundingClientRect();
+      const targetRect = targetElement.getBoundingClientRect();
+      const left = targetRect.left - containerRect.left;
+      const width = targetRect.width;
 
-      this.navIndicator.style.width = `${rect.width}px`;
-      this.navIndicator.style.left = `${rect.left - navRect.left}px`;
-      this.navIndicator.style.opacity = '1';
+      if (width > 0 && width < 220) {
+        this.navIndicator.style.left = `${Math.round(left)}px`;
+        this.navIndicator.style.width = `${Math.round(width)}px`;
+        this.navIndicator.style.opacity = '1';
+      }
     }
 
     resetIndicator() {
+      if (AppState.isMobile) return;
       const activeLink = document.querySelector('.nav-link.active');
       if (activeLink) {
         this.moveIndicator(activeLink);
       } else {
-        // If no active link, hide indicator
         if (this.navIndicator) this.navIndicator.style.opacity = '0';
       }
     }
@@ -776,6 +780,10 @@
     initMobileMenu() {
       if (this.mobileMenuToggle) {
         this.mobileMenuToggle.addEventListener('click', this.toggleMobileMenu.bind(this));
+      }
+      const drawerClose = document.getElementById('drawerCloseBtn');
+      if (drawerClose) {
+        drawerClose.addEventListener('click', this.closeMobileMenu.bind(this));
       }
     }
 
@@ -854,11 +862,12 @@
     }
 
     initThemeToggle() {
-      if (!this.themeToggle) return;
-
       this.applyTheme(AppState.currentTheme, false);
 
-      this.themeToggle.addEventListener('click', this.toggleTheme.bind(this));
+      const themeButtons = document.querySelectorAll('.theme-toggle:not([aria-label*="Contrast"]), #themeToggle, .mobile-theme-btn');
+      themeButtons.forEach(btn => {
+        btn.addEventListener('click', this.toggleTheme.bind(this));
+      });
     }
 
     toggleTheme() {
@@ -872,8 +881,12 @@
       AppState.currentTheme = themeStr;
       document.documentElement.dataset.theme = themeStr;
       document.body.classList.toggle('dark-theme', isDark);
-      this.themeToggle.setAttribute('aria-pressed', String(isDark));
-      this.themeToggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+      
+      const themeButtons = document.querySelectorAll('.theme-toggle:not([aria-label*="Contrast"]), #themeToggle, .mobile-theme-btn');
+      themeButtons.forEach(btn => {
+        btn.setAttribute('aria-pressed', String(isDark));
+        btn.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+      });
       this.updateThemeIcon(isDark ? 'sun' : 'moon');
 
       if (persist) {
@@ -884,11 +897,11 @@
     }
 
     updateThemeIcon(iconName) {
-      const themeIcon = this.themeToggle?.querySelector('i');
-      if (!themeIcon) return;
-
-      themeIcon.classList.remove('fa-moon', 'fa-sun');
-      themeIcon.classList.add(`fa-${iconName}`);
+      const icons = document.querySelectorAll('.theme-toggle:not([aria-label*="Contrast"]) i, #themeToggle i, .mobile-theme-btn i');
+      icons.forEach(icon => {
+        icon.classList.remove('fa-moon', 'fa-sun');
+        icon.classList.add(`fa-${iconName}`);
+      });
     }
 
     initBackToTop() {
@@ -1101,7 +1114,20 @@
         if (!btn) return;
         const originalContent = btn.innerHTML;
 
-        // Track contact form submission and prioritize Clarity session recording
+        const name = (form.querySelector('#name')?.value || '').trim();
+        const email = (form.querySelector('#email')?.value || '').trim();
+        const message = (form.querySelector('#message')?.value || '').trim();
+
+        // Basic validation
+        if (!name || !email || !message) {
+          if (status) {
+            status.textContent = 'Please fill in all fields.';
+            status.style.color = 'var(--error)';
+          }
+          return;
+        }
+
+        // Track contact form submission
         AnalyticsTracker.sendEvent('contact_form_submit', { timestamp: Date.now() });
         AnalyticsTracker.upgradeSession('contact_form_submission');
 
@@ -1109,25 +1135,31 @@
         btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending...</span>';
         btn.disabled = true;
         btn.style.opacity = '0.8';
-        if (status) status.textContent = 'Preparing your message…';
+        if (status) { status.textContent = 'Opening your mail client…'; status.style.color = ''; }
 
-        // Simulate request
+        // Open mailto: link to send the message via user's email client
+        const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
+        const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+        const mailtoLink = `mailto:sarthakmathapati4@gmail.com?subject=${subject}&body=${body}`;
+
         setTimeout(() => {
-          btn.innerHTML = '<span><i class="fas fa-check"></i> Sent!</span>';
+          window.location.href = mailtoLink;
+
+          btn.innerHTML = '<span><i class="fas fa-check"></i> Mail Client Opened!</span>';
           btn.style.backgroundColor = '#00C851';
           btn.style.borderColor = '#00C851';
-          if (status) status.textContent = 'Thanks — your message is ready to send.';
+          if (status) {
+            status.textContent = '✅ Your mail client opened with the message pre-filled. Just hit Send!';
+            status.style.color = 'var(--success)';
+          }
 
-          // Reset form
           form.reset();
 
-          // Visual feedback for form
+          // Visual feedback
           const container = form.closest('.contact-form-container');
           if (container) {
             container.style.boxShadow = '0 0 20px rgba(0, 200, 81, 0.3)';
-            setTimeout(() => {
-              container.style.boxShadow = '';
-            }, 2000);
+            setTimeout(() => { container.style.boxShadow = ''; }, 2000);
           }
 
           // Reset button after delay
@@ -1137,11 +1169,12 @@
             btn.style.backgroundColor = '';
             btn.style.borderColor = '';
             btn.style.opacity = '1';
-            if (status) status.textContent = '';
-          }, 3000);
-        }, 1500);
+            if (status) { status.textContent = ''; status.style.color = ''; }
+          }, 4000);
+        }, 600);
       });
     }
+
 
     initInteractiveCards() {
       document.querySelectorAll('.interactive-card').forEach(card => {
@@ -1447,17 +1480,17 @@
     }
 
     initHighContrast() {
-      const toggle = document.getElementById('highContrastToggle');
-      if (!toggle) return;
-
       if (Storage.get('highContrast') === 'true') {
         document.body.classList.add('high-contrast');
       }
 
-      toggle.addEventListener('click', () => {
-        document.body.classList.toggle('high-contrast');
-        const isHighContrast = document.body.classList.contains('high-contrast');
-        Storage.set('highContrast', isHighContrast);
+      const contrastButtons = document.querySelectorAll('#highContrastToggle, .mobile-contrast-btn, [aria-label*="High Contrast"]');
+      contrastButtons.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          document.body.classList.toggle('high-contrast');
+          const isHighContrast = document.body.classList.contains('high-contrast');
+          Storage.set('highContrast', isHighContrast);
+        });
       });
     }
   }
@@ -2019,28 +2052,39 @@
       this.renderer = null;
       this.animationId = null;
 
-      // Interaction state
-      this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+      // Interaction & Physics state
+      this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0 };
       this.scrollProgress = 0;
       this.targetScrollProgress = 0;
+      this.scrollVelocity = 0;
+      this.lastScrollY = window.scrollY || 0;
+      this.lastScrollTime = performance.now();
       this.clock = null;
+
+      // Motion dynamics & damping
+      this.momentum = 0;
+      this.velocityDamping = 0.92;
 
       // Scene components
       this.coreGroup = null;
       this.coreShaderMat = null;
+      this.coreWireMesh = null;
+      this.nucleusMesh = null;
       this.gimbalRings = [];
       this.synapticGroup = null;
+      this.synapticNodes = [];
       this.synapticLines = null;
       this.matrixGroup = null;
+      this.matrixObjects = [];
       this.chronometerGroup = null;
+      this.chronometerRings = [];
       this.gridGroup = null;
-      this.gridMesh = null;
+      this.gridHelper = null;
       this.shards = [];
       this.waveField = null;
       this.waveGeo = null;
       this.warpLines = null;
       this.warpPoints = null;
-      this.singularityGroup = null;
       this.ambientParticles = null;
 
       // Lights
@@ -2049,11 +2093,25 @@
       this.pointLightCyan = null;
       this.pointLightViolet = null;
 
-      // Dynamic camera targets
+      // Dynamic camera system
       this.camPos = null;
       this.camLook = null;
       this.currentCamPos = null;
       this.currentCamLook = null;
+      this.targetRoll = 0;
+      this.currentRoll = 0;
+
+      // Waypoints for continuous smooth 3D camera trajectory
+      this.cameraWaypoints = [
+        { p: 0.00, pos: [1.8, 0.4, 13.5], look: [0.8, 0, 0] },     // #home
+        { p: 0.15, pos: [-1.8, 0.6, 11.0], look: [-0.6, 0, 0] },   // #about
+        { p: 0.32, pos: [0.0, 2.2, 12.0], look: [0, 0, -4.0] },    // #tech-stack / #services
+        { p: 0.48, pos: [2.2, 1.2, 10.5], look: [1.2, 0, -2.5] },   // #routine / #goals
+        { p: 0.64, pos: [0.0, 0.8, 13.0], look: [0, -1.8, -5.0] }, // #projects / #stats
+        { p: 0.78, pos: [0.0, 2.6, 10.8], look: [0, -1.6, -3.5] }, // #open-source / #blog
+        { p: 0.90, pos: [0.0, 0.2, 8.5], look: [0, 0, -18.0] },    // #experience / #tools
+        { p: 1.00, pos: [0.0, 0.3, 8.0], look: [0, 0, 0] }         // #contact (convergence)
+      ];
 
       this.animate = this.animate.bind(this);
       this.onMouseMove = this.onMouseMove.bind(this);
@@ -2063,26 +2121,26 @@
 
     init() {
       if (!window.THREE || AppState.prefersReducedMotion) return;
-      const targetCanvas = this.canvas || (this.container ? this.container.querySelector('canvas') : null);
 
-      // Tier detection for performance budget
+      // Responsive Tier Detection
       const isMobile = window.innerWidth <= 768;
       const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
       this.tier = isMobile ? 0 : isTablet ? 1 : 2;
-      const particleCount = [250, 600, 1100][this.tier];
+      const particleCount = [200, 500, 950][this.tier];
       const maxPixelRatio = [1.0, 1.25, 1.5][this.tier];
 
       try {
         // 1. Scene Setup
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.FogExp2(0x05070d, 0.032);
+        this.scene.fog = new THREE.FogExp2(0x04060f, 0.028);
         this.clock = new THREE.Clock();
 
         // 2. Camera Setup
         const aspect = window.innerWidth / window.innerHeight;
-        this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 800);
-        this.camPos = new THREE.Vector3(0, 0, 18);
-        this.camLook = new THREE.Vector3(0, 0, 0);
+        const baseFov = isMobile ? 55 : isTablet ? 48 : 42;
+        this.camera = new THREE.PerspectiveCamera(baseFov, aspect, 0.1, 800);
+        this.camPos = new THREE.Vector3(1.8, 0.4, 13.5);
+        this.camLook = new THREE.Vector3(0.8, 0, 0);
         this.currentCamPos = this.camPos.clone();
         this.currentCamLook = this.camLook.clone();
         this.camera.position.copy(this.currentCamPos);
@@ -2107,9 +2165,9 @@
 
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
-        this.renderer.setClearColor(0x05070d, 0);
+        this.renderer.setClearColor(0x04060f, 0);
 
-        // 4. Build Environment Systems
+        // 4. Build Harmonized Visual Systems
         this.buildLighting();
         this.buildQuantumCore();
         this.buildSynapticLattice();
@@ -2126,167 +2184,172 @@
         window.addEventListener('resize', this.onResize, { passive: true });
         window.addEventListener('beforeunload', () => this.dispose(), { once: true });
 
-        // Initial layout sync
+        // Initial trigger
         this.onScroll();
 
-        // 6. Start Loop
+        // 6. Start RAF Loop
         this.animate();
-        console.log('🌌 Cinematic 3D Experience initialized successfully [Tier: ' + this.tier + ']');
+        console.log('🌌 Nexus Cinematic 3D Engine initialized with fluid motion physics [Tier: ' + this.tier + ']');
       } catch (err) {
         console.warn('WebGL 3D Experience initialization skipped:', err);
       }
     }
 
     buildLighting() {
-      this.ambientLight = new THREE.AmbientLight(0x0f1c3f, 0.45);
+      this.ambientLight = new THREE.AmbientLight(0x0b162e, 0.55);
       this.scene.add(this.ambientLight);
 
-      this.dirLight = new THREE.DirectionalLight(0xbbeeff, 0.9);
-      this.dirLight.position.set(5, 12, 10);
+      this.dirLight = new THREE.DirectionalLight(0xbbeeff, 1.0);
+      this.dirLight.position.set(6, 14, 10);
       this.scene.add(this.dirLight);
 
-      this.pointLightCyan = new THREE.PointLight(0x00f0ff, 3.2, 35, 1.4);
-      this.pointLightCyan.position.set(2, 2, 8);
+      this.pointLightCyan = new THREE.PointLight(0x00f0ff, 3.4, 38, 1.4);
+      this.pointLightCyan.position.set(3, 2, 8);
       this.scene.add(this.pointLightCyan);
 
-      this.pointLightViolet = new THREE.PointLight(0x8855ff, 2.5, 30, 1.4);
+      this.pointLightViolet = new THREE.PointLight(0x8855ff, 2.8, 32, 1.4);
       this.pointLightViolet.position.set(-3, -2, 6);
       this.scene.add(this.pointLightViolet);
     }
 
     buildQuantumCore() {
       this.coreGroup = new THREE.Group();
-      this.coreGroup.position.set(2.8, 0.5, 0); // Positioned elegantly in hero
+      this.coreGroup.position.set(2.4, 0.4, 0);
       this.scene.add(this.coreGroup);
 
-      // Custom GLSL noise vertex deformation + Fresnel glow
+      // Custom GLSL Noise Displacement Shader + Dynamic Fresnel Glow
       const vertexShader = `
-                uniform float uTime;
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                varying float vDisplacement;
+        uniform float uTime;
+        uniform float uVelocity;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying float vDisplacement;
 
-                // Classic 3D Simplex-like hash noise
-                vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
-                vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+        vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+        vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 
-                float snoise(vec3 v){
-                    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-                    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-                    vec3 i  = floor(v + dot(v, C.yyy) );
-                    vec3 x0 = v - i + dot(i, C.xxx) ;
-                    vec3 g = step(x0.yzx, x0.xyz);
-                    vec3 l = 1.0 - g;
-                    vec3 i1 = min( g.xyz, l.zxy );
-                    vec3 i2 = max( g.xyz, l.zxy );
-                    vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-                    vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-                    vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
-                    i = mod(i, 289.0 );
-                    vec4 p = permute( permute( permute(
-                                i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-                            + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
-                            + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
-                    float n_ = 0.142857142857;
-                    vec3 ns = n_ * D.wyz - D.xzx;
-                    vec4 j = p - 49.0 * floor(p * ns.z *ns.z);
-                    vec4 x_ = floor(j * ns.z);
-                    vec4 y_ = floor(j - 7.0 * x_ );
-                    vec4 x = x_ *ns.x + ns.yyyy;
-                    vec4 y = y_ *ns.x + ns.yyyy;
-                    vec4 h = 1.0 - abs(x) - abs(y);
-                    vec4 b0 = vec4( x.xy, y.xy );
-                    vec4 b1 = vec4( x.zw, y.zw );
-                    vec4 s0 = floor(b0)*2.0 + 1.0;
-                    vec4 s1 = floor(b1)*2.0 + 1.0;
-                    vec4 sh = -step(h, vec4(0.0));
-                    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
-                    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
-                    vec3 p0 = vec3(a0.xy,h.x);
-                    vec3 p1 = vec3(a0.zw,h.y);
-                    vec3 p2 = vec3(a1.xy,h.z);
-                    vec3 p3 = vec3(a1.zw,h.w);
-                    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-                    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-                    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-                    m = m * m;
-                    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
-                }
+        float snoise(vec3 v){
+            const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+            const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+            vec3 i  = floor(v + dot(v, C.yyy) );
+            vec3 x0 = v - i + dot(i, C.xxx) ;
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min( g.xyz, l.zxy );
+            vec3 i2 = max( g.xyz, l.zxy );
+            vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+            vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+            vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+            i = mod(i, 289.0 );
+            vec4 p = permute( permute( permute(
+                        i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+                    + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
+                    + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+            float n_ = 0.142857142857;
+            vec3 ns = n_ * D.wyz - D.xzx;
+            vec4 j = p - 49.0 * floor(p * ns.z *ns.z);
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_ );
+            vec4 x = x_ *ns.x + ns.yyyy;
+            vec4 y = y_ *ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(x) - abs(y);
+            vec4 b0 = vec4( x.xy, y.xy );
+            vec4 b1 = vec4( x.zw, y.zw );
+            vec4 s0 = floor(b0)*2.0 + 1.0;
+            vec4 s1 = floor(b1)*2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+            vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+            vec3 p0 = vec3(a0.xy,h.x);
+            vec3 p1 = vec3(a0.zw,h.y);
+            vec3 p2 = vec3(a1.xy,h.z);
+            vec3 p3 = vec3(a1.zw,h.w);
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+            p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+            vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
+        }
 
-                void main() {
-                    vNormal = normalize(normalMatrix * normal);
-                    vPosition = position;
-                    float noise = snoise(position * 0.45 + vec3(uTime * 0.35));
-                    vDisplacement = noise;
-                    vec3 newPosition = position + normal * (noise * 0.45);
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-                }
-            `;
+        void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vPosition = position;
+            float freq = 0.45 + uVelocity * 0.5;
+            float noise = snoise(position * freq + vec3(uTime * 0.4));
+            vDisplacement = noise;
+            vec3 newPosition = position + normal * (noise * (0.35 + uVelocity * 0.4));
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+        }
+      `;
 
       const fragmentShader = `
-                uniform vec3 uColorCyan;
-                uniform vec3 uColorViolet;
-                uniform float uTime;
-                varying vec3 vNormal;
-                varying vec3 vPosition;
-                varying float vDisplacement;
+        uniform vec3 uColorCyan;
+        uniform vec3 uColorViolet;
+        uniform float uTime;
+        uniform float uOpacity;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying float vDisplacement;
 
-                void main() {
-                    vec3 viewDir = normalize(-vPosition);
-                    float fresnel = pow(1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.4);
-                    float pulse = 0.5 + 0.5 * sin(uTime * 1.8 + vDisplacement * 4.0);
-                    vec3 glowColor = mix(uColorCyan, uColorViolet, pulse);
-                    vec3 baseColor = vec3(0.02, 0.05, 0.12);
-                    vec3 finalColor = mix(baseColor, glowColor, fresnel * 1.25);
-                    finalColor += glowColor * (vDisplacement * 0.25);
-                    gl_FragColor = vec4(finalColor, 0.88);
-                }
-            `;
+        void main() {
+            vec3 viewDir = normalize(-vPosition);
+            float fresnel = pow(1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.4);
+            float pulse = 0.5 + 0.5 * sin(uTime * 1.8 + vDisplacement * 4.0);
+            vec3 glowColor = mix(uColorCyan, uColorViolet, pulse);
+            vec3 baseColor = vec3(0.02, 0.05, 0.12);
+            vec3 finalColor = mix(baseColor, glowColor, fresnel * 1.35);
+            finalColor += glowColor * (vDisplacement * 0.3);
+            gl_FragColor = vec4(finalColor, 0.88 * uOpacity);
+        }
+      `;
 
       this.coreShaderMat = new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
         uniforms: {
           uTime: { value: 0 },
+          uVelocity: { value: 0 },
+          uOpacity: { value: 1.0 },
           uColorCyan: { value: new THREE.Color(0x00f0ff) },
           uColorViolet: { value: new THREE.Color(0x8855ff) }
         },
-        transparent: true,
-        wireframe: false
+        transparent: true
       });
 
-      const coreGeo = new THREE.IcosahedronGeometry(2.4, this.tier >= 1 ? 4 : 2);
+      const coreGeo = new THREE.IcosahedronGeometry(2.3, this.tier >= 1 ? 4 : 2);
       const coreMesh = new THREE.Mesh(coreGeo, this.coreShaderMat);
       this.coreGroup.add(coreMesh);
 
-      // Outer wireframe crystalline aura
-      const wireGeo = new THREE.IcosahedronGeometry(2.65, 2);
+      // Outer wireframe crystalline aura with Golden Ratio proportion
+      const wireGeo = new THREE.IcosahedronGeometry(2.55, 2);
       const wireMat = new THREE.MeshBasicMaterial({
         color: 0x49e8fa,
         wireframe: true,
         transparent: true,
-        opacity: 0.32
+        opacity: 0.35
       });
       this.coreWireMesh = new THREE.Mesh(wireGeo, wireMat);
       this.coreGroup.add(this.coreWireMesh);
 
       // Nested chromatic nucleus
-      const nucleusGeo = new THREE.OctahedronGeometry(1.2, 0);
+      const nucleusGeo = new THREE.OctahedronGeometry(1.15, 0);
       const nucleusMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         emissive: 0x00f0ff,
         emissiveIntensity: 1.8,
         roughness: 0.1,
-        metalness: 0.9
+        metalness: 0.9,
+        transparent: true,
+        opacity: 0.95
       });
       this.nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
       this.coreGroup.add(this.nucleusMesh);
 
-      // Gyroscopic Gimbal Rings with orbiting beads
+      // Gyroscopic Harmonic Gimbal Rings (Golden ratio radii)
       const ringConfigs = [
-        { r: 3.5, tube: 0.035, color: 0x00f0ff, rot: [0.8, 0.2, 0], speed: 0.45 },
-        { r: 4.3, tube: 0.028, color: 0x8855ff, rot: [-0.6, 0.9, 0.3], speed: -0.32 },
-        { r: 5.1, tube: 0.022, color: 0x00d4ff, rot: [0.3, -0.7, 0.8], speed: 0.22 }
+        { r: 3.4, tube: 0.032, color: 0x00f0ff, rot: [0.75, 0.2, 0], speed: 0.45 },
+        { r: 4.2, tube: 0.026, color: 0x8855ff, rot: [-0.6, 0.85, 0.3], speed: -0.32 },
+        { r: 5.0, tube: 0.020, color: 0x00e5ff, rot: [0.35, -0.65, 0.75], speed: 0.24 }
       ];
 
       this.gimbalRings = [];
@@ -2295,7 +2358,7 @@
         const ringMat = new THREE.MeshStandardMaterial({
           color: cfg.color,
           emissive: cfg.color,
-          emissiveIntensity: 0.6,
+          emissiveIntensity: 0.65,
           metalness: 0.85,
           roughness: 0.2,
           transparent: true,
@@ -2307,8 +2370,8 @@
         this.coreGroup.add(ringMesh);
         this.gimbalRings.push(ringMesh);
 
-        // Small orbiting photon bead on each ring
-        const beadGeo = new THREE.SphereGeometry(0.09, 8, 8);
+        // Orbiting photon bead
+        const beadGeo = new THREE.SphereGeometry(0.085, 8, 8);
         const beadMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const bead = new THREE.Mesh(beadGeo, beadMat);
         bead.position.x = cfg.r;
@@ -2317,40 +2380,56 @@
     }
 
     buildSynapticLattice() {
-      // Neural constellation for #about
+      // Golden Spiral / Neural Constellation for #about
       this.synapticGroup = new THREE.Group();
-      this.synapticGroup.position.set(-2, 0, -4);
-      this.synapticGroup.visible = false;
+      this.synapticGroup.position.set(-1.8, 0.2, -3.5);
+      this.synapticGroup.scale.setScalar(0.001);
       this.scene.add(this.synapticGroup);
 
-      const nodeCount = this.tier >= 1 ? 28 : 14;
-      const nodes = [];
+      const nodeCount = this.tier >= 1 ? 32 : 16;
+      this.synapticNodes = [];
       const nodeGeo = new THREE.SphereGeometry(0.12, 10, 10);
       const nodeMat = new THREE.MeshStandardMaterial({
         color: 0x00f0ff,
         emissive: 0x00b4ff,
-        emissiveIntensity: 1.2,
+        emissiveIntensity: 1.3,
         metalness: 0.9,
-        roughness: 0.1
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0.85
       });
 
+      // Sacred geometry arrangement (Fibonacci spherical lattice)
+      const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
+      const points = [];
+
       for (let i = 0; i < nodeCount; i++) {
+        const y = 1 - (i / (nodeCount - 1)) * 2; // y goes from 1 to -1
+        const radius = Math.sqrt(1 - y * y);
+        const theta = phi * i;
+
+        const x = Math.cos(theta) * radius * 4.8;
+        const yPos = y * 3.4;
+        const z = Math.sin(theta) * radius * 4.8;
+
         const mesh = new THREE.Mesh(nodeGeo, nodeMat);
-        mesh.position.set(
-          (Math.random() - 0.5) * 12,
-          (Math.random() - 0.5) * 8,
-          (Math.random() - 0.5) * 6
-        );
+        mesh.position.set(x, yPos, z);
+        mesh.userData = {
+          basePos: mesh.position.clone(),
+          phase: i * 0.35,
+          speed: 0.8 + (i % 3) * 0.4
+        };
         this.synapticGroup.add(mesh);
-        nodes.push(mesh.position);
+        this.synapticNodes.push(mesh);
+        points.push(mesh.position);
       }
 
-      // Connect nearby nodes with glowing lines
+      // Connecting harmonic lattice lines
       const linePoints = [];
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          if (nodes[i].distanceTo(nodes[j]) < 4.2) {
-            linePoints.push(nodes[i].clone(), nodes[j].clone());
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+          if (points[i].distanceTo(points[j]) < 3.8) {
+            linePoints.push(points[i].clone(), points[j].clone());
           }
         }
       }
@@ -2358,124 +2437,160 @@
       const lineMat = new THREE.LineBasicMaterial({
         color: 0x49e8fa,
         transparent: true,
-        opacity: 0.35
+        opacity: 0.38
       });
       this.synapticLines = new THREE.LineSegments(lineGeo, lineMat);
       this.synapticGroup.add(this.synapticLines);
     }
 
     buildCyberMatrix() {
-      // High-tech floating crystalline objects for #tech-stack & #services
+      // Symmetrical Dual-Tier Orbital Carousel for #tech-stack & #services
       this.matrixGroup = new THREE.Group();
-      this.matrixGroup.position.set(0, 0, -10);
-      this.matrixGroup.visible = false;
+      this.matrixGroup.position.set(0, 0, -8);
+      this.matrixGroup.scale.setScalar(0.001);
       this.scene.add(this.matrixGroup);
 
       const geometries = [
-        new THREE.TetrahedronGeometry(0.45, 0),
-        new THREE.OctahedronGeometry(0.4, 0),
+        new THREE.TetrahedronGeometry(0.46, 0),
+        new THREE.OctahedronGeometry(0.42, 0),
         new THREE.DodecahedronGeometry(0.38, 0),
-        new THREE.BoxGeometry(0.5, 0.5, 0.5)
+        new THREE.IcosahedronGeometry(0.40, 0)
       ];
 
-      const count = this.tier >= 1 ? 16 : 8;
-      for (let i = 0; i < count; i++) {
+      const ringCount = this.tier >= 1 ? 12 : 8;
+      this.matrixObjects = [];
+
+      for (let i = 0; i < ringCount; i++) {
+        const angle = (i / ringCount) * Math.PI * 2;
+        const radius = 5.2 + (i % 2) * 1.8; // Inner and outer orbits
         const geo = geometries[i % geometries.length];
         const isViolet = i % 2 === 0;
+
         const mat = new THREE.MeshPhysicalMaterial({
           color: isViolet ? 0x8855ff : 0x00f0ff,
           emissive: isViolet ? 0x331166 : 0x003355,
-          metalness: 0.85,
-          roughness: 0.15,
-          transmission: 0.5,
+          metalness: 0.88,
+          roughness: 0.12,
+          transmission: 0.6,
           transparent: true,
           opacity: 0.85
         });
+
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(
-          (Math.random() - 0.5) * 16,
-          (Math.random() - 0.5) * 10,
-          (Math.random() - 0.5) * 8
+          Math.cos(angle) * radius,
+          (Math.sin(angle * 2) * 0.8),
+          Math.sin(angle) * radius
         );
         mesh.userData = {
-          speedX: 0.008 + Math.random() * 0.015,
-          speedY: 0.006 + Math.random() * 0.012,
-          floatOffset: Math.random() * Math.PI * 2
+          angle,
+          radius,
+          orbitSpeed: (i % 2 === 0 ? 1 : -1) * (0.28 + (i % 3) * 0.08),
+          spinSpeedX: 0.015 + (i % 4) * 0.005,
+          spinSpeedY: 0.012 + (i % 3) * 0.006,
+          elevationPhase: i * 0.5
         };
         this.matrixGroup.add(mesh);
+        this.matrixObjects.push(mesh);
       }
     }
 
     buildCircadianChronometer() {
-      // Concentric orbital rings with markers for #routine & #goals
+      // Precision Orbital Astrolabe for #routine & #goals
       this.chronometerGroup = new THREE.Group();
-      this.chronometerGroup.position.set(2.5, 0, -6);
-      this.chronometerGroup.rotation.x = 0.55;
-      this.chronometerGroup.visible = false;
+      this.chronometerGroup.position.set(2.2, 0.2, -5.5);
+      this.chronometerGroup.rotation.x = 0.52;
+      this.chronometerGroup.scale.setScalar(0.001);
       this.scene.add(this.chronometerGroup);
 
       const ringRadii = [2.2, 3.4, 4.6];
+      this.chronometerRings = [];
+
       ringRadii.forEach((rad, idx) => {
-        const geo = new THREE.RingGeometry(rad, rad + 0.03, 64);
+        const ringGroup = new THREE.Group();
+        const geo = new THREE.RingGeometry(rad, rad + 0.035, 64);
         const mat = new THREE.MeshBasicMaterial({
-          color: idx === 1 ? 0x8855ff : 0x00f0ff,
+          color: idx === 1 ? 0x8855ff : idx === 2 ? 0x00e5ff : 0x00f0ff,
           side: THREE.DoubleSide,
           transparent: true,
-          opacity: 0.45
+          opacity: 0.55
         });
         const ring = new THREE.Mesh(geo, mat);
-        this.chronometerGroup.add(ring);
+        ringGroup.add(ring);
 
-        // Add 4 tick markers per ring
-        for (let k = 0; k < 4; k++) {
-          const angle = (k / 4) * Math.PI * 2;
-          const markerGeo = new THREE.BoxGeometry(0.12, 0.04, 0.04);
+        // Cardinal Tick Markers (12-hour circadian divisions)
+        const ticks = idx === 0 ? 4 : idx === 1 ? 8 : 12;
+        for (let k = 0; k < ticks; k++) {
+          const angle = (k / ticks) * Math.PI * 2;
+          const markerGeo = new THREE.BoxGeometry(0.14, 0.035, 0.035);
           const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
           const marker = new THREE.Mesh(markerGeo, markerMat);
           marker.position.set(Math.cos(angle) * rad, Math.sin(angle) * rad, 0);
           marker.rotation.z = angle;
-          this.chronometerGroup.add(marker);
+          ringGroup.add(marker);
         }
+
+        // Solar / Lunar celestial orbital nodes
+        const nodeGeo = new THREE.SphereGeometry(0.12, 12, 12);
+        const nodeMat = new THREE.MeshStandardMaterial({
+          color: idx === 0 ? 0xffcc00 : idx === 1 ? 0x00f0ff : 0x8855ff,
+          emissive: idx === 0 ? 0xff8800 : idx === 1 ? 0x00b4ff : 0x441188,
+          emissiveIntensity: 1.5,
+          roughness: 0.2
+        });
+        const celestialNode = new THREE.Mesh(nodeGeo, nodeMat);
+        celestialNode.position.set(rad, 0, 0);
+        ringGroup.add(celestialNode);
+
+        ringGroup.userData = {
+          speed: (idx % 2 === 0 ? 1 : -1) * (0.2 + idx * 0.12)
+        };
+
+        this.chronometerGroup.add(ringGroup);
+        this.chronometerRings.push(ringGroup);
       });
     }
 
     buildPerspectiveGridAndShards() {
-      // 3D Perspective Grid & Iridescent Shards for #projects
+      // Perspective Horizon Grid & Iridescent Prisms for #projects & #stats
       this.gridGroup = new THREE.Group();
-      this.gridGroup.position.set(0, -5, -8);
-      this.gridGroup.visible = false;
+      this.gridGroup.position.set(0, -4.6, -7);
+      this.gridGroup.scale.setScalar(0.001);
       this.scene.add(this.gridGroup);
 
-      // Infinite wireframe grid floor
-      const gridHelper = new THREE.GridHelper(50, 40, 0x00f0ff, 0x1a284e);
-      gridHelper.position.y = 0;
-      this.gridGroup.add(gridHelper);
+      this.gridHelper = new THREE.GridHelper(56, 44, 0x00f0ff, 0x162444);
+      this.gridHelper.position.y = 0;
+      this.gridGroup.add(this.gridHelper);
 
-      // Floating translucent refractive glass shards
+      // Orbiting Refractive Prisms arranged in an elegant wave arch
       this.shards = [];
-      const shardCount = this.tier >= 1 ? 10 : 5;
+      const shardCount = this.tier >= 1 ? 12 : 6;
       for (let i = 0; i < shardCount; i++) {
-        const geo = new THREE.ConeGeometry(0.7, 1.8, 3);
+        const geo = new THREE.ConeGeometry(0.65, 1.7, 3);
         const mat = new THREE.MeshPhysicalMaterial({
           color: 0x49e8fa,
-          emissive: 0x002233,
-          metalness: 0.9,
-          roughness: 0.1,
-          transmission: 0.75,
-          ior: 1.45,
+          emissive: 0x002238,
+          metalness: 0.92,
+          roughness: 0.08,
+          transmission: 0.78,
+          ior: 1.48,
           transparent: true,
-          opacity: 0.8
+          opacity: 0.85
         });
         const shard = new THREE.Mesh(geo, mat);
+        const angle = (i / shardCount) * Math.PI * 2;
+        const rad = 7.5;
         shard.position.set(
-          (Math.random() - 0.5) * 18,
-          1.5 + Math.random() * 4,
-          (Math.random() - 0.5) * 12
+          Math.cos(angle) * rad,
+          2.0 + Math.sin(angle * 3) * 1.2,
+          Math.sin(angle) * 4.0
         );
         shard.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
         shard.userData = {
-          rotSpeed: 0.005 + Math.random() * 0.01,
-          floatSpeed: 0.8 + Math.random() * 0.6,
+          angle,
+          rad,
+          rotSpeed: 0.006 + (i % 3) * 0.003,
+          floatSpeed: 0.9 + (i % 2) * 0.4,
           baseY: shard.position.y
         };
         this.gridGroup.add(shard);
@@ -2484,9 +2599,9 @@
     }
 
     buildSignalWaveField() {
-      // Undulating particle wave field for #open-source, #speaking, #blog
-      const cols = this.tier >= 1 ? 32 : 20;
-      const rows = this.tier >= 1 ? 32 : 20;
+      // Multi-Harmonic Undulating Wave Mesh for #open-source, #speaking, #blog
+      const cols = this.tier >= 1 ? 36 : 22;
+      const rows = this.tier >= 1 ? 36 : 22;
       const count = cols * rows;
       const positions = new Float32Array(count * 3);
       const colors = new Float32Array(count * 3);
@@ -2497,8 +2612,8 @@
       let idx = 0;
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
-          const x = (i - cols / 2) * 0.65;
-          const z = (j - rows / 2) * 0.65;
+          const x = (i - cols / 2) * 0.62;
+          const z = (j - rows / 2) * 0.62;
           positions[idx * 3] = x;
           positions[idx * 3 + 1] = 0;
           positions[idx * 3 + 2] = z;
@@ -2516,30 +2631,30 @@
       this.waveGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
       const waveMat = new THREE.PointsMaterial({
-        size: 0.09,
+        size: 0.085,
         vertexColors: true,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.7,
         depthWrite: false
       });
 
       this.waveField = new THREE.Points(this.waveGeo, waveMat);
-      this.waveField.position.set(0, -3.2, -6);
-      this.waveField.visible = false;
+      this.waveField.position.set(0, -3.0, -5.5);
+      this.waveField.scale.setScalar(0.001);
       this.scene.add(this.waveField);
     }
 
     buildTemporalWarp() {
-      // High-velocity light streaks for #experience & #tools
-      const count = this.tier >= 1 ? 160 : 70;
-      const positions = new Float32Array(count * 6); // 2 vertices per streak
+      // High-Velocity Directional Warp Rays for #experience & #tools
+      const count = this.tier >= 1 ? 180 : 80;
+      const positions = new Float32Array(count * 6);
       this.warpPoints = [];
 
       for (let i = 0; i < count; i++) {
-        const x = (Math.random() - 0.5) * 18;
-        const y = (Math.random() - 0.5) * 12;
-        const z = -25 + Math.random() * 30;
-        const len = 1.2 + Math.random() * 2.5;
+        const x = (Math.random() - 0.5) * 20;
+        const y = (Math.random() - 0.5) * 14;
+        const z = -28 + Math.random() * 32;
+        const len = 1.4 + Math.random() * 2.8;
 
         positions[i * 6] = x;
         positions[i * 6 + 1] = y;
@@ -2549,7 +2664,7 @@
         positions[i * 6 + 4] = y;
         positions[i * 6 + 5] = z - len;
 
-        this.warpPoints.push({ x, y, z, len, speed: 18 + Math.random() * 25 });
+        this.warpPoints.push({ x, y, z, len, speed: 20 + Math.random() * 28 });
       }
 
       const geo = new THREE.BufferGeometry();
@@ -2557,28 +2672,28 @@
       const mat = new THREE.LineBasicMaterial({
         color: 0x00f0ff,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.55
       });
 
       this.warpLines = new THREE.LineSegments(geo, mat);
-      this.warpLines.visible = false;
+      this.warpLines.scale.setScalar(0.001);
       this.scene.add(this.warpLines);
     }
 
     buildAmbientDust(count) {
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 35;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 35;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 45;
+        positions[i * 3] = (Math.random() - 0.5) * 38;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 38;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 48;
       }
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       const mat = new THREE.PointsMaterial({
         color: 0x88ccff,
-        size: 0.05,
+        size: 0.048,
         transparent: true,
-        opacity: 0.4,
+        opacity: 0.42,
         depthWrite: false
       });
       this.ambientParticles = new THREE.Points(geo, mat);
@@ -2592,7 +2707,17 @@
 
     onScroll() {
       const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      this.targetScrollProgress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+      const currentScrollY = window.scrollY || 0;
+      this.targetScrollProgress = Math.max(0, Math.min(1, currentScrollY / maxScroll));
+
+      // Calculate instantaneous scroll velocity with timestamp
+      const now = performance.now();
+      const dt = Math.max(16, now - this.lastScrollTime);
+      const rawVelocity = Math.abs(currentScrollY - this.lastScrollY) / dt;
+      this.scrollVelocity = Math.min(3.5, this.scrollVelocity * 0.4 + rawVelocity * 0.6);
+
+      this.lastScrollY = currentScrollY;
+      this.lastScrollTime = now;
     }
 
     onResize() {
@@ -2600,8 +2725,58 @@
       const w = window.innerWidth;
       const h = window.innerHeight;
       this.camera.aspect = w / h;
+      this.camera.fov = w <= 768 ? 55 : w <= 1024 ? 48 : 42;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(w, h);
+    }
+
+    // Evaluate smooth camera path at continuous scroll progress 'p'
+    interpolateCameraWaypoints(p) {
+      const waypoints = this.cameraWaypoints;
+      if (p <= waypoints[0].p) {
+        return {
+          pos: new THREE.Vector3(...waypoints[0].pos),
+          look: new THREE.Vector3(...waypoints[0].look)
+        };
+      }
+      if (p >= waypoints[waypoints.length - 1].p) {
+        const last = waypoints[waypoints.length - 1];
+        return {
+          pos: new THREE.Vector3(...last.pos),
+          look: new THREE.Vector3(...last.look)
+        };
+      }
+
+      for (let i = 0; i < waypoints.length - 1; i++) {
+        const w0 = waypoints[i];
+        const w1 = waypoints[i + 1];
+        if (p >= w0.p && p <= w1.p) {
+          const t = (p - w0.p) / (w1.p - w0.p);
+          // Smoothstep Hermite curve
+          const easeT = t * t * (3 - 2 * t);
+
+          const pos = new THREE.Vector3(
+            w0.pos[0] + (w1.pos[0] - w0.pos[0]) * easeT,
+            w0.pos[1] + (w1.pos[1] - w0.pos[1]) * easeT,
+            w0.pos[2] + (w1.pos[2] - w0.pos[2]) * easeT
+          );
+          const look = new THREE.Vector3(
+            w0.look[0] + (w1.look[0] - w0.look[0]) * easeT,
+            w0.look[1] + (w1.look[1] - w0.look[1]) * easeT,
+            w0.look[2] + (w1.look[2] - w0.look[2]) * easeT
+          );
+          return { pos, look };
+        }
+      }
+      return { pos: new THREE.Vector3(0, 0, 14), look: new THREE.Vector3(0, 0, 0) };
+    }
+
+    // Helper: calculate continuous transition influence in bell-curve range
+    getZoneInfluence(p, center, spread) {
+      const dist = Math.abs(p - center);
+      if (dist >= spread) return 0;
+      const t = dist / spread;
+      return 1 - t * t * (3 - 2 * t); // Smoothstep bell
     }
 
     animate() {
@@ -2611,230 +2786,237 @@
       const dt = Math.min(0.05, this.clock.getDelta());
       const time = this.clock.getElapsedTime();
 
-      // ── 1. Smooth Interpolation (Lerp) ──
-      this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.08;
-      this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.08;
-      this.scrollProgress += (this.targetScrollProgress - this.scrollProgress) * 0.065;
+      // ── 1. Physics-Driven Interpolation & Inertia ──
+      this.scrollVelocity *= this.velocityDamping;
+      if (this.scrollVelocity < 0.001) this.scrollVelocity = 0;
+
+      // Spring-damper for mouse pointer tracking
+      this.mouse.vx = (this.mouse.targetX - this.mouse.x) * 0.075;
+      this.mouse.vy = (this.mouse.targetY - this.mouse.y) * 0.075;
+      this.mouse.x += this.mouse.vx;
+      this.mouse.y += this.mouse.vy;
+
+      // Smooth scroll progress interpolation
+      const scrollStep = (this.targetScrollProgress - this.scrollProgress) * 0.072;
+      this.scrollProgress += scrollStep;
       const p = this.scrollProgress;
 
-      // ── 2. Multi-Zone Scroll Pathing ──
-      // Zones:
-      // 0.00 - 0.12 : #home (Genesis Core)
-      // 0.12 - 0.26 : #about (Synaptic Lattice)
-      // 0.26 - 0.42 : #tech-stack & #services (Cyber Matrix)
-      // 0.42 - 0.56 : #routine & #goals (Circadian Chronometer)
-      // 0.56 - 0.72 : #projects & #stats (Cyber Grid & Prisms)
-      // 0.72 - 0.84 : #open-source / #blog (Signal Wave)
-      // 0.84 - 0.94 : #experience & #tools (Temporal Warp)
-      // 0.94 - 1.00 : #contact (Singularity Convergence)
+      // ── 2. Cinematic Camera Spline Choreography ──
+      const { pos: basePos, look: baseLook } = this.interpolateCameraWaypoints(p);
 
-      if (p < 0.12) {
-        // Zone 0: Hero
-        this.camPos.set(1.2 + this.mouse.x * 0.8, -this.mouse.y * 0.5, 14);
-        this.camLook.set(1.0, 0, 0);
-        this.coreGroup.visible = true;
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = false;
-        this.waveField.visible = false;
-        this.warpLines.visible = false;
-      } else if (p < 0.26) {
-        // Zone 1: About
-        const t = (p - 0.12) / 0.14;
-        this.camPos.set(-2 + this.mouse.x * 0.8, 1 - this.mouse.y * 0.4, 12 - t * 2);
-        this.camLook.set(-1.5, 0, 0);
-        this.coreGroup.visible = t < 0.5;
-        this.synapticGroup.visible = true;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = false;
-        this.waveField.visible = false;
-        this.warpLines.visible = false;
-      } else if (p < 0.42) {
-        // Zone 2: Tech Stack / Services
-        const t = (p - 0.26) / 0.16;
-        this.camPos.set(0 + this.mouse.x * 0.9, 3 - this.mouse.y * 0.5, 13);
-        this.camLook.set(0, 0, -5);
-        this.coreGroup.visible = false;
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = true;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = false;
-        this.waveField.visible = false;
-        this.warpLines.visible = false;
-      } else if (p < 0.56) {
-        // Zone 3: Routine & Goals
-        this.camPos.set(2.0 + this.mouse.x * 0.7, 2 - this.mouse.y * 0.4, 11);
-        this.camLook.set(1.5, 0, -3);
-        this.coreGroup.visible = false;
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = true;
-        this.gridGroup.visible = false;
-        this.waveField.visible = false;
-        this.warpLines.visible = false;
-      } else if (p < 0.72) {
-        // Zone 4: Projects & Stats
-        const t = (p - 0.56) / 0.16;
-        this.camPos.set(0 + this.mouse.x * 1.0, 1 - this.mouse.y * 0.4, 14);
-        this.camLook.set(0, -2, -6);
-        this.coreGroup.visible = false;
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = true;
-        this.waveField.visible = false;
-        this.warpLines.visible = false;
-      } else if (p < 0.84) {
-        // Zone 5: Open Source & Publications
-        this.camPos.set(0 + this.mouse.x * 0.8, 3 - this.mouse.y * 0.4, 11);
-        this.camLook.set(0, -2.5, -4);
-        this.coreGroup.visible = false;
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = false;
-        this.waveField.visible = true;
-        this.warpLines.visible = false;
-      } else if (p < 0.94) {
-        // Zone 6: Timeline & Tools
-        this.camPos.set(0 + this.mouse.x * 0.6, -this.mouse.y * 0.4, 8);
-        this.camLook.set(0, 0, -20);
-        this.coreGroup.visible = false;
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = false;
-        this.waveField.visible = false;
-        this.warpLines.visible = true;
-      } else {
-        // Zone 7: Contact (Singularity Convergence)
-        this.camPos.set(0 + this.mouse.x * 0.6, 0.5 - this.mouse.y * 0.4, 9);
-        this.camLook.set(0, 0, 0);
-        this.coreGroup.visible = true;
-        this.coreGroup.position.set(0, 0, 0); // Converge to center
-        this.coreGroup.scale.setScalar(0.75);
-        this.synapticGroup.visible = false;
-        this.matrixGroup.visible = false;
-        this.chronometerGroup.visible = false;
-        this.gridGroup.visible = false;
-        this.waveField.visible = false;
-        this.warpLines.visible = false;
-      }
+      // Parallax mouse lookahead layered by velocity
+      const mouseParallaxX = this.mouse.x * (0.8 + this.scrollVelocity * 0.3);
+      const mouseParallaxY = -this.mouse.y * (0.5 + this.scrollVelocity * 0.2);
 
-      // Damped Camera Movement
-      this.currentCamPos.lerp(this.camPos, 0.05);
-      this.currentCamLook.lerp(this.camLook, 0.05);
+      this.camPos.copy(basePos).add(new THREE.Vector3(mouseParallaxX, mouseParallaxY, 0));
+      this.camLook.copy(baseLook).add(new THREE.Vector3(mouseParallaxX * 0.3, mouseParallaxY * 0.3, 0));
+
+      // Damped camera lerp (eliminates any jitter)
+      this.currentCamPos.lerp(this.camPos, 0.065);
+      this.currentCamLook.lerp(this.camLook, 0.065);
       this.camera.position.copy(this.currentCamPos);
       this.camera.lookAt(this.currentCamLook);
 
-      // ── 3. Component Animations ──
+      // Subtle roll banking based on horizontal mouse movement & velocity
+      this.targetRoll = -this.mouse.vx * 0.22 - (this.targetScrollProgress - this.scrollProgress) * 0.15;
+      this.currentRoll += (this.targetRoll - this.currentRoll) * 0.05;
+      this.camera.rotation.z += this.currentRoll;
 
-      // Quantum Core Updates
-      if (this.coreGroup && this.coreGroup.visible) {
-        if (this.coreShaderMat) {
-          this.coreShaderMat.uniforms.uTime.value = time;
-        }
-        this.coreGroup.rotation.y += 0.005;
-        this.coreGroup.rotation.x += 0.002;
+      // ── 3. Continuous Multi-Stage Zone Influences ──
+      const coreInf = Math.max(
+        this.getZoneInfluence(p, 0.00, 0.16),
+        this.getZoneInfluence(p, 1.00, 0.12)
+      );
+      const synapInf = this.getZoneInfluence(p, 0.15, 0.14);
+      const matrixInf = this.getZoneInfluence(p, 0.32, 0.15);
+      const chronoInf = this.getZoneInfluence(p, 0.48, 0.15);
+      const gridInf = this.getZoneInfluence(p, 0.64, 0.15);
+      const waveInf = this.getZoneInfluence(p, 0.78, 0.14);
+      const warpInf = this.getZoneInfluence(p, 0.90, 0.12);
 
-        if (this.coreWireMesh) {
-          this.coreWireMesh.rotation.y -= 0.007;
-          this.coreWireMesh.rotation.z += 0.004;
-        }
-        if (this.nucleusMesh) {
-          this.nucleusMesh.rotation.x += 0.012;
-          this.nucleusMesh.rotation.y -= 0.008;
-        }
-        this.gimbalRings.forEach(ring => {
-          ring.rotation.z += ring.userData.speed * dt;
-          ring.rotation.y += ring.userData.speed * 0.5 * dt;
-        });
-      }
+      // ── 4. Harmonized Component Animations ──
 
-      // Synaptic Lattice Updates
-      if (this.synapticGroup && this.synapticGroup.visible) {
-        this.synapticGroup.rotation.y = time * 0.04 + this.mouse.x * 0.15;
-        this.synapticGroup.rotation.x = Math.sin(time * 0.3) * 0.08;
-      }
+      // 1. Quantum Core (Hero & Contact Singularity)
+      if (this.coreGroup) {
+        const isContact = p > 0.85;
+        const targetScale = isContact ? 0.75 * coreInf : 1.0 * coreInf;
+        const currentScale = this.coreGroup.scale.x;
+        const newScale = currentScale + (targetScale - currentScale) * 0.08;
+        this.coreGroup.scale.setScalar(Math.max(0.0001, newScale));
+        this.coreGroup.visible = newScale > 0.01;
 
-      // Cyber Matrix Updates
-      if (this.matrixGroup && this.matrixGroup.visible) {
-        this.matrixGroup.children.forEach(child => {
-          child.rotation.x += child.userData.speedX;
-          child.rotation.y += child.userData.speedY;
-          child.position.y += Math.sin(time * 1.5 + child.userData.floatOffset) * 0.004;
-        });
-      }
-
-      // Chronometer Updates
-      if (this.chronometerGroup && this.chronometerGroup.visible) {
-        this.chronometerGroup.rotation.z = time * 0.12;
-      }
-
-      // Grid & Shards Updates
-      if (this.gridGroup && this.gridGroup.visible) {
-        this.shards.forEach(shard => {
-          shard.rotation.x += shard.userData.rotSpeed;
-          shard.rotation.y += shard.userData.rotSpeed * 1.2;
-          shard.position.y = shard.userData.baseY + Math.sin(time * shard.userData.floatSpeed) * 0.3;
-        });
-      }
-
-      // Signal Wave Field Updates
-      if (this.waveField && this.waveField.visible && this.waveGeo) {
-        const posAttr = this.waveGeo.attributes.position;
-        const posArray = posAttr.array;
-        const cols = this.tier >= 1 ? 32 : 20;
-        const rows = this.tier >= 1 ? 32 : 20;
-
-        let idx = 0;
-        for (let i = 0; i < cols; i++) {
-          for (let j = 0; j < rows; j++) {
-            const x = posArray[idx * 3];
-            const z = posArray[idx * 3 + 2];
-            posArray[idx * 3 + 1] = Math.sin(x * 0.45 + time * 1.8) * 0.55 +
-              Math.cos(z * 0.45 + time * 1.4) * 0.45;
-            idx++;
+        if (this.coreGroup.visible) {
+          // Dynamic convergence to center on Contact section
+          if (isContact) {
+            this.coreGroup.position.lerp(new THREE.Vector3(0, 0.1, 0), 0.06);
+          } else {
+            this.coreGroup.position.lerp(new THREE.Vector3(2.4, 0.4, 0), 0.06);
           }
+
+          if (this.coreShaderMat) {
+            this.coreShaderMat.uniforms.uTime.value = time;
+            this.coreShaderMat.uniforms.uVelocity.value = this.scrollVelocity;
+            this.coreShaderMat.uniforms.uOpacity.value = Math.min(1.0, coreInf * 1.2);
+          }
+
+          const speedMult = 1.0 + this.scrollVelocity * 2.5;
+          this.coreGroup.rotation.y += 0.005 * speedMult;
+          this.coreGroup.rotation.x += 0.002 * speedMult;
+
+          if (this.coreWireMesh) {
+            this.coreWireMesh.rotation.y -= 0.007 * speedMult;
+            this.coreWireMesh.rotation.z += 0.004 * speedMult;
+          }
+          if (this.nucleusMesh) {
+            this.nucleusMesh.rotation.x += 0.014 * speedMult;
+            this.nucleusMesh.rotation.y -= 0.010 * speedMult;
+          }
+          this.gimbalRings.forEach(ring => {
+            ring.rotation.z += ring.userData.speed * dt * speedMult;
+            ring.rotation.y += ring.userData.speed * 0.5 * dt * speedMult;
+          });
         }
-        posAttr.needsUpdate = true;
       }
 
-      // Temporal Warp Streak Updates
-      if (this.warpLines && this.warpLines.visible) {
-        const posAttr = this.warpLines.geometry.attributes.position;
-        const posArray = posAttr.array;
+      // 2. Synaptic Lattice (#about)
+      if (this.synapticGroup) {
+        const curScale = this.synapticGroup.scale.x;
+        const newScale = curScale + (synapInf - curScale) * 0.08;
+        this.synapticGroup.scale.setScalar(Math.max(0.0001, newScale));
+        this.synapticGroup.visible = newScale > 0.01;
 
-        for (let i = 0; i < this.warpPoints.length; i++) {
-          const wp = this.warpPoints[i];
-          wp.z += wp.speed * dt;
-          if (wp.z > 12) wp.z = -28;
+        if (this.synapticGroup.visible) {
+          this.synapticGroup.rotation.y = time * 0.05 + this.mouse.x * 0.22;
+          this.synapticGroup.rotation.x = Math.sin(time * 0.35) * 0.08 - this.mouse.y * 0.15;
 
-          posArray[i * 6 + 2] = wp.z;
-          posArray[i * 6 + 5] = wp.z - wp.len;
+          // Gentle breathing pulsation on nodes
+          this.synapticNodes.forEach(node => {
+            const pulse = 1.0 + Math.sin(time * node.userData.speed + node.userData.phase) * 0.18;
+            node.scale.setScalar(pulse);
+          });
         }
-        posAttr.needsUpdate = true;
       }
 
-      // Ambient Particles Rotation
+      // 3. Cyber Matrix (#tech-stack & #services)
+      if (this.matrixGroup) {
+        const curScale = this.matrixGroup.scale.x;
+        const newScale = curScale + (matrixInf - curScale) * 0.08;
+        this.matrixGroup.scale.setScalar(Math.max(0.0001, newScale));
+        this.matrixGroup.visible = newScale > 0.01;
+
+        if (this.matrixGroup.visible) {
+          this.matrixGroup.rotation.y += 0.004 * (1.0 + this.scrollVelocity * 2.0);
+          this.matrixObjects.forEach(obj => {
+            obj.userData.angle += obj.userData.orbitSpeed * dt;
+            obj.position.x = Math.cos(obj.userData.angle) * obj.userData.radius;
+            obj.position.z = Math.sin(obj.userData.angle) * obj.userData.radius;
+            obj.position.y = Math.sin(time * 1.6 + obj.userData.elevationPhase) * 0.75;
+            obj.rotation.x += obj.userData.spinSpeedX;
+            obj.rotation.y += obj.userData.spinSpeedY;
+          });
+        }
+      }
+
+      // 4. Circadian Chronometer (#routine & #goals)
+      if (this.chronometerGroup) {
+        const curScale = this.chronometerGroup.scale.x;
+        const newScale = curScale + (chronoInf - curScale) * 0.08;
+        this.chronometerGroup.scale.setScalar(Math.max(0.0001, newScale));
+        this.chronometerGroup.visible = newScale > 0.01;
+
+        if (this.chronometerGroup.visible) {
+          this.chronometerGroup.rotation.z = time * 0.08 + this.mouse.x * 0.18;
+          this.chronometerRings.forEach(ring => {
+            ring.rotation.z += ring.userData.speed * dt;
+          });
+        }
+      }
+
+      // 5. Perspective Grid & Shards (#projects & #stats)
+      if (this.gridGroup) {
+        const curScale = this.gridGroup.scale.x;
+        const newScale = curScale + (gridInf - curScale) * 0.08;
+        this.gridGroup.scale.setScalar(Math.max(0.0001, newScale));
+        this.gridGroup.visible = newScale > 0.01;
+
+        if (this.gridGroup.visible) {
+          this.shards.forEach(shard => {
+            shard.rotation.x += shard.userData.rotSpeed;
+            shard.rotation.y += shard.userData.rotSpeed * 1.3;
+            shard.position.y = shard.userData.baseY + Math.sin(time * shard.userData.floatSpeed) * 0.45;
+          });
+        }
+      }
+
+      // 6. Signal Wave Field (#open-source / #blog / #speaking)
+      if (this.waveField && this.waveGeo) {
+        const curScale = this.waveField.scale.x;
+        const newScale = curScale + (waveInf - curScale) * 0.08;
+        this.waveField.scale.setScalar(Math.max(0.0001, newScale));
+        this.waveField.visible = newScale > 0.01;
+
+        if (this.waveField.visible) {
+          const posAttr = this.waveGeo.attributes.position;
+          const posArray = posAttr.array;
+          const cols = this.tier >= 1 ? 36 : 22;
+          const rows = this.tier >= 1 ? 36 : 22;
+
+          let idx = 0;
+          for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+              const x = posArray[idx * 3];
+              const z = posArray[idx * 3 + 2];
+              posArray[idx * 3 + 1] = Math.sin(x * 0.48 + time * 1.9) * 0.55 +
+                Math.cos(z * 0.48 + time * 1.4) * 0.45 +
+                Math.sin((x + z) * 0.35 + time * 2.2) * 0.25;
+              idx++;
+            }
+          }
+          posAttr.needsUpdate = true;
+        }
+      }
+
+      // 7. Temporal Warp Streaks (#experience & #tools)
+      if (this.warpLines && this.warpPoints) {
+        const curScale = this.warpLines.scale.x;
+        const newScale = curScale + (warpInf - curScale) * 0.08;
+        this.warpLines.scale.setScalar(Math.max(0.0001, newScale));
+        this.warpLines.visible = newScale > 0.01;
+
+        if (this.warpLines.visible) {
+          const posAttr = this.warpLines.geometry.attributes.position;
+          const posArray = posAttr.array;
+          const warpSpeedMult = 1.0 + this.scrollVelocity * 4.0;
+
+          for (let i = 0; i < this.warpPoints.length; i++) {
+            const wp = this.warpPoints[i];
+            wp.z += wp.speed * dt * warpSpeedMult;
+            if (wp.z > 14) wp.z = -28;
+
+            posArray[i * 6 + 2] = wp.z;
+            posArray[i * 6 + 5] = wp.z - wp.len * (1.0 + this.scrollVelocity * 0.8);
+          }
+          posAttr.needsUpdate = true;
+        }
+      }
+
+      // 8. Ambient Particles Multi-layer Depth Drift
       if (this.ambientParticles) {
-        this.ambientParticles.rotation.y = time * 0.015;
-        this.ambientParticles.rotation.x = time * 0.008;
+        this.ambientParticles.rotation.y = time * 0.012 + this.mouse.x * 0.05;
+        this.ambientParticles.rotation.x = time * 0.006 - this.mouse.y * 0.03;
       }
 
-      // Dynamic Point Lights tracking mouse
+      // 9. Interactive Lights tracking pointer with natural inertia
       if (this.pointLightCyan) {
-        this.pointLightCyan.position.x = 2 + this.mouse.x * 4;
-        this.pointLightCyan.position.y = 2 - this.mouse.y * 3;
+        this.pointLightCyan.position.x = 2.5 + this.mouse.x * 4.5;
+        this.pointLightCyan.position.y = 2.0 - this.mouse.y * 3.5;
       }
       if (this.pointLightViolet) {
-        this.pointLightViolet.position.x = -3 + this.mouse.x * 3;
-        this.pointLightViolet.position.y = -2 - this.mouse.y * 2;
+        this.pointLightViolet.position.x = -3.0 + this.mouse.x * 3.5;
+        this.pointLightViolet.position.y = -2.0 - this.mouse.y * 2.5;
       }
 
-      // ── 4. Render ──
+      // ── 5. Render Pass ──
       this.renderer.render(this.scene, this.camera);
     }
 
