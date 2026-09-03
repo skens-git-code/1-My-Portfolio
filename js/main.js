@@ -843,6 +843,7 @@
 
     init() {
       this.initMobileMenu();
+      this.initBottomNav();
       this.initThemeToggle();
       this.initBackToTop();
       this.initHeaderScrollEffect();
@@ -947,6 +948,8 @@
         this.moveIndicator(matchedLink);
       }
 
+      this.setActiveBottomNav(sectionId);
+
       this.sectionDots.forEach(dot => {
         const isCurrent = dot.getAttribute('data-section') === sectionId;
         dot.classList.toggle('active', isCurrent);
@@ -982,6 +985,150 @@
         }
       }
       document.body.classList.remove('nav-open');
+    }
+
+    initBottomNav() {
+      this.bottomNavLinks = document.querySelectorAll('.bottom-nav-link');
+      this.bottomNavDropdownLinks = document.querySelectorAll('.bottom-nav-dropdown-link:not(#bottomThemeToggle):not(#bottomContrastToggle)');
+      this.bottomNavMore = document.getElementById('bottomNavMore');
+      this.bottomNavDropdown = document.getElementById('bottomNavDropdown');
+      this.bottomThemeToggle = document.getElementById('bottomThemeToggle');
+      this.bottomContrastToggle = document.getElementById('bottomContrastToggle');
+      this.lastScrollY = window.scrollY || 0;
+
+      const scrollToSection = (targetId) => {
+        if (!targetId) return;
+        const target = document.getElementById(targetId);
+        if (target) {
+          if (typeof target.scrollIntoView === 'function') {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            Utils.smoothScrollTo(target);
+          }
+        }
+      };
+
+      // Bottom Nav Tabs Click Handlers
+      this.bottomNavLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('data-section') || (link.getAttribute('href') || '').replace('#', '');
+          scrollToSection(targetId);
+          this.closeBottomDropdown();
+          this.setActiveBottomNav(targetId);
+        });
+      });
+
+      // Dropdown Links Click Handlers
+      this.bottomNavDropdownLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('data-section') || (link.getAttribute('href') || '').replace('#', '');
+          scrollToSection(targetId);
+          this.closeBottomDropdown();
+          this.setActiveBottomNav(targetId);
+        });
+      });
+
+      // More Button Toggle
+      if (this.bottomNavMore && this.bottomNavDropdown) {
+        this.bottomNavMore.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = this.bottomNavDropdown.classList.toggle('open');
+          this.bottomNavMore.classList.toggle('active', isOpen);
+          this.bottomNavMore.setAttribute('aria-expanded', String(isOpen));
+        });
+      }
+
+      // Close dropdown when clicking outside
+      this.boundHandlers.bottomDropdownClick = (e) => {
+        if (this.bottomNavDropdown && this.bottomNavDropdown.classList.contains('open')) {
+          const isInside = this.bottomNavDropdown.contains(e.target) ||
+            (this.bottomNavMore && this.bottomNavMore.contains(e.target));
+          if (!isInside) {
+            this.closeBottomDropdown();
+          }
+        }
+      };
+      document.addEventListener('click', this.boundHandlers.bottomDropdownClick);
+
+      // Theme Toggle in Bottom Nav (closes dropdown upon toggle)
+      this.bottomThemeToggle?.addEventListener('click', () => {
+        this.closeBottomDropdown();
+      });
+
+      // Contrast Toggle in Bottom Nav (closes dropdown upon toggle)
+      this.bottomContrastToggle?.addEventListener('click', () => {
+        this.closeBottomDropdown();
+      });
+
+      // Auto-hide on scroll
+      this.initBottomNavScrollHide();
+    }
+
+    setActiveBottomNav(sectionId) {
+      if (!sectionId || !this.bottomNavLinks) return;
+      let matchedInTabs = false;
+      this.bottomNavLinks.forEach(link => {
+        const isActive = link.getAttribute('data-section') === sectionId;
+        link.classList.toggle('active', isActive);
+        link.setAttribute('aria-current', isActive ? 'true' : 'false');
+        if (isActive) matchedInTabs = true;
+      });
+
+      // If active section is inside the "More" dropdown, highlight More button
+      if (this.bottomNavMore) {
+        const isDropdownSection = ['tech-stack', 'routine', 'open-source', 'experience'].includes(sectionId);
+        if (isDropdownSection && !matchedInTabs) {
+          this.bottomNavMore.classList.add('active');
+        } else if (!this.bottomNavDropdown?.classList.contains('open')) {
+          this.bottomNavMore.classList.remove('active');
+        }
+      }
+    }
+
+    closeBottomDropdown() {
+      if (this.bottomNavDropdown) {
+        this.bottomNavDropdown.classList.remove('open');
+      }
+      if (this.bottomNavMore) {
+        this.bottomNavMore.classList.remove('active');
+        this.bottomNavMore.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    initBottomNavScrollHide() {
+      const bottomNav = document.getElementById('bottomNav');
+      if (!bottomNav) return;
+
+      let ticking = false;
+      this.boundHandlers.bottomNavScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY || window.pageYOffset || 0;
+          const scrollDelta = currentScrollY - this.lastScrollY;
+
+          if (scrollDelta > 25 && currentScrollY > 100) {
+            // Scrolling down – hide nav and close dropdown
+            bottomNav.classList.add('hidden');
+            this.closeBottomDropdown();
+          } else if (scrollDelta < -15) {
+            // Scrolling up – show nav
+            bottomNav.classList.remove('hidden');
+          }
+
+          // If at top of page, always show
+          if (currentScrollY < 60) {
+            bottomNav.classList.remove('hidden');
+          }
+
+          this.lastScrollY = currentScrollY;
+          ticking = false;
+        });
+      };
+
+      window.addEventListener('scroll', this.boundHandlers.bottomNavScroll, { passive: true });
     }
 
     initThemeToggle() {
@@ -1082,6 +1229,12 @@
       }
       if (this.boundHandlers.navMouseLeave && this.mainNav) {
         this.mainNav.removeEventListener('mouseleave', this.boundHandlers.navMouseLeave);
+      }
+      if (this.boundHandlers.bottomDropdownClick) {
+        document.removeEventListener('click', this.boundHandlers.bottomDropdownClick);
+      }
+      if (this.boundHandlers.bottomNavScroll) {
+        window.removeEventListener('scroll', this.boundHandlers.bottomNavScroll);
       }
       if (this.sectionObserver) {
         this.sectionObserver.disconnect();
@@ -1652,11 +1805,11 @@
 
     destroy() {
       if (this.projectSwiper && typeof this.projectSwiper.destroy === 'function') {
-        try { this.projectSwiper.destroy(true, true); } catch (_) {}
+        try { this.projectSwiper.destroy(true, true); } catch (_) { }
         this.projectSwiper = null;
       }
       if (this.certSwiper && typeof this.certSwiper.destroy === 'function') {
-        try { this.certSwiper.destroy(true, true); } catch (_) {}
+        try { this.certSwiper.destroy(true, true); } catch (_) { }
         this.certSwiper = null;
       }
     }
@@ -1711,7 +1864,7 @@
         document.body.classList.add('high-contrast');
       }
 
-      const contrastButtons = document.querySelectorAll('#highContrastToggle, .mobile-contrast-btn, [aria-label*="High Contrast"]');
+      const contrastButtons = document.querySelectorAll('#highContrastToggle, #bottomContrastToggle, #mobileHighContrastBtn, .mobile-contrast-btn, [aria-label*="High Contrast"]');
       contrastButtons.forEach(toggle => {
         toggle.setAttribute('aria-pressed', String(isHighContrast));
         toggle.addEventListener('click', () => {
