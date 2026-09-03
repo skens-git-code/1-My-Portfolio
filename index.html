@@ -284,7 +284,7 @@
                         <i class="fas fa-moon" aria-hidden="true"></i>
                         <span>Theme</span>
                     </button>
-                    <button class="drawer-btn" id="mobileHighContrastBtn" aria-label="Toggle High Contrast">
+                    <button class="drawer-btn mobile-contrast-btn" id="mobileHighContrastBtn" aria-label="Toggle High Contrast">
                         <i class="fas fa-adjust" aria-hidden="true"></i>
                         <span>Contrast</span>
                     </button>
@@ -2083,10 +2083,10 @@ function InteractiveButton({ children, onClick }) {
                                 <div class="note">Feel free to reach out. 💬</div>
                             </div>
                         </div>
-                        </div>
+                    </div>
 
-                        <!-- Contact Form -->
-                        <div class="contact-form-container glass-card interactive-card stagger-animation">
+                    <!-- Contact Form -->
+                    <div class="contact-form-container glass-card interactive-card stagger-animation">
                         <form id="contactForm">
                             <div class="form-group">
                                 <label for="name">Your Name</label>
@@ -2110,11 +2110,67 @@ function InteractiveButton({ children, onClick }) {
                             <p class="form-status" id="contactStatus" role="status" aria-live="polite"></p>
                         </form>
                     </div>
-                    </div>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- ============================================================
+         FLOATING BOTTOM NAVIGATION – MOBILE ONLY
+         ============================================================ -->
+    <nav class="bottom-nav-mobile" id="bottomNav" role="navigation" aria-label="Mobile navigation">
+        <div class="bottom-nav-inner">
+            <a href="#home" class="bottom-nav-link active" data-section="home" aria-label="Home">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                <span>Home</span>
+            </a>
+            <a href="#about" class="bottom-nav-link" data-section="about" aria-label="About">
+                <i class="fas fa-user" aria-hidden="true"></i>
+                <span>About</span>
+            </a>
+            <a href="#projects" class="bottom-nav-link" data-section="projects" aria-label="Projects">
+                <i class="fas fa-briefcase" aria-hidden="true"></i>
+                <span>Projects</span>
+            </a>
+            <a href="#contact" class="bottom-nav-link" data-section="contact" aria-label="Contact">
+                <i class="fas fa-envelope" aria-hidden="true"></i>
+                <span>Contact</span>
+            </a>
+            <button class="bottom-nav-more" id="bottomNavMore" aria-label="More options" aria-expanded="false">
+                <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
+                <span>More</span>
+            </button>
+        </div>
+
+        <!-- Expandable More Menu -->
+        <div class="bottom-nav-dropdown" id="bottomNavDropdown" role="menu">
+            <a href="#tech-stack" class="bottom-nav-dropdown-link" data-section="tech-stack" role="menuitem">
+                <i class="fas fa-cogs" aria-hidden="true"></i>
+                <span>Stack</span>
+            </a>
+            <a href="#routine" class="bottom-nav-dropdown-link" data-section="routine" role="menuitem">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                <span>Routine</span>
+            </a>
+            <a href="#open-source" class="bottom-nav-dropdown-link" data-section="open-source" role="menuitem">
+                <i class="fas fa-code-branch" aria-hidden="true"></i>
+                <span>Open Source</span>
+            </a>
+            <a href="#experience" class="bottom-nav-dropdown-link" data-section="experience" role="menuitem">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span>Journey</span>
+            </a>
+            <div class="bottom-nav-divider"></div>
+            <button class="bottom-nav-dropdown-link theme-toggle" id="bottomThemeToggle" role="menuitem">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+                <span>Theme</span>
+            </button>
+            <button class="bottom-nav-dropdown-link mobile-contrast-btn" id="bottomContrastToggle" role="menuitem">
+                <i class="fas fa-adjust" aria-hidden="true"></i>
+                <span>Contrast</span>
+            </button>
+        </div>
+    </nav>
 
     <!-- Command Palette -->
     <div id="commandPalette" class="command-palette-overlay">
