@@ -167,7 +167,6 @@
 
     <!-- Perfect Animated Background & Cinematic 3D Scene -->
     <div class="animated-bg">
-        <canvas id="webgl-3d-canvas" class="webgl-3d-canvas" aria-hidden="true"></canvas>
         <div class="gradient-bg"></div>
         <div class="gradients-container">
             <div class="gradient gradient-1"></div>
@@ -315,7 +314,9 @@
 
         <!-- Hero Section -->
         <section class="hero" id="home">
-            <div id="hero-3d-scene" class="hero-3d-container"></div>
+            <div id="hero-3d-scene" class="hero-3d-container">
+                <canvas id="webgl-3d-canvas" class="webgl-3d-canvas" aria-hidden="true"></canvas>
+            </div>
             <div class="hero-content testimonial-card glass-card">
                 <p class="hero-subtitle fade-in interactive-card testimonial-card glass-card">
                     Disciplina - Execucao - Foco
