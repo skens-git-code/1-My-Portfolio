@@ -304,12 +304,14 @@
           this.timeoutPromise(1400)
         ]);
 
-        // Ensure minimum display time
-        const elapsed = performance.now() - this.startTime;
-        const remaining = Math.max(0, this.minDisplayTime - elapsed);
-
-        if (remaining > 0) {
-          await this.timeoutPromise(remaining);
+        // Ensure minimum display time (skip if fast/testing parameter provided)
+        const isFastMode = new URLSearchParams(window.location.search).has('fast') || new URLSearchParams(window.location.search).has('skipLoader');
+        if (!isFastMode) {
+          const elapsed = performance.now() - this.startTime;
+          const remaining = Math.max(0, this.minDisplayTime - elapsed);
+          if (remaining > 0) {
+            await this.timeoutPromise(remaining);
+          }
         }
 
         // Hide loading screen
@@ -467,6 +469,27 @@
         }, 480);
 
         window.dispatchEvent(new CustomEvent('loadingComplete'));
+
+        // Handle initial hash or section query param scrolling after loader is dismissed
+        const rawTargetId = (window.location.hash ? window.location.hash.split('?')[0] : '') ||
+                            (new URLSearchParams(window.location.search).get('section') ? '#' + new URLSearchParams(window.location.search).get('section') : '');
+        if (rawTargetId) {
+          try {
+            const hashTarget = document.querySelector(rawTargetId);
+            if (hashTarget) {
+              const prefersInstant = new URLSearchParams(window.location.search).has('instant') || AppState.prefersReducedMotion;
+              if (prefersInstant) {
+                document.documentElement.style.scrollBehavior = 'auto';
+                document.body.style.scrollBehavior = 'auto';
+                window.scrollTo(0, Math.max(0, hashTarget.offsetTop - 30));
+              } else {
+                setTimeout(() => {
+                  hashTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 60);
+              }
+            }
+          } catch (e) {}
+        }
       }
     }
 
@@ -754,7 +777,12 @@
       this.themeToggle = document.getElementById('themeToggle');
       this.backToTop = document.getElementById('backToTop');
       this.navIndicator = document.querySelector('.nav-indicator');
+      /* ============================================================
+         [OLD NAV LINKS SELECTOR - COMMENTED OUT]
+         ============================================================
       this.navLinks = document.querySelectorAll('.nav-link');
+      ============================================================ */
+      this.navLinks = document.querySelectorAll('#mainNav .nav-link, .nav-container .nav-link');
       this.sectionDots = document.querySelectorAll('.section-dot');
       this.boundHandlers = {
         updateBackToTop: null,
@@ -884,7 +912,12 @@
 
     resetIndicator() {
       if (AppState.isMobile) return;
+      /* ============================================================
+         [OLD ACTIVE LINK SELECTOR - COMMENTED OUT]
+         ============================================================
       const activeLink = document.querySelector('.nav-link.active');
+      ============================================================ */
+      const activeLink = document.querySelector('#mainNav .nav-link.active, .nav-container .nav-link.active');
       if (activeLink) {
         this.moveIndicator(activeLink);
       } else {
@@ -1160,6 +1193,10 @@
       });
       this.updateThemeIcon(isDark ? 'sun' : 'moon');
 
+      if (window.portfolioApp?.cinematic3D?.onThemeChange) {
+        window.portfolioApp.cinematic3D.onThemeChange(isDark);
+      }
+
       if (persist) {
         Storage.set('theme', themeStr);
         AnalyticsTracker.setTag('theme', themeStr);
@@ -1345,6 +1382,10 @@
           opacity: '1',
           transform: 'translateY(0)'
         });
+        setTimeout(() => {
+          element.style.transform = '';
+          element.style.transition = '';
+        }, 550);
       }
 
       if (element.classList.contains('stagger-animation')) {
@@ -1354,6 +1395,10 @@
               opacity: '1',
               transform: 'translateY(0)'
             });
+            setTimeout(() => {
+              child.style.transform = '';
+              child.style.transition = '';
+            }, 550);
           }, index * CONFIG.animations.staggerDelay);
         });
       }
@@ -1482,6 +1527,9 @@
       });
     }
 
+    /* ============================================================
+       [OLD 3D TILT INTERACTION - COMMENTED OUT]
+       ============================================================
     initInteractiveCards() {
       this.cardCleanups = [];
       document.querySelectorAll('.interactive-card').forEach(card => {
@@ -1519,6 +1567,61 @@
 
         card.addEventListener('mousemove', onMouseMove);
         card.addEventListener('mouseleave', onMouseLeave);
+
+        this.cardCleanups.push(() => {
+          card.removeEventListener('mousemove', onMouseMove);
+          card.removeEventListener('mouseleave', onMouseLeave);
+        });
+      });
+    }
+    ============================================================ */
+
+    /* NEW REFINED, JITTER-FREE 3D TILT INTERACTION */
+    initInteractiveCards() {
+      this.cardCleanups = [];
+      document.querySelectorAll('.interactive-card').forEach(card => {
+        if (AppState.isMobile || AppState.prefersReducedMotion) return;
+        // Skip large container wrappers or sections to avoid jitter
+        if (card.classList.contains('container') || card.classList.contains('hero-content')) return;
+
+        let ticking = false;
+
+        const onMouseMove = (e) => {
+          if (ticking) return;
+          const clientX = e.clientX;
+          const clientY = e.clientY;
+          ticking = true;
+
+          requestAnimationFrame(() => {
+            const rect = card.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            // Gentle, subtle tilt (-3deg to 3deg) for a natural, premium feel
+            const rotateX = ((y - centerY) / centerY) * -3.5;
+            const rotateY = ((x - centerX) / centerX) * 3.5;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.01, 1.01, 1.01)`;
+            card.style.transition = 'transform 0.18s cubic-bezier(0.16, 1, 0.3, 1)';
+            ticking = false;
+          });
+        };
+
+        const onMouseLeave = () => {
+          card.style.transform = '';
+          card.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+          setTimeout(() => {
+            if (!card.matches(':hover')) {
+              card.style.transition = '';
+            }
+          }, 360);
+        };
+
+        card.addEventListener('mousemove', onMouseMove, { passive: true });
+        card.addEventListener('mouseleave', onMouseLeave, { passive: true });
 
         this.cardCleanups.push(() => {
           card.removeEventListener('mousemove', onMouseMove);
@@ -2158,7 +2261,7 @@
     constructor(container) {
       this.container = container;
       this.tracks = Array.from(container.querySelectorAll('.carousel-track'));
-      this.dotsContainer = container.querySelector('.carousel-dots');
+      this.dotsContainer = container.querySelector('.carousel-dots') || container.parentElement?.querySelector('.carousel-dots');
       this.currentIndex = 0;
       this.interval = null;
       this.autoScrollDelay = 4000;
@@ -2668,7 +2771,8 @@
     }
 
     buildLighting() {
-      this.ambientLight = new THREE.AmbientLight(0x0b162e, 0.55);
+      const isLight = document.body.classList.contains('light-theme') || document.documentElement.dataset.theme === 'light';
+      this.ambientLight = new THREE.AmbientLight(isLight ? 0xdce8f6 : 0x0b162e, isLight ? 0.9 : 0.55);
       this.scene.add(this.ambientLight);
 
       this.dirLight = new THREE.DirectionalLight(0xbbeeff, 1.0);
@@ -2686,6 +2790,7 @@
 
     buildQuantumCore() {
       this.coreGroup = new THREE.Group();
+      // Positioned to the right of the centered hero card
       this.coreGroup.position.set(2.4, 0.4, 0);
       this.scene.add(this.coreGroup);
 
@@ -2758,6 +2863,7 @@
         uniform vec3 uColorViolet;
         uniform float uTime;
         uniform float uOpacity;
+        uniform float uIsLight;
         varying vec3 vNormal;
         varying vec3 vPosition;
         varying float vDisplacement;
@@ -2767,13 +2873,17 @@
             float fresnel = pow(1.0 - max(0.0, dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.4);
             float pulse = 0.5 + 0.5 * sin(uTime * 1.8 + vDisplacement * 4.0);
             vec3 glowColor = mix(uColorCyan, uColorViolet, pulse);
-            vec3 baseColor = vec3(0.02, 0.05, 0.12);
-            vec3 finalColor = mix(baseColor, glowColor, fresnel * 1.35);
+            vec3 darkBase = vec3(0.02, 0.05, 0.12);
+            vec3 lightBase = vec3(0.90, 0.95, 0.99);
+            vec3 baseColor = mix(darkBase, lightBase, uIsLight);
+            vec3 finalColor = mix(baseColor, glowColor, fresnel * (1.35 - 0.5 * uIsLight));
             finalColor += glowColor * (vDisplacement * 0.3);
-            gl_FragColor = vec4(finalColor, 0.88 * uOpacity);
+            float alpha = mix(0.85, 0.22, uIsLight) * uOpacity;
+            gl_FragColor = vec4(finalColor, alpha);
         }
       `;
 
+      const isLight = document.body.classList.contains('light-theme') || document.documentElement.dataset.theme === 'light';
       this.coreShaderMat = new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
@@ -2781,27 +2891,28 @@
           uTime: { value: 0 },
           uVelocity: { value: 0 },
           uOpacity: { value: 1.0 },
+          uIsLight: { value: isLight ? 1.0 : 0.0 },
           uColorCyan: { value: new THREE.Color(0x00f0ff) },
           uColorViolet: { value: new THREE.Color(0x8855ff) }
         },
         transparent: true
       });
 
-      const coreGeo = new THREE.IcosahedronGeometry(2.3, this.tier >= 1 ? 4 : 2);
+      const coreGeo = new THREE.IcosahedronGeometry(2.1, this.tier >= 1 ? 4 : 2);
       const coreMesh = new THREE.Mesh(coreGeo, this.coreShaderMat);
       this.coreGroup.add(coreMesh);
 
-      const wireGeo = new THREE.IcosahedronGeometry(2.55, 2);
+      const wireGeo = new THREE.IcosahedronGeometry(2.35, 2);
       const wireMat = new THREE.MeshBasicMaterial({
-        color: 0x49e8fa,
+        color: isLight ? 0x0088cc : 0x49e8fa,
         wireframe: true,
         transparent: true,
-        opacity: 0.35
+        opacity: isLight ? 0.15 : 0.35
       });
       this.coreWireMesh = new THREE.Mesh(wireGeo, wireMat);
       this.coreGroup.add(this.coreWireMesh);
 
-      const nucleusGeo = new THREE.OctahedronGeometry(1.15, 0);
+      const nucleusGeo = new THREE.OctahedronGeometry(1.05, 0);
       const nucleusMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         emissive: 0x00f0ff,
@@ -2815,9 +2926,9 @@
       this.coreGroup.add(this.nucleusMesh);
 
       const ringConfigs = [
-        { r: 3.4, tube: 0.032, color: 0x00f0ff, rot: [0.75, 0.2, 0], speed: 0.45 },
-        { r: 4.2, tube: 0.026, color: 0x8855ff, rot: [-0.6, 0.85, 0.3], speed: -0.32 },
-        { r: 5.0, tube: 0.020, color: 0x00e5ff, rot: [0.35, -0.65, 0.75], speed: 0.24 }
+        { r: 3.2, tube: 0.026, color: 0x00f0ff, rot: [0.75, 0.2, 0], speed: 0.40 },
+        { r: 4.0, tube: 0.022, color: 0x8855ff, rot: [-0.6, 0.85, 0.3], speed: -0.28 },
+        { r: 4.8, tube: 0.018, color: 0x00e5ff, rot: [0.35, -0.65, 0.75], speed: 0.22 }
       ];
 
       this.gimbalRings = [];
@@ -2830,7 +2941,7 @@
           metalness: 0.85,
           roughness: 0.2,
           transparent: true,
-          opacity: 0.75
+          opacity: isLight ? 0.45 : 0.75
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.rotation.set(...cfg.rot);
@@ -2838,7 +2949,7 @@
         this.coreGroup.add(ringMesh);
         this.gimbalRings.push(ringMesh);
 
-        const beadGeo = new THREE.SphereGeometry(0.085, 8, 8);
+        const beadGeo = new THREE.SphereGeometry(0.08, 8, 8);
         const beadMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const bead = new THREE.Mesh(beadGeo, beadMat);
         bead.position.x = cfg.r;
@@ -3296,7 +3407,11 @@
           if (isContact) {
             this.coreGroup.position.lerp(new THREE.Vector3(0, 0.1, 0), 0.06);
           } else {
-            this.coreGroup.position.lerp(new THREE.Vector3(2.4, 0.4, 0), 0.06);
+            const isMobile = window.innerWidth <= 768;
+            const targetPos = isMobile
+              ? new THREE.Vector3(0, 1.8, -4.5)
+              : new THREE.Vector3(2.4, 0.4, 0);
+            this.coreGroup.position.lerp(targetPos, 0.06);
           }
 
           if (this.coreShaderMat) {
@@ -3455,6 +3570,24 @@
 
       // 5. Render Pass
       this.renderer.render(this.scene, this.camera);
+    }
+
+    onThemeChange(isDark) {
+      const isLight = !isDark;
+      if (this.coreShaderMat?.uniforms?.uIsLight) {
+        this.coreShaderMat.uniforms.uIsLight.value = isLight ? 1.0 : 0.0;
+      }
+      if (this.ambientLight) {
+        this.ambientLight.color.setHex(isLight ? 0xdce8f6 : 0x0b162e);
+        this.ambientLight.intensity = isLight ? 0.9 : 0.55;
+      }
+      if (this.coreWireMesh?.material) {
+        this.coreWireMesh.material.color.setHex(isLight ? 0x0088cc : 0x49e8fa);
+        this.coreWireMesh.material.opacity = isLight ? 0.16 : 0.35;
+      }
+      if (this.scene?.fog) {
+        this.scene.fog.color.setHex(isLight ? 0xf0f4fb : 0x000000);
+      }
     }
 
     dispose() {

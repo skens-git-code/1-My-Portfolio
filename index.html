@@ -80,12 +80,20 @@
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://generativelanguage.googleapis.com https://*.clarity.ms https://c.clarity.ms https://k.clarity.ms https://z.clarity.ms https://*.bing.com https://www.google-analytics.com https://*.google-analytics.com https://region1.google-analytics.com https://analytics.google.com; img-src 'self' https: data: blob: https://c.clarity.ms https://*.clarity.ms https://*.bing.com https://www.google-analytics.com; font-src 'self' https: data:;">
 
+
     <!-- Apply the saved theme before the stylesheet paints to avoid a flash. Default to dark for cinematic experience. -->
+
     <script>
         (() => {
             let theme = 'dark';
             try {
-                theme = localStorage.getItem('theme') || 'dark';
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('theme')) {
+                    theme = params.get('theme');
+                    localStorage.setItem('theme', theme);
+                } else {
+                    theme = localStorage.getItem('theme') || 'dark';
+                }
             } catch (_) { /* Use the dark fallback when storage is unavailable. */ }
             document.documentElement.dataset.theme = theme;
         })();
@@ -317,6 +325,7 @@
             <div id="hero-3d-scene" class="hero-3d-container">
                 <canvas id="webgl-3d-canvas" class="webgl-3d-canvas" aria-hidden="true"></canvas>
             </div>
+            <!-- [OLD HERO CONTENT WITH NESTED CARD CLASSES - COMMENTED OUT]
             <div class="hero-content testimonial-card glass-card">
                 <p class="hero-subtitle fade-in interactive-card testimonial-card glass-card">
                     Disciplina - Execucao - Foco
@@ -327,6 +336,23 @@
                 </h1>
                 <p class="hero-description fade-in">
                     <span class="bouncing-text testimonial-card glass-card interactive-card">
+                        Hello, I'm Sarthak Mathapati. <br>An AI Software Engineer & Web Developer
+                        Crafting sleek, responsive, and meaningful digital experiences — turning ideas into reality.
+                    </span>
+                </p>
+            -->
+
+            <!-- CLEAN, BALANCED HERO LAYOUT -->
+            <div class="hero-content">
+                <p class="hero-subtitle fade-in">
+                    Disciplina - Execucao - Foco
+                </p>
+                <h1 class="hero-title-fade-in">
+                    I am <span class="text-gradient dynamic-color typewriter-text" id="typewriter">a Software
+                        Engineer</span>
+                </h1>
+                <p class="hero-description fade-in">
+                    <span class="bouncing-text">
                         Hello, I'm Sarthak Mathapati. <br>An AI Software Engineer & Web Developer
                         Crafting sleek, responsive, and meaningful digital experiences — turning ideas into reality.
                     </span>
@@ -354,6 +380,7 @@
                 <!-- Profile Image Container -->
                 <div class="profile-container fade-in">
                     <div class="image-carousel">
+                        <!-- [OLD CAROUSEL TRACKS WITH NESTED CARD CLASSES - COMMENTED OUT]
                         <div class="carousel-track active">
                             <img src="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
                                 alt="Sarthak Mathapati"
@@ -377,13 +404,42 @@
                                 class="profile-img morph-shape responsive-img glass-card interactive-card"
                                 loading="lazy">
                         </div>
+                        -->
 
-                        <!-- Navigation dots -->
-                        <div class="carousel-dots"></div>
+                        <!-- CLEAN CAROUSEL TRACKS WITH PROPER CORNERS -->
+                        <div class="carousel-track active">
+                            <img src="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
+                                alt="Sarthak Mathapati"
+                                class="profile-img morph-shape responsive-img">
+                        </div>
+                        <div class="carousel-track">
+                            <img src="https://prior-tomato-eep3ntlclj-j8rbppfdom.edgeone.dev/IMG_3747.jpg"
+                                alt="Sarthak Mathapati - Photo 2"
+                                class="profile-img morph-shape responsive-img"
+                                loading="lazy">
+                        </div>
+                        <div class="carousel-track">
+                            <img src="https://spotty-violet-jpvcsmo1an-1cidgtcev9.edgeone.dev/IMG_3520.jpg"
+                                alt="Sarthak Mathapati - Photo 3"
+                                class="profile-img morph-shape responsive-img"
+                                loading="lazy">
+                        </div>
+                        <div class="carousel-track">
+                            <img src="https://tasteless-amber-k7iaa4q0o2-8uawoj7jkh.edgeone.dev/IMG_3045.jpg"
+                                alt="Sarthak Mathapati - Photo 4"
+                                class="profile-img morph-shape responsive-img"
+                                loading="lazy">
+                        </div>
+
                     </div>
+                    <!-- Navigation dots -->
+                    <div class="carousel-dots"></div>
                 </div>
 
+                <!-- [OLD HERO BUTTONS WITH TESTIMONIAL CARD - COMMENTED OUT]
                 <div class="hero-buttons testimonial-card glass-card interactive-card fade-in">
+                -->
+                <div class="hero-buttons fade-in">
                     <a href="#projects" class="hero-btn btn-3d">
                         <span>View My Work <i class="fas fa-arrow-right"></i></span>
                     </a>
@@ -408,7 +464,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">About</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     About <span class="text-gradient text-shimmer">Me</span>
                 </h2>
 
@@ -615,190 +671,11 @@
             </div>
         </section>
 
-        <section id="routine" class="section-transition">
-            <div class="container testimonial-card glass-card">
-                <div class="breadcrumb">
-                    <a href="#home">Home</a>
-                    <span class="breadcrumb-separator">/</span>
-                    <span class="text-gradient">My Day</span>
-                </div>
-                <h2 class="section-title nav-link modern-heading">
-                    Daily <span class="text-gradient text-shimmer">Routine & Habits</span>
-                </h2>
-
-                <div class="routine-timeline">
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">06:00 AM</div>
-                        <div class="routine-icon"><i class="fas fa-sun"></i></div>
-                        <h3>Morning Ritual</h3>
-                        <p>Meditation, planning the day, and learning new technologies</p>
-                    </div>
-
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">08:00 AM</div>
-                        <div class="routine-icon"><i class="fas fa-laptop-code"></i></div>
-                        <h3>Deep Work Session</h3>
-                        <p>Coding, problem-solving, and project development</p>
-                    </div>
-
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">12:00 PM</div>
-                        <div class="routine-icon"><i class="fas fa-utensils"></i></div>
-                        <h3>Break & Learning</h3>
-                        <p>Lunch while reading tech articles or watching tutorials</p>
-                    </div>
-
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">01:00 PM</div>
-                        <div class="routine-icon"><i class="fas fa-users"></i></div>
-                        <h3>Collaboration Time</h3>
-                        <p>Meetings, code reviews, and team collaboration</p>
-                    </div>
-
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">04:00 PM</div>
-                        <div class="routine-icon"><i class="fas fa-dumbbell"></i></div>
-                        <h3>Physical Activity</h3>
-                        <p>Badminton, gym, or outdoor activities</p>
-                    </div>
-
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">07:00 PM</div>
-                        <div class="routine-icon"><i class="fas fa-lightbulb"></i></div>
-                        <h3>Creative Time</h3>
-                        <p>Side projects, open source contributions, or writing</p>
-                    </div>
-
-                    <div class="routine-item glass-card interactive-card">
-                        <div class="routine-time">10:00 PM</div>
-                        <div class="routine-icon"><i class="fas fa-book"></i></div>
-                        <h3>Wind Down</h3>
-                        <p>Reading, reflection, and planning for tomorrow</p>
-                    </div>
-                </div>
-
-                <div class="habits-section glass-card interactive-card">
-                    <h3 class="text-gradient">Key Habits & Principles</h3>
-                    <div class="habits-grid">
-                        <div class="habit-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Continuous Learning</span>
-                        </div>
-                        <div class="habit-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Daily Coding Practice</span>
-                        </div>
-                        <div class="habit-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Health First</span>
-                        </div>
-                        <div class="habit-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Open Source Contribution</span>
-                        </div>
-                        <div class="habit-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Document Everything</span>
-                        </div>
-                        <div class="habit-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Help Others Grow</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="goals" class="section-transition">
-            <div class="container testimonial-card glass-card">
-                <div class="breadcrumb">
-                    <a href="#home">Home</a>
-                    <span class="breadcrumb-separator">/</span>
-                    <span class="text-gradient">Future Goals</span>
-                </div>
-                <h2 class="section-title nav-link modern-heading">
-                    My <span class="text-gradient text-shimmer">Vision & Goals</span>
-                </h2>
-
-                <div class="goals-timeline">
-                    <div class="goal-period">
-                        <h3 class="text-gradient">Short Term (2025)</h3>
-                        <div class="goals-list">
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Launch Skens.inc MVP</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Contribute to 5+ open source projects</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Master AWS Certified Solutions Architect</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Build AI chatbot with 10K+ users</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="goal-period">
-                        <h3 class="text-gradient">Medium Term (2026-2027)</h3>
-                        <div class="goals-list">
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-bullseye"></i>
-                                <span>Scale startup to 100K+ users</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-bullseye"></i>
-                                <span>Speak at international tech conferences</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-bullseye"></i>
-                                <span>Launch AI-powered SaaS product</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-bullseye"></i>
-                                <span>Build developer community of 10K+ members</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="goal-period">
-                        <h3 class="text-gradient">Long Term (2028+)</h3>
-                        <div class="goals-list">
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-rocket"></i>
-                                <span>Establish tech education platform</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-rocket"></i>
-                                <span>Invest in early-stage tech startups</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-rocket"></i>
-                                <span>Publish technical book on AI development</span>
-                            </div>
-                            <div class="goal-item glass-card interactive-card">
-                                <i class="fas fa-rocket"></i>
-                                <span>Create foundation for tech education in rural areas</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="vision-statement glass-card interactive-card text-center">
-                    <h3 class="text-gradient">My Vision</h3>
-                    <p class="elegant-text">
-                        "To democratize technology education and create tools that empower the next generation of
-                        developers
-                        to build solutions that positively impact millions of lives globally."
-                    </p>
-                </div>
-            </div>
-        </section>
-
+        <!-- ============================================================
+             [TECH STACK SECTION - ALIGNED TO NAVIGATION FLOW]
+             Moved directly after About section to match navbar,
+             section dots, and mobile menu sequential order.
+             ============================================================ -->
         <section id="tech-stack" class="section-transition">
             <div class="container testimonial-card glass-card">
                 <div class="breadcrumb">
@@ -806,7 +683,8 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Tech Stack</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <!-- <h2 class="section-title modern-heading"> -->
+                <h2 class="section-title modern-heading">
                     My <span class="text-gradient text-shimmer">Technology Stack</span>
                 </h2>
 
@@ -929,6 +807,192 @@
             </div>
         </section>
 
+        <section id="routine" class="section-transition">
+            <div class="container testimonial-card glass-card">
+                <div class="breadcrumb">
+                    <a href="#home">Home</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="text-gradient">My Day</span>
+                </div>
+                <h2 class="section-title modern-heading">
+                    Daily <span class="text-gradient text-shimmer">Routine & Habits</span>
+                </h2>
+
+                <div class="routine-timeline">
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">06:00 AM</div>
+                        <div class="routine-icon"><i class="fas fa-sun"></i></div>
+                        <h3>Morning Ritual</h3>
+                        <p>Meditation, planning the day, and learning new technologies</p>
+                    </div>
+
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">08:00 AM</div>
+                        <div class="routine-icon"><i class="fas fa-laptop-code"></i></div>
+                        <h3>Deep Work Session</h3>
+                        <p>Coding, problem-solving, and project development</p>
+                    </div>
+
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">12:00 PM</div>
+                        <div class="routine-icon"><i class="fas fa-utensils"></i></div>
+                        <h3>Break & Learning</h3>
+                        <p>Lunch while reading tech articles or watching tutorials</p>
+                    </div>
+
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">01:00 PM</div>
+                        <div class="routine-icon"><i class="fas fa-users"></i></div>
+                        <h3>Collaboration Time</h3>
+                        <p>Meetings, code reviews, and team collaboration</p>
+                    </div>
+
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">04:00 PM</div>
+                        <div class="routine-icon"><i class="fas fa-dumbbell"></i></div>
+                        <h3>Physical Activity</h3>
+                        <p>Badminton, gym, or outdoor activities</p>
+                    </div>
+
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">07:00 PM</div>
+                        <div class="routine-icon"><i class="fas fa-lightbulb"></i></div>
+                        <h3>Creative Time</h3>
+                        <p>Side projects, open source contributions, or writing</p>
+                    </div>
+
+                    <div class="routine-item glass-card interactive-card">
+                        <div class="routine-time">10:00 PM</div>
+                        <div class="routine-icon"><i class="fas fa-book"></i></div>
+                        <h3>Wind Down</h3>
+                        <p>Reading, reflection, and planning for tomorrow</p>
+                    </div>
+                </div>
+
+                <div class="habits-section glass-card interactive-card">
+                    <h3 class="text-gradient">Key Habits & Principles</h3>
+                    <div class="habits-grid">
+                        <div class="habit-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Continuous Learning</span>
+                        </div>
+                        <div class="habit-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Daily Coding Practice</span>
+                        </div>
+                        <div class="habit-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Health First</span>
+                        </div>
+                        <div class="habit-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Open Source Contribution</span>
+                        </div>
+                        <div class="habit-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Document Everything</span>
+                        </div>
+                        <div class="habit-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Help Others Grow</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="goals" class="section-transition">
+            <div class="container testimonial-card glass-card">
+                <div class="breadcrumb">
+                    <a href="#home">Home</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="text-gradient">Future Goals</span>
+                </div>
+                <h2 class="section-title modern-heading">
+                    My <span class="text-gradient text-shimmer">Vision & Goals</span>
+                </h2>
+
+                <div class="goals-timeline">
+                    <div class="goal-period">
+                        <h3 class="text-gradient">Short Term (2025)</h3>
+                        <div class="goals-list">
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Launch Skens.inc MVP</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Contribute to 5+ open source projects</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Master AWS Certified Solutions Architect</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Build AI chatbot with 10K+ users</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="goal-period">
+                        <h3 class="text-gradient">Medium Term (2026-2027)</h3>
+                        <div class="goals-list">
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-bullseye"></i>
+                                <span>Scale startup to 100K+ users</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-bullseye"></i>
+                                <span>Speak at international tech conferences</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-bullseye"></i>
+                                <span>Launch AI-powered SaaS product</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-bullseye"></i>
+                                <span>Build developer community of 10K+ members</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="goal-period">
+                        <h3 class="text-gradient">Long Term (2028+)</h3>
+                        <div class="goals-list">
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-rocket"></i>
+                                <span>Establish tech education platform</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-rocket"></i>
+                                <span>Invest in early-stage tech startups</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-rocket"></i>
+                                <span>Publish technical book on AI development</span>
+                            </div>
+                            <div class="goal-item glass-card interactive-card">
+                                <i class="fas fa-rocket"></i>
+                                <span>Create foundation for tech education in rural areas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vision-statement glass-card interactive-card text-center">
+                    <h3 class="text-gradient">My Vision</h3>
+                    <p class="elegant-text">
+                        "To democratize technology education and create tools that empower the next generation of
+                        developers
+                        to build solutions that positively impact millions of lives globally."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- [OLD TECH STACK SECTION LOCATION - MOVED ABOVE ROUTINE TO MATCH NAVIGATION ORDER] -->
+
         <!-- Services Section -->
         <section id="services" class="section-transition">
             <div class="container testimonial-card glass-card">
@@ -938,7 +1002,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Services</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     My <span class="text-gradient text-shimmer">Services</span>
                 </h2>
                 <div class="services-grid stagger-animation">
@@ -998,7 +1062,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">My Process</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     My <span class="text-gradient text-shimmer">Development Process</span>
                 </h2>
 
@@ -1075,7 +1139,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Projects</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     A Selection of <span class="text-gradient text-shimmer">Recent Projects</span>
                 </h2>
 
@@ -1277,7 +1341,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Open Source</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     Open Source <span class="text-gradient text-shimmer">Contributions</span>
                 </h2>
 
@@ -1380,8 +1444,8 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Speaking</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
-                    Talks & <span class="text-gradient text-shimmer">Workshops</span>
+                <h2 class="section-title modern-heading">
+                    Talks &amp;&nbsp;<span class="text-gradient text-shimmer">Workshops</span>
                 </h2>
 
                 <div class="talks-grid stagger-animation">
@@ -1441,8 +1505,8 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Publications</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
-                    My <span class="text-gradient text-shimmer">Publications</span>
+                <h2 class="section-title modern-heading">
+                    My&nbsp;<span class="text-gradient text-shimmer">Publications</span>
                 </h2>
 
                 <div class="publications-list">
@@ -1511,7 +1575,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Blog</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     Latest <span class="text-gradient text-shimmer">Insights</span>
                 </h2>
                 <div class="blog-grid stagger-animation">
@@ -1575,7 +1639,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Testimonials</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     Client <span class="text-gradient text-shimmer">Testimonials</span>
                 </h2>
                 <div class="testimonials">
@@ -1636,7 +1700,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Experience</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     My <span class="text-gradient text-shimmer">Work Experience</span>
                 </h2>
                 <div class="experience-grid stagger-animation">
@@ -1706,7 +1770,7 @@
                     <span class="text-gradient">Certificates</span>
                 </div> -->
 
-        <!-- <h2 class="section-title nav-link modern-heading">My <span
+        <!-- <h2 class="section-title modern-heading">My <span
                         class="text-gradient text-shimmer">Certifications</span></h2>
 
                 <div class="portfolio-carousel glass-card" style="padding: 2rem;">
@@ -1780,7 +1844,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Tools</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     My <span class="text-gradient text-shimmer">Tools</span>
                 </h2>
                 <div class="services-grid stagger-animation">
@@ -1840,7 +1904,7 @@
                     <span class="text-gradient">Tools</span>
                 </div>
 
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     My <span class="text-gradient text-shimmer">Tools</span>
                 </h2>
 
@@ -1906,7 +1970,7 @@
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Playground</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     Code <span class="text-gradient text-shimmer">Playground</span>
                 </h2>
                 <div class="playground">
@@ -1962,7 +2026,7 @@ function InteractiveButton({ children, onClick }) {
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Collaborate</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     Let's <span class="text-gradient text-shimmer">Build Together</span>
                 </h2>
 
@@ -2044,7 +2108,7 @@ function InteractiveButton({ children, onClick }) {
                     <span class="breadcrumb-separator">/</span>
                     <span class="text-gradient">Contact</span>
                 </div>
-                <h2 class="section-title nav-link modern-heading">
+                <h2 class="section-title modern-heading">
                     Get In <span class="text-gradient text-shimmer">Touch</span>
                 </h2>
                 <div class="contact-container">
@@ -2186,15 +2250,12 @@ function InteractiveButton({ children, onClick }) {
         </div>
     </div>
 
-    <!-- footer -->
-
-
-
-
-
     <!-- Footer -->
     <footer role="contentinfo">
-        <div class="container testimonial-card glass-card">
+        <!-- ============================================================
+             [OLD NESTED FOOTER CARD CLASSES - COMMENTED OUT]
+             ============================================================
+            <div class="container testimonial-card glass-card">
             <div class="footer-content">
                 <div class="footer-about interactive-card testimonial-card glass-card bouncing-text">
                     <div class="footer-logo">
@@ -2237,7 +2298,6 @@ function InteractiveButton({ children, onClick }) {
 
             </div>
 
-                <!-- Additional Footer Info -->
                 <div class="trust-badges">
                     <div class="trust-badge">
                         <i class="fas fa-certificate text-gradient"></i>
@@ -2259,6 +2319,74 @@ function InteractiveButton({ children, onClick }) {
                         &copy; All Rights Reserved By Sarthak Mathapati.
                     </p>
                 </div>
+        </div>
+        ============================================================ -->
+
+        <!-- CLEAN, BALANCED & MODERN FOOTER LAYOUT -->
+        <!-- [OLD] <div class="container glass-card"> -->
+        <div class="container footer-container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <i class="fas fa-code text-gradient text-shimmer"></i> Sarthak Mathapati
+                    </div>
+                    <p class="elegant-text">Software Engineer & Web Developer creating digital experiences that make a
+                        difference. Passionate about building innovative solutions with modern technologies.</p>
+                    <div class="social-icons">
+                        <a href="https://github.com/skens-git-code" class="social-icon" aria-label="GitHub"><i
+                                class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/in/sarthak-mathapati-b2b04430a/" class="social-icon"
+                            aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://x.com/mathapatism8" class="social-icon" aria-label="Twitter"><i
+                                class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/mathapati.i8/" class="social-icon" aria-label="Instagram"><i
+                                class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#projects">Projects</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#experience">Experience</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#services">Web Development</a></li>
+                        <li><a href="#services">Responsive Design</a></li>
+                        <li><a href="#services">UI/UX Design</a></li>
+                        <li><a href="#services">Performance Optimization</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="trust-badges">
+                <div class="trust-badge">
+                    <i class="fas fa-certificate text-gradient"></i>
+                    <span>Quality Assured</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-rocket text-gradient"></i>
+                    <span>Fast Delivery</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-shield-alt text-gradient"></i>
+                    <span>Secure & Reliable</span>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>
+                    🌟 Grateful For Your Time ! Dream Big , Shine Bright ✨, And Make The Magic Happen. 🌟 <br>
+                    &copy; All Rights Reserved By Sarthak Mathapati.
+                </p>
+            </div>
         </div>
     </footer>
 
