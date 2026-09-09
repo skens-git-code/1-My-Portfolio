@@ -6,7 +6,7 @@
 /* ------------------------------------------------------------
    0.  GOOGLE FONTS  (already in <head> — mirror here for IDE)
    ------------------------------------------------------------ */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Poppins:wght@300;400;500;600;700&family=Zen+Dots&family=Fira+Code:wght@400;500&display=swap');
+/* Fonts are loaded once in index.html to avoid duplicate network requests. */
 
 /* ------------------------------------------------------------
    1.  DESIGN TOKENS & VARIABLES
@@ -228,7 +228,7 @@ html {
 }
 
 body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--c-bg);
     color: var(--text);
     line-height: 1.72;
@@ -745,7 +745,7 @@ header.scrolled,
 }
 
 .port {
-    font-family: 'Zen Dots', 'Orbitron', monospace, sans-serif;
+    font-family: 'Space Grotesk', 'Orbitron', system-ui, sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -974,7 +974,7 @@ header.scrolled .nav-container {
 .port {
     position: relative;
     z-index: 1;
-    font-family: 'Space Grotesk', 'Zen Dots', 'Orbitron', system-ui, -apple-system, sans-serif;
+    font-family: 'Space Grotesk', 'Orbitron', system-ui, -apple-system, sans-serif;
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 0.5px;
@@ -1247,10 +1247,17 @@ body.light-theme #highContrastToggle {
 
 #hero-3d-scene,
 .hero-3d-container {
-    position: absolute;
+    /* The camera timeline spans the whole page, so the scene stays in the
+       viewport while the content travels through it. */
+    position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
+}
+
+#main-content {
+    position: relative;
+    z-index: 1;
 }
 
 /* ============================================================
@@ -1309,7 +1316,7 @@ body.light-theme .webgl-3d-canvas {
 }
 
 .hero-title-fade-in {
-    font-family: 'Zen Dots', 'Orbitron', sans-serif;
+    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
     font-size: var(--fs-4xl);
     line-height: 1.14;
     margin-bottom: 24px;
@@ -1362,6 +1369,15 @@ body.light-theme .webgl-3d-canvas {
     padding: clamp(36px, 5vw, 52px) clamp(32px, 5vw, 52px) clamp(28px, 3.5vw, 38px);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.90), 0 0 50px rgba(0, 212, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     overflow: hidden;
+    transform: translate3d(0, calc(var(--scene-energy, 0) * -2px), 0);
+    will-change: transform, border-color, box-shadow;
+}
+
+/* The UI shares the same motion state as the 3D scene. This tiny lift and
+   stage-aware accent keep the content card connected to the choreography. */
+body[data-scene-stage="contact"] .hero-content,
+body[data-scene-stage="experience"] .hero-content {
+    border-color: rgba(136, 85, 255, 0.24);
 }
 
 [data-theme="light"] .hero-content,
@@ -1398,7 +1414,7 @@ body.light-theme .hero-subtitle {
 
 /* Title */
 .hero-title-fade-in {
-    font-family: 'Zen Dots', 'Orbitron', sans-serif;
+    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
     font-size: clamp(2.8rem, 2.4rem + 2.2vw, 4.0rem);
     line-height: 1.18;
     margin-bottom: 20px;
@@ -2014,7 +2030,7 @@ body.light-theme .container.testimonial-card.glass-card .p-lg.m-md.text-center {
    ============================================================
 .modern-heading,
 .section-title {
-    font-family: 'Orbitron', 'Zen Dots', sans-serif;
+    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
     font-size: var(--fs-3xl);
     text-align: center;
     margin-bottom: clamp(32px, 4.5vw, 60px);
@@ -2025,7 +2041,7 @@ body.light-theme .container.testimonial-card.glass-card .p-lg.m-md.text-center {
 ============================================================ */
 .modern-heading,
 .section-title {
-    font-family: 'Orbitron', 'Zen Dots', sans-serif;
+    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
     font-size: var(--fs-3xl);
     text-align: center;
     margin-bottom: clamp(24px, 3.5vw, 42px);
@@ -2059,12 +2075,18 @@ body.light-theme .container.testimonial-card.glass-card .p-lg.m-md.text-center {
 }
 
 .text-shimmer {
+    display: inline-block;
     background: linear-gradient(90deg, var(--clr-primary), var(--clr-magenta), var(--clr-green), var(--clr-primary));
-    background-size: 280% 100%;
+    background-size: 220% 100%;
+    background-position: 0 50%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: shimmerBg 6s linear infinite;
+    line-height: inherit;
+    vertical-align: baseline;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    animation: shimmerBg 8s linear infinite;
 }
 
 /* Breadcrumb */
@@ -3035,7 +3057,7 @@ body.light-theme .tech-item span {
 }
 
 .stat-number {
-    font-family: 'Zen Dots', sans-serif;
+    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
     font-size: 2.8rem;
     font-weight: 800;
     background: var(--clr-grad);
@@ -3621,7 +3643,7 @@ body.light-theme .publication-type {
     font-size: 2.6rem;
     font-weight: 800;
     color: rgba(255, 255, 255, .05);
-    font-family: 'Monoton', cursive;
+    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
     line-height: 1;
 }
 
@@ -3982,7 +4004,7 @@ footer>.container.glass-card::before {
     font-weight: 700;
     color: var(--clr-primary);
     margin-bottom: 12px;
-    font-family: 'Zen Dots', 'Orbitron', monospace, sans-serif;
+    font-family: 'Space Grotesk', 'Orbitron', system-ui, sans-serif;
 }
 
 .footer-links h3,
@@ -5261,7 +5283,7 @@ img.skeleton-loading {
     }
 
     100% {
-        background-position: 280% 50%;
+        background-position: 220% 50%;
     }
 }
 
@@ -6203,8 +6225,15 @@ body.high-contrast .stat-number {
         display: none !important;
     }
 
+    /* Keep a quiet, simplified depth layer on mobile. The scene itself uses
+       the low-detail tier; hiding it entirely breaks the continuous journey. */
     .hero-3d-container {
-        display: none !important;
+        display: block !important;
+        opacity: .46;
+    }
+
+    .webgl-3d-canvas {
+        opacity: .54 !important;
     }
 }
 
@@ -6740,5 +6769,528 @@ body.light-theme .bottom-nav-more.active span {
     a {
         color: inherit !important;
         text-decoration: underline;
+    }
+}
+
+/* ============================================================
+   FINAL RESPONSIVE NORMALIZATION
+   Keeps sizing predictable after the legacy responsive layers above.
+   ============================================================ */
+@media screen {
+    :root {
+        --layout-gutter: clamp(12px, 3.5vw, 32px);
+    }
+
+    html,
+    body {
+        overflow-x: clip;
+    }
+
+    img {
+        max-width: 100%;
+    }
+
+    header,
+    .navbar {
+        padding-inline: clamp(12px, 3vw, 24px);
+    }
+
+    .nav-container {
+        max-width: calc(100vw - 32px);
+        gap: clamp(1px, .35vw, 6px);
+    }
+
+    .nav-link {
+        min-height: 38px;
+        padding: 8px clamp(8px, 1.15vw, 15px);
+        font-size: clamp(.72rem, .68rem + .2vw, .9rem);
+        white-space: nowrap;
+    }
+
+    .hero {
+        padding-inline: var(--layout-gutter);
+    }
+
+    .hero-content {
+        width: min(820px, calc(100% - 16px));
+        padding: clamp(28px, 4vw, 52px) clamp(22px, 4vw, 52px) clamp(24px, 3vw, 38px);
+        border-radius: clamp(24px, 3vw, 36px);
+    }
+
+    .hero-title-fade-in {
+        font-size: clamp(2.45rem, 2rem + 2.3vw, 4rem);
+        line-height: 1.14;
+    }
+
+    .hero-description {
+        padding: clamp(14px, 2vw, 18px) clamp(18px, 2.5vw, 28px);
+        font-size: clamp(.92rem, .85rem + .35vw, 1.14rem);
+    }
+
+    .skills-carousel {
+        width: min(100%, 720px);
+    }
+
+    .hero-buttons {
+        width: min(100%, 680px);
+        gap: clamp(8px, 1.4vw, 16px);
+        padding: clamp(10px, 1.4vw, 14px) clamp(12px, 2vw, 24px);
+    }
+
+    .hero-btn {
+        min-height: 42px;
+    }
+
+    .projects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+        gap: clamp(16px, 2.5vw, 26px);
+    }
+
+    .project-img {
+        height: auto;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+    }
+
+    .project-content,
+    .blog-content {
+        padding: clamp(18px, 2.2vw, 24px);
+    }
+
+    .blog-grid,
+    .testimonial-slider {
+        gap: clamp(16px, 2vw, 24px);
+    }
+
+    .blog-image {
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+    }
+
+    .author-avatar,
+    .author-img {
+        width: clamp(42px, 4vw, 48px);
+        height: clamp(42px, 4vw, 48px);
+    }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .hero {
+        padding-top: 92px;
+        padding-bottom: 44px;
+    }
+
+    .hero-content {
+        width: min(720px, calc(100% - 28px));
+        padding: 34px 34px 28px;
+    }
+
+    .hero-title-fade-in {
+        font-size: clamp(2.35rem, 6.2vw, 3.45rem);
+    }
+
+    .hero-description {
+        padding: 14px 20px;
+        margin-bottom: 14px;
+    }
+
+    .skills-carousel {
+        margin-bottom: 14px;
+    }
+
+    .profile-container {
+        max-width: 260px;
+    }
+
+    .image-carousel {
+        width: 220px;
+        height: 248px;
+    }
+
+    .hero-buttons {
+        max-width: 600px;
+    }
+
+    .nav-container {
+        max-width: calc(100vw - 24px);
+    }
+
+    .nav-link {
+        padding-inline: 8px;
+        font-size: .75rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 10px)) !important;
+    }
+
+    header,
+    .navbar {
+        padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 6px !important;
+    }
+
+    .hero {
+        padding: 60px 10px 34px !important;
+    }
+
+    .hero-content {
+        width: min(calc(100% - 20px), 560px) !important;
+        max-width: 560px !important;
+        padding: 20px 16px 18px !important;
+        border-radius: 22px !important;
+    }
+
+    .hero-title-fade-in {
+        font-size: clamp(1.75rem, 7vw, 2.35rem) !important;
+        line-height: 1.14 !important;
+        margin-bottom: 12px !important;
+    }
+
+    .hero-description {
+        padding: 12px 14px !important;
+        margin-bottom: 12px !important;
+        font-size: .8rem !important;
+        line-height: 1.48 !important;
+    }
+
+    .hero-description .bouncing-text {
+        padding: 0 2px !important;
+        font-size: .82rem !important;
+        line-height: 1.48 !important;
+    }
+
+    .skills-carousel {
+        margin: 10px 0 12px !important;
+    }
+
+    .profile-container {
+        width: min(178px, 52vw) !important;
+        max-width: 178px !important;
+        margin: 10px auto 12px !important;
+    }
+
+    .image-carousel {
+        width: min(178px, 52vw) !important;
+        height: min(214px, 62vw) !important;
+        border-radius: 18px !important;
+    }
+
+    .hero-buttons {
+        gap: 7px !important;
+        margin-top: 10px !important;
+        padding: 8px !important;
+        border-radius: 16px !important;
+    }
+
+    .hero-buttons .hero-btn,
+    .hero-btn {
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 38px !important;
+        padding: 8px 10px !important;
+        font-size: .78rem !important;
+        flex: 1 1 0 !important;
+    }
+
+    .bottom-nav-mobile {
+        width: min(calc(100% - 20px), 372px) !important;
+        max-width: 372px !important;
+        bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+        padding: 5px 7px !important;
+        border-radius: 22px !important;
+    }
+
+    .bottom-nav-link,
+    .bottom-nav-more {
+        min-height: 48px;
+        padding: 6px 3px 5px !important;
+    }
+
+    .bottom-nav-link i,
+    .bottom-nav-more i {
+        font-size: 1.05rem !important;
+    }
+
+    .bottom-nav-link span,
+    .bottom-nav-more span {
+        font-size: .58rem !important;
+        line-height: 1.1;
+    }
+
+    .cookie-banner {
+        bottom: calc(72px + env(safe-area-inset-bottom, 10px)) !important;
+        width: min(calc(100% - 24px), 360px) !important;
+        max-width: 360px !important;
+        padding: 11px 14px !important;
+        gap: 7px !important;
+    }
+
+    .cookie-banner h4 {
+        font-size: .78rem !important;
+    }
+
+    .cookie-banner p,
+    .cookie-banner .elegant-text {
+        font-size: .70rem !important;
+        line-height: 1.35 !important;
+    }
+
+    .cookie-banner .hero-btn {
+        min-height: 32px !important;
+        padding: 6px 10px !important;
+        font-size: .72rem !important;
+    }
+}
+
+@media screen and (min-width: 421px) and (max-width: 1024px) {
+    /* Tablet privacy notice: compact enough to clear the centered hero actions. */
+    .cookie-banner {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: min(calc(100% - 32px), 460px) !important;
+        max-width: 460px !important;
+        padding: 12px 16px !important;
+        gap: 8px !important;
+    }
+
+    .cookie-banner h4 {
+        font-size: .9rem !important;
+        margin: 0 !important;
+    }
+
+    .cookie-banner p,
+    .cookie-banner .elegant-text {
+        font-size: .76rem !important;
+        line-height: 1.35 !important;
+        margin: 0 !important;
+    }
+
+    .cookie-banner .hero-btn {
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 7px 14px !important;
+        font-size: .76rem !important;
+        line-height: 1 !important;
+    }
+}
+
+@media screen and (max-width: 420px) {
+    .hero {
+        padding-inline: 8px !important;
+    }
+
+    .hero-content {
+        width: calc(100% - 16px) !important;
+        padding-inline: 14px !important;
+    }
+
+    .hero-title-fade-in {
+        font-size: clamp(1.72rem, 7vw, 2.05rem) !important;
+    }
+
+    .profile-container,
+    .image-carousel {
+        width: 172px !important;
+    }
+
+    .image-carousel {
+        height: 206px !important;
+    }
+
+    .bottom-nav-mobile {
+        width: calc(100% - 20px) !important;
+        max-width: none !important;
+        padding-inline: 5px !important;
+    }
+
+    .bottom-nav-link span,
+    .bottom-nav-more span {
+        font-size: .56rem !important;
+    }
+
+    /* Keep the privacy action from covering the hero CTAs on short screens. */
+    .cookie-banner {
+        padding: 5px 10px !important;
+        gap: 4px !important;
+    }
+
+    .cookie-banner p,
+    .cookie-banner .elegant-text {
+        display: none !important;
+    }
+
+    .cookie-banner h4 {
+        font-size: .72rem !important;
+        line-height: 1.1 !important;
+    }
+
+    .cookie-banner > div {
+        gap: 6px !important;
+    }
+
+    .cookie-banner .hero-btn {
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 5px 9px !important;
+        font-size: .68rem !important;
+        line-height: 1 !important;
+    }
+}
+
+/* ============================================================
+   FOOTER, MOTION & TYPE REFINEMENT
+   ============================================================ */
+@media screen {
+    /* The WebGL canvas is animated by JavaScript; avoid reserving an extra
+       compositor layer for a property it never transforms. */
+    .webgl-3d-canvas {
+        will-change: auto;
+    }
+
+    footer {
+        position: relative;
+        z-index: 1;
+        isolation: isolate;
+        contain: paint;
+        padding: clamp(44px, 6vw, 72px) clamp(16px, 3vw, 32px) 28px;
+        background: linear-gradient(180deg, rgba(5, 5, 5, .98), #050505 35%, #000 100%);
+    }
+
+    footer .footer-container {
+        width: min(100%, 1180px);
+        max-width: 1180px;
+    }
+
+    footer .footer-content {
+        grid-template-columns: minmax(0, 1.6fr) minmax(150px, .8fr) minmax(180px, .9fr);
+        gap: clamp(24px, 4vw, 56px);
+        margin-bottom: 30px;
+    }
+
+    footer .footer-about,
+    footer .footer-links {
+        height: auto;
+    }
+
+    footer .footer-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        font-size: clamp(1.35rem, 1.1rem + .6vw, 1.75rem);
+        letter-spacing: -.02em;
+    }
+
+    footer .footer-logo i {
+        font-size: .95em;
+    }
+
+    footer .footer-about p {
+        max-width: 42ch;
+        line-height: 1.6;
+    }
+
+    footer .footer-links a {
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        padding-block: 4px;
+        transition: color .2s ease, transform .2s ease;
+    }
+
+    footer .footer-links a:hover {
+        padding-left: 0;
+        transform: translateX(4px);
+    }
+
+    footer .trust-badges {
+        width: 100%;
+        gap: 10px;
+        margin: 0 auto 26px;
+    }
+
+    footer .trust-badge {
+        padding: 10px 16px;
+        font-size: .82rem;
+    }
+
+    footer .copyright {
+        width: 100%;
+        padding-top: 18px;
+        line-height: 1.55;
+    }
+
+    .text-shimmer {
+        text-rendering: geometricPrecision;
+    }
+}
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    footer .footer-content {
+        grid-template-columns: minmax(0, 1.25fr) minmax(140px, .85fr) minmax(160px, .95fr);
+        gap: 22px;
+    }
+
+    .webgl-3d-canvas {
+        opacity: .56 !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    footer {
+        padding: 42px 16px 24px;
+    }
+
+    footer .footer-content {
+        grid-template-columns: 1fr !important;
+        gap: 28px;
+        margin-bottom: 26px;
+        text-align: center;
+    }
+
+    footer .footer-about p {
+        margin-inline: auto;
+    }
+
+    footer .footer-links ul {
+        align-items: center;
+        gap: 5px;
+    }
+
+    footer .footer-links a {
+        justify-content: center;
+        min-height: 34px;
+    }
+
+    footer .social-icons {
+        justify-content: center;
+    }
+
+    footer .trust-badges {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    footer .trust-badge {
+        justify-content: center;
+        width: 100%;
+    }
+
+    footer .copyright {
+        font-size: .76rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .text-shimmer {
+        animation: none !important;
+        transform: none !important;
+        background-position: 0 50% !important;
     }
 }

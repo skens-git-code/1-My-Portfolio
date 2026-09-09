@@ -44,8 +44,8 @@
         mobile: 20
       },
       starInterval: {
-        min: 500,
-        max: 1500
+        min: 900,
+        max: 1800
       }
     }
   };
@@ -692,7 +692,7 @@
       const scheduleNextStar = () => {
         if (this.isDestroyed) return;
 
-        if (!document.hidden && this.activeStars.size < 15) {
+        if (!document.hidden && this.activeStars.size < 8) {
           this.createFallingStar();
         }
 
@@ -2610,15 +2610,38 @@
       this.renderer = null;
       this.animationId = null;
       this.isDisposed = false;
+      this.isPageVisible = !document.hidden;
+      this.lastFrameTime = 0;
+      this.frameInterval = 1000 / 45;
+      this.onVisibilityChange = this.onVisibilityChange.bind(this);
 
       // Interaction & Physics state
       this.mouse = { x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0 };
       this.scrollProgress = 0;
       this.targetScrollProgress = 0;
       this.scrollVelocity = 0;
+      this.targetScrollVelocity = 0;
+      this.scrollDirection = 1;
+      this.scrollEnergy = 0;
       this.lastScrollY = window.scrollY || 0;
       this.lastScrollTime = performance.now();
       this.clock = null;
+
+      // Reused vectors keep the render loop allocation-free while the
+      // motion state acts as the single source of truth for every layer.
+      this.motion = {
+        currentStage: 'home',
+        lastStage: 'home',
+        stageChangedAt: 0,
+        lastPublishedProgress: -1,
+        lastWaveUpdate: 0
+      };
+      this.mouseOffset = null;
+      this.lookOffset = null;
+      this.cameraWaypointResult = {
+        pos: null,
+        look: null
+      };
 
       // Motion dynamics & damping
       this.momentum = 0;
@@ -2685,8 +2708,10 @@
       const isMobile = window.innerWidth <= 768;
       const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
       this.tier = isMobile ? 0 : isTablet ? 1 : 2;
-      const particleCount = [200, 500, 950][this.tier];
-      const maxPixelRatio = [1.0, 1.25, 1.5][this.tier];
+      this.motionScale = isMobile ? 0.58 : isTablet ? 0.78 : 1;
+      const particleCount = [72, 220, 520][this.tier];
+      const maxPixelRatio = [1.0, 1.1, 1.25][this.tier];
+      this.frameInterval = 1000 / (isMobile ? 30 : isTablet ? 40 : 45);
 
       try {
         // 1. Scene Setup
@@ -2702,6 +2727,10 @@
         this.camLook = new THREE.Vector3(0.8, 0, 0);
         this.currentCamPos = this.camPos.clone();
         this.currentCamLook = this.camLook.clone();
+        this.mouseOffset = new THREE.Vector3();
+        this.lookOffset = new THREE.Vector3();
+        this.cameraWaypointResult.pos = new THREE.Vector3();
+        this.cameraWaypointResult.look = new THREE.Vector3();
         this.camera.position.copy(this.currentCamPos);
         this.camera.lookAt(this.currentCamLook);
 
@@ -2757,6 +2786,7 @@
         window.addEventListener('mousemove', this.onMouseMove, { passive: true });
         window.addEventListener('scroll', this.onScroll, { passive: true });
         window.addEventListener('resize', this.onResize, { passive: true });
+        document.addEventListener('visibilitychange', this.onVisibilityChange, { passive: true });
         window.addEventListener('beforeunload', () => this.dispose(), { once: true });
 
         this.onScroll();
@@ -3280,8 +3310,10 @@
 
       const now = performance.now();
       const dt = Math.max(16, now - this.lastScrollTime);
-      const rawVelocity = Math.abs(currentScrollY - this.lastScrollY) / dt;
-      this.scrollVelocity = Math.min(3.5, this.scrollVelocity * 0.4 + rawVelocity * 0.6);
+      const delta = currentScrollY - this.lastScrollY;
+      const rawVelocity = Math.max(-3.5, Math.min(3.5, delta / dt));
+      if (Math.abs(delta) > 0.25) this.scrollDirection = rawVelocity < 0 ? -1 : 1;
+      this.targetScrollVelocity = this.targetScrollVelocity * 0.42 + rawVelocity * 0.58;
 
       this.lastScrollY = currentScrollY;
       this.lastScrollTime = now;
@@ -3295,22 +3327,25 @@
       this.camera.fov = w <= 768 ? 55 : w <= 1024 ? 48 : 42;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(w, h);
+
+      // Keep the same composition on smaller screens without re-building the
+      // scene. The camera and responsive motion scale do the adaptation.
+      this.motionScale = w <= 768 ? 0.58 : w <= 1024 ? 0.78 : 1;
     }
 
     interpolateCameraWaypoints(p) {
       const waypoints = this.cameraWaypoints;
+      const result = this.cameraWaypointResult;
       if (p <= waypoints[0].p) {
-        return {
-          pos: new THREE.Vector3(...waypoints[0].pos),
-          look: new THREE.Vector3(...waypoints[0].look)
-        };
+        result.pos.set(...waypoints[0].pos);
+        result.look.set(...waypoints[0].look);
+        return result;
       }
       if (p >= waypoints[waypoints.length - 1].p) {
         const last = waypoints[waypoints.length - 1];
-        return {
-          pos: new THREE.Vector3(...last.pos),
-          look: new THREE.Vector3(...last.look)
-        };
+        result.pos.set(...last.pos);
+        result.look.set(...last.look);
+        return result;
       }
 
       for (let i = 0; i < waypoints.length - 1; i++) {
@@ -3320,20 +3355,22 @@
           const t = (p - w0.p) / (w1.p - w0.p);
           const easeT = t * t * (3 - 2 * t);
 
-          const pos = new THREE.Vector3(
+          result.pos.set(
             w0.pos[0] + (w1.pos[0] - w0.pos[0]) * easeT,
             w0.pos[1] + (w1.pos[1] - w0.pos[1]) * easeT,
             w0.pos[2] + (w1.pos[2] - w0.pos[2]) * easeT
           );
-          const look = new THREE.Vector3(
+          result.look.set(
             w0.look[0] + (w1.look[0] - w0.look[0]) * easeT,
             w0.look[1] + (w1.look[1] - w0.look[1]) * easeT,
             w0.look[2] + (w1.look[2] - w0.look[2]) * easeT
           );
-          return { pos, look };
+          return result;
         }
       }
-      return { pos: new THREE.Vector3(0, 0, 14), look: new THREE.Vector3(0, 0, 0) };
+      result.pos.set(0, 0, 14);
+      result.look.set(0, 0, 0);
+      return result;
     }
 
     getZoneInfluence(p, center, spread) {
@@ -3343,44 +3380,97 @@
       return 1 - t * t * (3 - 2 * t);
     }
 
-    animate() {
+    getLocalProgress(p, start, end) {
+      const range = Math.max(0.0001, end - start);
+      const value = Math.max(0, Math.min(1, (p - start) / range));
+      return value * value * (3 - 2 * value);
+    }
+
+    getStage(p) {
+      if (p < 0.08) return 'home';
+      if (p < 0.24) return 'about';
+      if (p < 0.40) return 'tech-stack';
+      if (p < 0.56) return 'routine';
+      if (p < 0.71) return 'projects';
+      if (p < 0.85) return 'open-source';
+      if (p < 0.95) return 'experience';
+      return 'contact';
+    }
+
+    publishMotionState(p) {
+      const root = document.documentElement;
+      const stage = this.getStage(p);
+      if (stage !== this.motion.currentStage) {
+        this.motion.lastStage = this.motion.currentStage;
+        this.motion.currentStage = stage;
+        this.motion.stageChangedAt = performance.now();
+        document.body.dataset.sceneStage = stage;
+      }
+
+      // Publish at a small threshold so UI synchronization never forces a
+      // style recalculation on every render frame.
+      if (Math.abs(p - this.motion.lastPublishedProgress) > 0.003) {
+        root.style.setProperty('--scene-progress', p.toFixed(3));
+        root.style.setProperty('--scene-energy', this.scrollEnergy.toFixed(3));
+        this.motion.lastPublishedProgress = p;
+      }
+    }
+
+    animate(timestamp = performance.now()) {
       if (this.isDisposed || !this.scene || !this.renderer || !this.camera || !this.clock) return;
+      if (!this.isPageVisible) {
+        this.animationId = null;
+        return;
+      }
 
       this.animationId = requestAnimationFrame(this.animate);
+
+      if (timestamp - this.lastFrameTime < this.frameInterval) return;
+      this.lastFrameTime = timestamp;
 
       const dt = Math.min(0.05, this.clock.getDelta()) || 0.016;
       const time = this.clock.getElapsedTime();
 
-      // 1. Physics-Driven Interpolation & Inertia
-      this.scrollVelocity *= this.velocityDamping;
-      if (this.scrollVelocity < 0.001) this.scrollVelocity = 0;
+      // 1. Physics-driven interpolation & inertia. Scroll input is treated as
+      // signed momentum, then allowed to settle instead of snapping to zero.
+      this.targetScrollVelocity *= Math.exp(-dt * 7.5);
+      this.scrollVelocity += (this.targetScrollVelocity - this.scrollVelocity) * (1 - Math.exp(-dt * 9));
+      const targetEnergy = Math.min(1, Math.abs(this.scrollVelocity) / 2.4);
+      this.scrollEnergy += (targetEnergy - this.scrollEnergy) * (1 - Math.exp(-dt * 5.5));
 
-      this.mouse.vx = (this.mouse.targetX - this.mouse.x) * 0.075;
-      this.mouse.vy = (this.mouse.targetY - this.mouse.y) * 0.075;
+      this.mouse.vx = (this.mouse.targetX - this.mouse.x) * (0.065 + this.scrollEnergy * 0.02);
+      this.mouse.vy = (this.mouse.targetY - this.mouse.y) * (0.065 + this.scrollEnergy * 0.02);
       this.mouse.x += this.mouse.vx;
       this.mouse.y += this.mouse.vy;
 
-      const scrollStep = (this.targetScrollProgress - this.scrollProgress) * 0.072;
+      const scrollStep = (this.targetScrollProgress - this.scrollProgress) * (1 - Math.exp(-dt * 5.2));
       this.scrollProgress += scrollStep;
       const p = this.scrollProgress;
+      this.publishMotionState(p);
 
       // 2. Cinematic Camera Spline Choreography
       const { pos: basePos, look: baseLook } = this.interpolateCameraWaypoints(p);
 
-      const mouseParallaxX = this.mouse.x * (0.8 + this.scrollVelocity * 0.3);
-      const mouseParallaxY = -this.mouse.y * (0.5 + this.scrollVelocity * 0.2);
+      const mouseParallaxX = this.mouse.x * (0.7 + this.scrollEnergy * 0.28) * this.motionScale;
+      const mouseParallaxY = -this.mouse.y * (0.45 + this.scrollEnergy * 0.18) * this.motionScale;
 
-      this.camPos.copy(basePos).add(new THREE.Vector3(mouseParallaxX, mouseParallaxY, 0));
-      this.camLook.copy(baseLook).add(new THREE.Vector3(mouseParallaxX * 0.3, mouseParallaxY * 0.3, 0));
+      this.mouseOffset.set(mouseParallaxX, mouseParallaxY, 0);
+      this.lookOffset.set(mouseParallaxX * 0.3, mouseParallaxY * 0.3, 0);
+      this.camPos.copy(basePos).add(this.mouseOffset);
+      this.camLook.copy(baseLook).add(this.lookOffset);
 
-      this.currentCamPos.lerp(this.camPos, 0.065);
-      this.currentCamLook.lerp(this.camLook, 0.065);
+      const cameraEase = 1 - Math.exp(-dt * (4.5 + this.scrollEnergy * 2.0));
+      this.currentCamPos.lerp(this.camPos, cameraEase);
+      this.currentCamLook.lerp(this.camLook, cameraEase);
       this.camera.position.copy(this.currentCamPos);
       this.camera.lookAt(this.currentCamLook);
 
-      this.targetRoll = -this.mouse.vx * 0.22 - (this.targetScrollProgress - this.scrollProgress) * 0.15;
-      this.currentRoll += (this.targetRoll - this.currentRoll) * 0.05;
-      this.camera.rotation.z += this.currentRoll;
+      this.targetRoll = Math.max(-0.035, Math.min(0.035,
+        -this.mouse.vx * 0.24 - this.scrollVelocity * 0.012));
+      this.currentRoll += (this.targetRoll - this.currentRoll) * (1 - Math.exp(-dt * 5.5));
+      // lookAt rewrites the Euler rotation; assign the roll after it so the
+      // tilt stays stable instead of accumulating every frame.
+      this.camera.rotation.z = this.currentRoll;
 
       // 3. Continuous Multi-Stage Zone Influences
       const coreInf = Math.max(
@@ -3393,6 +3483,16 @@
       const gridInf = this.getZoneInfluence(p, 0.64, 0.15);
       const waveInf = this.getZoneInfluence(p, 0.78, 0.14);
       const warpInf = this.getZoneInfluence(p, 0.90, 0.12);
+      const coreExit = this.getLocalProgress(p, 0.02, 0.18);
+      const synapticEnter = this.getLocalProgress(p, 0.06, 0.16);
+      const synapticExit = this.getLocalProgress(p, 0.16, 0.30);
+      const matrixEnter = this.getLocalProgress(p, 0.22, 0.38);
+      const matrixExit = this.getLocalProgress(p, 0.39, 0.52);
+      const chronoEnter = this.getLocalProgress(p, 0.38, 0.54);
+      const gridEnter = this.getLocalProgress(p, 0.54, 0.70);
+      const waveEnter = this.getLocalProgress(p, 0.68, 0.84);
+      const warpEnter = this.getLocalProgress(p, 0.82, 0.96);
+      const motionEase = 1 - Math.exp(-dt * 4.8);
 
       // 4. Harmonized Component Animations
       if (this.coreGroup) {
@@ -3404,33 +3504,36 @@
         this.coreGroup.visible = newScale > 0.01;
 
         if (this.coreGroup.visible) {
-          if (isContact) {
-            this.coreGroup.position.lerp(new THREE.Vector3(0, 0.1, 0), 0.06);
-          } else {
-            const isMobile = window.innerWidth <= 768;
-            const targetPos = isMobile
-              ? new THREE.Vector3(0, 1.8, -4.5)
-              : new THREE.Vector3(2.4, 0.4, 0);
-            this.coreGroup.position.lerp(targetPos, 0.06);
-          }
+          const isMobile = window.innerWidth <= 768;
+          const baseX = isMobile ? 0 : 2.4;
+          const baseY = isMobile ? 1.8 : 0.4;
+          const baseZ = isMobile ? -4.5 : 0;
+          const targetX = isContact ? 0 : baseX - coreExit * 1.2 * this.motionScale;
+          const targetY = isContact ? 0.1 : baseY + Math.sin(coreExit * Math.PI) * 0.35 * this.motionScale;
+          const targetZ = isContact ? 0 : baseZ - coreExit * 1.6;
+          this.coreGroup.position.x += (targetX - this.coreGroup.position.x) * motionEase;
+          this.coreGroup.position.y += (targetY - this.coreGroup.position.y) * motionEase;
+          this.coreGroup.position.z += (targetZ - this.coreGroup.position.z) * motionEase;
 
           if (this.coreShaderMat) {
             this.coreShaderMat.uniforms.uTime.value = time;
-            this.coreShaderMat.uniforms.uVelocity.value = this.scrollVelocity;
+            this.coreShaderMat.uniforms.uVelocity.value = this.scrollEnergy;
             this.coreShaderMat.uniforms.uOpacity.value = Math.min(1.0, coreInf * 1.2);
           }
 
-          const speedMult = 1.0 + this.scrollVelocity * 2.5;
-          this.coreGroup.rotation.y += 0.005 * speedMult;
-          this.coreGroup.rotation.x += 0.002 * speedMult;
+          const speedMult = 1.0 + this.scrollEnergy * 1.8;
+          this.coreGroup.rotation.y += 0.30 * dt * speedMult;
+          this.coreGroup.rotation.x += 0.12 * dt * speedMult;
 
           if (this.coreWireMesh) {
-            this.coreWireMesh.rotation.y -= 0.007 * speedMult;
-            this.coreWireMesh.rotation.z += 0.004 * speedMult;
+            this.coreWireMesh.rotation.y -= 0.42 * dt * speedMult;
+            this.coreWireMesh.rotation.z += 0.24 * dt * speedMult;
           }
           if (this.nucleusMesh) {
-            this.nucleusMesh.rotation.x += 0.014 * speedMult;
-            this.nucleusMesh.rotation.y -= 0.010 * speedMult;
+            this.nucleusMesh.rotation.x += 0.84 * dt * speedMult;
+            this.nucleusMesh.rotation.y -= 0.60 * dt * speedMult;
+            const breathe = 1 + Math.sin(time * 1.6) * 0.045 + this.scrollEnergy * 0.025;
+            this.nucleusMesh.scale.setScalar(breathe);
           }
           this.gimbalRings.forEach(ring => {
             ring.rotation.z += ring.userData.speed * dt * speedMult;
@@ -3446,11 +3549,18 @@
         this.synapticGroup.visible = newScale > 0.01;
 
         if (this.synapticGroup.visible) {
-          this.synapticGroup.rotation.y = time * 0.05 + this.mouse.x * 0.22;
+          const targetX = -1.8 + synapticEnter * 0.65 - synapticExit * 1.4;
+          const targetY = 0.2 + Math.sin(synapticEnter * Math.PI) * 0.35;
+          const targetZ = -3.5 + synapticEnter * 0.8 - synapticExit * 1.2;
+          this.synapticGroup.position.x += (targetX - this.synapticGroup.position.x) * motionEase;
+          this.synapticGroup.position.y += (targetY - this.synapticGroup.position.y) * motionEase;
+          this.synapticGroup.position.z += (targetZ - this.synapticGroup.position.z) * motionEase;
+          this.synapticGroup.rotation.y = time * 0.28 + this.mouse.x * 0.22 + this.scrollEnergy * 0.06 * this.scrollDirection;
           this.synapticGroup.rotation.x = Math.sin(time * 0.35) * 0.08 - this.mouse.y * 0.15;
+          this.synapticGroup.rotation.z = synapticEnter * 0.16 - synapticExit * 0.24;
 
           this.synapticNodes.forEach(node => {
-            const pulse = 1.0 + Math.sin(time * node.userData.speed + node.userData.phase) * 0.18;
+            const pulse = 1.0 + Math.sin(time * node.userData.speed + node.userData.phase) * (0.13 + this.scrollEnergy * 0.05);
             node.scale.setScalar(pulse);
           });
         }
@@ -3463,14 +3573,18 @@
         this.matrixGroup.visible = newScale > 0.01;
 
         if (this.matrixGroup.visible) {
-          this.matrixGroup.rotation.y += 0.004 * (1.0 + this.scrollVelocity * 2.0);
+          const targetMatrixZ = -8 + matrixEnter * 1.2 - matrixExit * 1.8;
+          this.matrixGroup.position.z += (targetMatrixZ - this.matrixGroup.position.z) * motionEase;
+          this.matrixGroup.rotation.y += 0.24 * dt * (1.0 + this.scrollEnergy * 1.6);
+          this.matrixGroup.rotation.x = Math.sin(time * 0.28) * 0.05 + this.mouse.y * 0.08;
           this.matrixObjects.forEach(obj => {
-            obj.userData.angle += obj.userData.orbitSpeed * dt;
-            obj.position.x = Math.cos(obj.userData.angle) * obj.userData.radius;
-            obj.position.z = Math.sin(obj.userData.angle) * obj.userData.radius;
-            obj.position.y = Math.sin(time * 1.6 + obj.userData.elevationPhase) * 0.75;
-            obj.rotation.x += obj.userData.spinSpeedX;
-            obj.rotation.y += obj.userData.spinSpeedY;
+            obj.userData.angle += obj.userData.orbitSpeed * dt * (1 + this.scrollEnergy * 1.8);
+            const radius = obj.userData.radius * (1 + matrixEnter * 0.11 + this.scrollEnergy * 0.025);
+            obj.position.x = Math.cos(obj.userData.angle) * radius;
+            obj.position.z = Math.sin(obj.userData.angle) * radius;
+            obj.position.y = Math.sin(time * 1.6 + obj.userData.elevationPhase) * (0.58 + matrixEnter * 0.32);
+            obj.rotation.x += obj.userData.spinSpeedX * dt * 60;
+            obj.rotation.y += obj.userData.spinSpeedY * dt * 60;
           });
         }
       }
@@ -3482,9 +3596,13 @@
         this.chronometerGroup.visible = newScale > 0.01;
 
         if (this.chronometerGroup.visible) {
-          this.chronometerGroup.rotation.z = time * 0.08 + this.mouse.x * 0.18;
+          const targetChronoZ = -5.5 + chronoEnter * 1.8;
+          this.chronometerGroup.position.z += (targetChronoZ - this.chronometerGroup.position.z) * motionEase;
+          this.chronometerGroup.position.x += ((2.2 - chronoEnter * 0.5) - this.chronometerGroup.position.x) * motionEase;
+          this.chronometerGroup.rotation.z = time * 0.38 + this.mouse.x * 0.18 + this.scrollEnergy * 0.08 * this.scrollDirection;
+          this.chronometerGroup.rotation.y = Math.sin(time * 0.24) * 0.06 - this.mouse.y * 0.1;
           this.chronometerRings.forEach(ring => {
-            ring.rotation.z += ring.userData.speed * dt;
+            ring.rotation.z += ring.userData.speed * dt * (1 + this.scrollEnergy * 1.5);
           });
         }
       }
@@ -3496,10 +3614,15 @@
         this.gridGroup.visible = newScale > 0.01;
 
         if (this.gridGroup.visible) {
+          this.gridGroup.position.z += ((-7 + gridEnter * 1.4) - this.gridGroup.position.z) * motionEase;
+          this.gridGroup.rotation.z = Math.sin(time * 0.18) * 0.025 + this.mouse.x * 0.035;
           this.shards.forEach(shard => {
-            shard.rotation.x += shard.userData.rotSpeed;
-            shard.rotation.y += shard.userData.rotSpeed * 1.3;
-            shard.position.y = shard.userData.baseY + Math.sin(time * shard.userData.floatSpeed) * 0.45;
+            const shardSpread = 1 + gridEnter * 0.14 + this.scrollEnergy * 0.06;
+            shard.position.x = Math.cos(shard.userData.angle + time * 0.045) * shard.userData.rad * shardSpread;
+            shard.position.z = Math.sin(shard.userData.angle + time * 0.045) * 4.0 * shardSpread;
+            shard.rotation.x += shard.userData.rotSpeed * dt * 60 * (1 + this.scrollEnergy);
+            shard.rotation.y += shard.userData.rotSpeed * 1.3 * dt * 60 * (1 + this.scrollEnergy);
+            shard.position.y = shard.userData.baseY + Math.sin(time * shard.userData.floatSpeed + shard.userData.angle) * (0.34 + gridEnter * 0.2);
           });
         }
       }
@@ -3510,20 +3633,22 @@
         this.waveField.scale.setScalar(Math.max(0.0001, newScale));
         this.waveField.visible = newScale > 0.01;
 
-        if (this.waveField.visible) {
+        if (this.waveField.visible && time - this.motion.lastWaveUpdate > 0.033) {
+          this.motion.lastWaveUpdate = time;
           const posAttr = this.waveGeo.attributes.position;
           const posArray = posAttr.array;
           const cols = this.tier >= 1 ? 36 : 22;
           const rows = this.tier >= 1 ? 36 : 22;
+          const waveAmplitude = 0.78 + waveEnter * 0.28 + this.scrollEnergy * 0.16;
 
           let idx = 0;
           for (let i = 0; i < cols; i++) {
             for (let j = 0; j < rows; j++) {
               const x = posArray[idx * 3];
               const z = posArray[idx * 3 + 2];
-              posArray[idx * 3 + 1] = Math.sin(x * 0.48 + time * 1.9) * 0.55 +
+              posArray[idx * 3 + 1] = (Math.sin(x * 0.48 + time * 1.9) * 0.55 +
                 Math.cos(z * 0.48 + time * 1.4) * 0.45 +
-                Math.sin((x + z) * 0.35 + time * 2.2) * 0.25;
+                Math.sin((x + z) * 0.35 + time * 2.2) * 0.25) * waveAmplitude;
               idx++;
             }
           }
@@ -3540,11 +3665,11 @@
         if (this.warpLines.visible) {
           const posAttr = this.warpLines.geometry.attributes.position;
           const posArray = posAttr.array;
-          const warpSpeedMult = 1.0 + this.scrollVelocity * 4.0;
+          const warpSpeedMult = 1.0 + this.scrollEnergy * 3.2;
 
           for (let i = 0; i < this.warpPoints.length; i++) {
             const wp = this.warpPoints[i];
-            wp.z += wp.speed * dt * warpSpeedMult;
+            wp.z += wp.speed * dt * warpSpeedMult * (0.72 + warpEnter * 0.28);
             if (wp.z > 14) wp.z = -28;
 
             posArray[i * 6 + 2] = wp.z;
@@ -3555,21 +3680,31 @@
       }
 
       if (this.ambientParticles) {
-        this.ambientParticles.rotation.y = time * 0.012 + this.mouse.x * 0.05;
-        this.ambientParticles.rotation.x = time * 0.006 - this.mouse.y * 0.03;
+        this.ambientParticles.rotation.y = time * 0.07 + this.mouse.x * 0.05 + this.scrollProgress * 0.16;
+        this.ambientParticles.rotation.x = time * 0.035 - this.mouse.y * 0.03 + this.scrollVelocity * 0.008;
       }
 
       if (this.pointLightCyan) {
-        this.pointLightCyan.position.x = 2.5 + this.mouse.x * 4.5;
-        this.pointLightCyan.position.y = 2.0 - this.mouse.y * 3.5;
+        this.pointLightCyan.position.x = 2.5 + this.mouse.x * 4.5 + this.scrollProgress * 1.5;
+        this.pointLightCyan.position.y = 2.0 - this.mouse.y * 3.5 + this.scrollVelocity * 0.35;
+        this.pointLightCyan.intensity = 3.0 + this.scrollEnergy * 1.2;
       }
       if (this.pointLightViolet) {
-        this.pointLightViolet.position.x = -3.0 + this.mouse.x * 3.5;
-        this.pointLightViolet.position.y = -2.0 - this.mouse.y * 2.5;
+        this.pointLightViolet.position.x = -3.0 + this.mouse.x * 3.5 - this.scrollProgress * 1.2;
+        this.pointLightViolet.position.y = -2.0 - this.mouse.y * 2.5 - this.scrollVelocity * 0.24;
+        this.pointLightViolet.intensity = 2.5 + this.scrollEnergy * 0.9;
       }
 
       // 5. Render Pass
       this.renderer.render(this.scene, this.camera);
+    }
+
+    onVisibilityChange() {
+      this.isPageVisible = !document.hidden;
+      if (this.isPageVisible && !this.animationId && !this.isDisposed) {
+        this.clock?.start();
+        this.animate();
+      }
     }
 
     onThemeChange(isDark) {
@@ -3601,6 +3736,7 @@
       window.removeEventListener('mousemove', this.onMouseMove);
       window.removeEventListener('scroll', this.onScroll);
       window.removeEventListener('resize', this.onResize);
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
 
       if (this.renderer) {
         this.renderer.dispose();
