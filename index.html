@@ -118,13 +118,11 @@
 
     <!-- Performance: Preload Critical Assets -->
     <link rel="preload" as="image"
-        href="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
+        href="./images/optimized/profile-1.webp"
         fetchpriority="high">
 
     <!-- External Libraries (Deferred to unblock parsing) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
     <!-- Three.js for 3D Elements -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 
@@ -380,7 +378,7 @@
                     <div class="image-carousel">
                         <!-- CLEAN CAROUSEL TRACKS WITH PROPER CORNERS -->
                         <div class="carousel-track active">
-                            <img src="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
+                            <img src="./images/optimized/profile-1.webp"
                                 alt="Sarthak Mathapati - AI Software Engineer"
                                 class="profile-img morph-shape responsive-img"
                                 width="640" height="360"
@@ -388,21 +386,21 @@
                                 decoding="async">
                         </div>
                         <div class="carousel-track">
-                            <img src="https://prior-tomato-eep3ntlclj-j8rbppfdom.edgeone.dev/IMG_3747.jpg"
+                            <img src="./images/optimized/profile-2.webp"
                                 alt="Sarthak Mathapati - Photo 2"
                                 class="profile-img morph-shape responsive-img"
                                 width="640" height="360"
                                 loading="lazy" decoding="async">
                         </div>
                         <div class="carousel-track">
-                            <img src="https://spotty-violet-jpvcsmo1an-1cidgtcev9.edgeone.dev/IMG_3520.jpg"
+                            <img src="./images/optimized/profile-3.webp"
                                 alt="Sarthak Mathapati - Photo 3"
                                 class="profile-img morph-shape responsive-img"
                                 width="640" height="360"
                                 loading="lazy" decoding="async">
                         </div>
                         <div class="carousel-track">
-                            <img src="https://tasteless-amber-k7iaa4q0o2-8uawoj7jkh.edgeone.dev/IMG_3045.jpg"
+                            <img src="./images/optimized/profile-4.webp"
                                 alt="Sarthak Mathapati - Photo 4"
                                 class="profile-img morph-shape responsive-img"
                                 width="640" height="360"
@@ -1121,12 +1119,12 @@
                     <button class="filter-btn" data-filter="fullstack">Full Stack</button>
                 </div>
 
-                <!-- Portfolio Carousel -->
+                <!-- Portfolio Carousel (Embla Vanilla Engine) -->
                 <div class="portfolio-carousel glass-card">
-                    <div class="swiper">
-                        <div class="swiper-wrapper">
+                    <div class="embla swiper">
+                        <div class="embla__container swiper-wrapper">
                             <!-- Slide 1 -->
-                            <div class="swiper-slide">
+                            <div class="embla__slide swiper-slide">
                                 <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
                                     srcset="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=85 400w,
                                             https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85 800w,
@@ -1141,7 +1139,7 @@
                                 </div>
                             </div>
                             <!-- Slide 2 -->
-                            <div class="swiper-slide">
+                            <div class="embla__slide swiper-slide">
                                 <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
                                     srcset="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=85 400w,
                                             https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85 800w,
@@ -1156,7 +1154,7 @@
                                 </div>
                             </div>
                             <!-- Slide 3 -->
-                            <div class="swiper-slide">
+                            <div class="embla__slide swiper-slide">
                                 <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
                                     srcset="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=85 400w,
                                             https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85 800w,
@@ -1171,10 +1169,10 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Swiper Controls -->
-                        <div class="swiper-pagination"></div>
-                        <div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous slide"></div>
-                        <div class="swiper-button-next" role="button" tabindex="0" aria-label="Next slide"></div>
+                        <!-- Controls -->
+                        <div class="embla__dots swiper-pagination"></div>
+                        <div class="embla__prev swiper-button-prev" role="button" tabindex="0" aria-label="Previous slide"></div>
+                        <div class="embla__next swiper-button-next" role="button" tabindex="0" aria-label="Next slide"></div>
                     </div>
                 </div>
 
@@ -2290,6 +2288,8 @@ function InteractiveButton({ children, onClick }) {
     </footer>
 
 
+    <!-- Embla Carousel Vanilla (Ultralight, Hardware-Accelerated) -->
+    <script src="https://cdn.jsdelivr.net/npm/embla-carousel@8.5.2/embla-carousel.umd.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 

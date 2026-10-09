@@ -1247,12 +1247,14 @@
   class AnimationManager {
     constructor() {
       this.observer = null;
+      this.animObserver = null;
       this.scrollIndicatorHandler = null;
     }
 
     init() {
       this.initScrollIndicator();
       this.initIntersectionObserver();
+      this.initOffscreenAnimationPauser();
     }
 
     initScrollIndicator() {
@@ -1300,12 +1302,31 @@
       this.setupAnimationElements();
     }
 
+    initOffscreenAnimationPauser() {
+      if (typeof IntersectionObserver === 'undefined') return;
+
+      this.animObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          // Freezes animation loop when not visible on screen
+          entry.target.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+        });
+      }, { threshold: 0.1 });
+
+      // Observe your marquee and carousel tracks
+      document.querySelectorAll('.ticker-track, .carousel-track, .skills-track, .skills-carousel').forEach((el) => {
+        this.animObserver.observe(el);
+      });
+    }
+
     destroy() {
       if (this.scrollIndicatorHandler) {
         window.removeEventListener('scroll', this.scrollIndicatorHandler);
       }
       if (this.observer) {
         this.observer.disconnect();
+      }
+      if (this.animObserver) {
+        this.animObserver.disconnect();
       }
     }
 
@@ -1763,96 +1784,118 @@
     }
   }
 
-  // Swiper Manager
+  // Carousel Manager (Embla Lightweight Engine)
   class SwiperManager {
     constructor() {
-      this.projectSwiper = null;
-      this.certSwiper = null;
+      this.emblaApi = null;
+      this.autoplayTimer = null;
+      this.observer = null;
+      this.stopAutoplay = null;
     }
 
     init() {
       try {
-        if (typeof Swiper === 'undefined') {
-          console.warn('Swiper not available');
+        const emblaNode = document.querySelector('.embla');
+        if (!emblaNode || typeof window.EmblaCarousel !== 'function') {
           return;
         }
 
-        // Project Carousel (Fade Effect)
-        const projectSwiperEl = document.querySelector('.swiper:not(.certificates-swiper)');
-        if (projectSwiperEl) {
-          const paginationEl = projectSwiperEl.querySelector('.swiper-pagination');
-          const nextEl = projectSwiperEl.querySelector('.swiper-button-next');
-          const prevEl = projectSwiperEl.querySelector('.swiper-button-prev');
+        this.emblaApi = window.EmblaCarousel(emblaNode, {
+          loop: true,
+          align: 'start',
+          skipSnaps: false
+        });
 
-          this.projectSwiper = new Swiper(projectSwiperEl, {
-            loop: true,
-            pagination: paginationEl ? {
-              el: paginationEl,
-              clickable: true,
-            } : false,
-            navigation: (nextEl && prevEl) ? {
-              nextEl,
-              prevEl,
-            } : false,
-            autoplay: AppState.prefersReducedMotion ? false : {
-              delay: 4500,
-              disableOnInteraction: false
-            },
-            effect: 'fade',
-            fadeEffect: {
-              crossFade: true
-            },
-            speed: 600,
-          });
+        // Next / Prev button bindings
+        const prevBtn = document.querySelector('.embla__prev, .swiper-button-prev');
+        const nextBtn = document.querySelector('.embla__next, .swiper-button-next');
+        if (prevBtn) prevBtn.addEventListener('click', () => this.emblaApi.scrollPrev(), { passive: true });
+        if (nextBtn) nextBtn.addEventListener('click', () => this.emblaApi.scrollNext(), { passive: true });
+
+        // Generate & update dots
+        const dotsNode = document.querySelector('.embla__dots, .swiper-pagination');
+        if (dotsNode) {
+          dotsNode.innerHTML = '';
+          const snapCount = this.emblaApi.scrollSnapList().length;
+          const dots = [];
+
+          for (let i = 0; i < snapCount; i++) {
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'embla__dot swiper-pagination-bullet' + (i === 0 ? ' embla__dot--selected swiper-pagination-bullet-active' : '');
+            dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+            dot.addEventListener('click', () => this.emblaApi.scrollTo(i), { passive: true });
+            dotsNode.appendChild(dot);
+            dots.push(dot);
+          }
+
+          const setSelectedDot = () => {
+            const selectedIndex = this.emblaApi.selectedScrollSnap();
+            dots.forEach((dot, idx) => {
+              if (idx === selectedIndex) {
+                dot.classList.add('embla__dot--selected', 'swiper-pagination-bullet-active');
+              } else {
+                dot.classList.remove('embla__dot--selected', 'swiper-pagination-bullet-active');
+              }
+            });
+          };
+
+          this.emblaApi.on('select', setSelectedDot);
+          this.emblaApi.on('init', setSelectedDot);
         }
 
-        // Certificates Carousel (Slide Effect)
-        const certSwiperEl = document.querySelector('.certificates-swiper');
-        if (certSwiperEl) {
-          const certPagination = certSwiperEl.querySelector('.swiper-pagination');
+        // Lightweight autoplay with pause on hover & off-screen
+        if (!AppState.prefersReducedMotion) {
+          const startAutoplay = () => {
+            this.stopAutoplay?.();
+            this.autoplayTimer = setInterval(() => {
+              if (this.emblaApi && this.emblaApi.canScrollNext()) {
+                this.emblaApi.scrollNext();
+              }
+            }, 4500);
+          };
 
-          this.certSwiper = new Swiper(certSwiperEl, {
-            loop: true,
-            slidesPerView: 1,
-            spaceBetween: 20,
-            pagination: certPagination ? {
-              el: certPagination,
-              clickable: true,
-            } : false,
-            breakpoints: {
-              640: {
-                slidesPerView: 2,
-                spaceBetween: 20,
-              },
-              1024: {
-                slidesPerView: 3,
-                spaceBetween: 30,
-              },
-            },
-            autoplay: AppState.prefersReducedMotion ? false : {
-              delay: 3000,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: true
-            },
-            speed: 600,
-            grabCursor: true,
-            observer: true,
-            observeParents: true
-          });
+          this.stopAutoplay = () => {
+            if (this.autoplayTimer) {
+              clearInterval(this.autoplayTimer);
+              this.autoplayTimer = null;
+            }
+          };
+
+          startAutoplay();
+          emblaNode.addEventListener('mouseenter', () => this.stopAutoplay?.(), { passive: true });
+          emblaNode.addEventListener('mouseleave', () => startAutoplay(), { passive: true });
+
+          // Auto-pause when off-screen
+          if (typeof IntersectionObserver !== 'undefined') {
+            this.observer = new IntersectionObserver((entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  startAutoplay();
+                } else {
+                  this.stopAutoplay?.();
+                }
+              });
+            }, { threshold: 0.1 });
+            this.observer.observe(emblaNode);
+          }
         }
       } catch (error) {
-        console.error('Swiper initialization failed:', error);
+        console.error('Embla initialization failed:', error);
       }
     }
 
     destroy() {
-      if (this.projectSwiper && typeof this.projectSwiper.destroy === 'function') {
-        try { this.projectSwiper.destroy(true, true); } catch (_) { }
-        this.projectSwiper = null;
+      if (this.stopAutoplay) {
+        this.stopAutoplay();
       }
-      if (this.certSwiper && typeof this.certSwiper.destroy === 'function') {
-        try { this.certSwiper.destroy(true, true); } catch (_) { }
-        this.certSwiper = null;
+      if (this.observer) {
+        this.observer.disconnect();
+        this.observer = null;
+      }
+      if (this.emblaApi) {
+        this.emblaApi.destroy();
+        this.emblaApi = null;
       }
     }
   }
@@ -2230,6 +2273,20 @@
 
       this.container.addEventListener('mouseenter', () => this.stopAutoScroll());
       this.container.addEventListener('mouseleave', () => this.startAutoScroll());
+
+      // Auto-pause carousel interval when scrolled off-screen
+      if (typeof IntersectionObserver !== 'undefined') {
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              this.startAutoScroll();
+            } else {
+              this.stopAutoScroll();
+            }
+          });
+        }, { threshold: 0.1 });
+        this.intersectionObserver.observe(this.container);
+      }
     }
 
     createDots() {
@@ -2328,6 +2385,10 @@
 
     destroy() {
       this.stopAutoScroll();
+      if (this.intersectionObserver) {
+        this.intersectionObserver.disconnect();
+        this.intersectionObserver = null;
+      }
       if (this.boundKeyHandler) {
         document.removeEventListener('keydown', this.boundKeyHandler);
       }
@@ -3940,6 +4001,21 @@
     if (window.portfolioApp) return;
     window.portfolioApp = new PortfolioApp();
     window.portfolioApp.init();
+
+    // Auto-Pause Animations When Off-Screen (Drop-in observer)
+    if (typeof IntersectionObserver !== 'undefined') {
+      const animObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          // Freezes animation loop when not visible on screen
+          entry.target.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+        });
+      }, { threshold: 0.1 });
+
+      // Observe your marquee and carousel tracks
+      document.querySelectorAll('.ticker-track, .carousel-track, .skills-track').forEach((el) => {
+        animObserver.observe(el);
+      });
+    }
   };
 
   if (document.readyState === 'loading') {

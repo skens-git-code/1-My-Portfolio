@@ -1584,6 +1584,12 @@ body.light-theme .image-carousel {
     overflow: hidden;
     border-radius: inherit;
     transition: opacity .8s ease;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+    will-change: transform;
 }
 
 .carousel-track.active {
@@ -1814,6 +1820,17 @@ body.light-theme .hero-buttons .hero-btn:not(.primary) {
     animation: ticker 26s linear infinite;
 }
 ============================================================ */
+/* Hardware-Accelerate Moving Layers (Zero Visual Change) */
+.ticker-track,
+.carousel-track {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+    will-change: transform;
+}
+
 .skills-track {
     display: flex;
     gap: 14px;
@@ -1821,6 +1838,9 @@ body.light-theme .hero-buttons .hero-btn:not(.primary) {
     animation: ticker 26s linear infinite;
     will-change: transform;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
     transform: translate3d(0, 0, 0);
 }
 
@@ -1874,12 +1894,18 @@ section,
     padding: clamp(48px, 6vw, 70px) 20px;
     position: relative;
     scroll-margin-top: 96px;
-    content-visibility: auto;
-    contain-intrinsic-size: 1000px;
 }
 
-/* Override contain-intrinsic on #home */
-#home {
+/* Skip Off-Screen DOM Rendering with content-visibility (Zero Visual Change) */
+section:not(:first-of-type) {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
+}
+
+/* Ensure first section and active modal containers render immediately */
+#home,
+section:first-of-type,
+section:has(.case-study-modal.active) {
     content-visibility: visible;
     contain-intrinsic-size: unset;
 }
@@ -2890,13 +2916,33 @@ body.light-theme .tech-item span {
     margin-bottom: 38px;
 }
 
+/* Embla root viewport */
+.embla,
 .swiper {
+    overflow: hidden;
     width: 100%;
     height: clamp(260px, 50vw, 450px);
     aspect-ratio: 16 / 9;
+    position: relative;
 }
 
+/* Slide container (runs GPU transform) */
+.embla__container,
+.swiper-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+}
+
+/* Individual slide */
+.embla__slide,
 .swiper-slide {
+    flex: 0 0 100%;
+    min-width: 0;
     position: relative;
     border-radius: var(--card-radius);
     overflow: hidden;
@@ -2907,6 +2953,7 @@ body.light-theme .tech-item span {
     contain: paint;
 }
 
+.embla__slide img,
 .swiper-slide img {
     width: 100%;
     height: 100%;
@@ -2916,6 +2963,7 @@ body.light-theme .tech-item span {
     transition: transform .6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.embla__slide:hover img,
 .swiper-slide:hover img {
     transform: scale(1.03);
 }
@@ -2940,8 +2988,14 @@ body.light-theme .tech-item span {
     margin-bottom: 16px;
 }
 
+.embla__prev,
+.embla__next,
 .swiper-button-next,
 .swiper-button-prev {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
     color: var(--clr-primary) !important;
     background: var(--c-surface-solid) !important;
     width: 44px !important;
@@ -2949,23 +3003,80 @@ body.light-theme .tech-item span {
     border-radius: 50% !important;
     border: 1px solid var(--c-border) !important;
     backdrop-filter: var(--blur) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast);
 }
 
-.swiper-button-next::after,
+.embla__prev:hover,
+.embla__next:hover,
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    border-color: var(--clr-primary) !important;
+    transform: translateY(-50%) scale(1.08);
+}
+
+.embla__prev,
+.swiper-button-prev {
+    left: 18px;
+}
+
+.embla__next,
+.swiper-button-next {
+    right: 18px;
+}
+
+.embla__prev::after,
 .swiper-button-prev::after {
-    font-size: 1rem !important;
-    font-weight: 700;
+    content: "\f053";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif;
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: var(--clr-primary);
 }
 
+.embla__next::after,
+.swiper-button-next::after {
+    content: "\f054";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif;
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: var(--clr-primary);
+}
+
+.embla__dots,
+.swiper-pagination {
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+}
+
+.embla__dot,
 .swiper-pagination-bullet {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
     background: var(--text-secondary) !important;
     opacity: .55 !important;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform var(--t-fast), opacity var(--t-fast), background var(--t-fast);
 }
 
+.embla__dot--selected,
 .swiper-pagination-bullet-active {
     background: var(--clr-primary) !important;
     opacity: 1 !important;
-    transform: scale(1.22);
+    transform: scale(1.25);
 }
 
 /* Project cards */
@@ -5464,11 +5575,21 @@ img.skeleton-loading {
 
 @keyframes ticker {
     0% {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
 
     100% {
-        transform: translateX(-50%);
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes scrollSkills {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-50%, 0, 0);
     }
 }
 
@@ -5567,11 +5688,11 @@ img.skeleton-loading {
 
     0%,
     100% {
-        box-shadow: 0 0 0 0 var(--clr-glow);
+        opacity: 0.45;
     }
 
     50% {
-        box-shadow: 0 0 0 12px transparent;
+        opacity: 1;
     }
 }
 
