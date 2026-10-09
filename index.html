@@ -17,10 +17,15 @@
     <meta name="apple-mobile-web-app-title" content="Sarthak Mathapati">
 
     <!-- Favicon & App Icons -->
-    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=4">
-    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png?v=4">
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=4">
-    <link rel="apple-touch-icon" sizes="192x192" href="favicon.png?v=4">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon.png?v=5">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=5">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=5">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=5">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=5">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://portfolioskens.vercel.app/">
 
     <!-- SEO Meta Tags -->
     <meta name="description"
@@ -32,7 +37,17 @@
     <meta property="og:title" content="Sarthak Mathapati - AI Software Engineer & Web Developer">
     <meta property="og:description" content="Turning ideas into sleek, responsive, and meaningful digital experiences">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sarthakmathapati.com">
+    <meta property="og:url" content="https://portfolioskens.vercel.app/">
+    <meta property="og:image" content="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg">
+    <meta property="og:image:alt" content="Sarthak Mathapati - AI Software Engineer & Web Developer">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@mathapatism8">
+    <meta name="twitter:creator" content="@mathapatism8">
+    <meta name="twitter:title" content="Sarthak Mathapati | AI Software Engineer">
+    <meta name="twitter:description" content="Turning ideas into sleek, responsive, and meaningful digital experiences.">
+    <meta name="twitter:image" content="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg">
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -41,7 +56,7 @@
       "@type": "Person",
       "name": "Sarthak Mathapati",
       "jobTitle": "AI Software Engineer & Web Developer",
-      "url": "https://sarthakmathapati.com",
+      "url": "https://portfolioskens.vercel.app/",
       "image": "https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg",
       "sameAs": [
         "https://github.com/skens-git-code",
@@ -56,10 +71,10 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Sarthak's Portfolio",
-      "url": "https://sarthakmathapati.com",
+      "url": "https://portfolioskens.vercel.app/",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://sarthakmathapati.com/?q={search_term_string}",
+        "target": "https://portfolioskens.vercel.app/?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
@@ -103,14 +118,15 @@
 
     <!-- Performance: Preload Critical Assets -->
     <link rel="preload" as="image"
-        href="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg">
+        href="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
+        fetchpriority="high">
 
-    <!-- External Libraries -->
+    <!-- External Libraries (Deferred to unblock parsing) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
     <!-- Three.js for 3D Elements -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VCV1KM9J6F"></script>
@@ -142,7 +158,7 @@
             </div>
 
             <p class="loader-kicker">Designing digital experiences with intent</p>
-            <h1 class="loader-title">Building <span>what comes next.</span></h1>
+            <p class="loader-title" role="presentation">Building <span>what comes next.</span></p>
             <p class="loader-subtitle">Preparing a thoughtful space for ideas, code, and meaningful work.</p>
 
             <div class="loader-progress-row">
@@ -302,7 +318,7 @@
     <!-- Main Content -->
     <main id="main-content">
         <!-- Cookie Banner -->
-        <div id="cookieBanner" class="cookie-banner glass-card">
+        <div id="cookieBanner" class="cookie-banner glass-card" role="region" aria-label="Cookie consent">
             <h4><i class="fas fa-cookie-bite"></i> We respect your privacy</h4>
             <p class="elegant-text" style="font-size: 0.9rem;">
                 We use cookies to ensure you get the best experience on our portfolio. No personal data is sold.
@@ -323,22 +339,6 @@
             <div id="hero-3d-scene" class="hero-3d-container">
                 <canvas id="webgl-3d-canvas" class="webgl-3d-canvas" aria-hidden="true"></canvas>
             </div>
-            <!-- [OLD HERO CONTENT WITH NESTED CARD CLASSES - COMMENTED OUT]
-            <div class="hero-content testimonial-card glass-card">
-                <p class="hero-subtitle fade-in interactive-card testimonial-card glass-card">
-                    Disciplina - Execucao - Foco
-                </p>
-                <h1 class="hero-title-fade-in">
-                    I am <span class="text-gradient dynamic-color typewriter-text" id="typewriter">a Software
-                        Engineer</span>
-                </h1>
-                <p class="hero-description fade-in">
-                    <span class="bouncing-text testimonial-card glass-card interactive-card">
-                        Hello, I'm Sarthak Mathapati. <br>An AI Software Engineer & Web Developer
-                        Crafting sleek, responsive, and meaningful digital experiences — turning ideas into reality.
-                    </span>
-                </p>
-            -->
 
             <!-- CLEAN, BALANCED HERO LAYOUT -->
             <div class="hero-content">
@@ -378,65 +378,41 @@
                 <!-- Profile Image Container -->
                 <div class="profile-container fade-in">
                     <div class="image-carousel">
-                        <!-- [OLD CAROUSEL TRACKS WITH NESTED CARD CLASSES - COMMENTED OUT]
-                        <div class="carousel-track active">
-                            <img src="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
-                                alt="Sarthak Mathapati"
-                                class="profile-img morph-shape responsive-img glass-card interactive-card">
-                        </div>
-                        <div class="carousel-track">
-                            <img src="https://prior-tomato-eep3ntlclj-j8rbppfdom.edgeone.dev/IMG_3747.jpg"
-                                alt="Sarthak Mathapati - Photo 2"
-                                class="profile-img morph-shape responsive-img glass-card interactive-card"
-                                loading="lazy">
-                        </div>
-                        <div class="carousel-track">
-                            <img src="https://spotty-violet-jpvcsmo1an-1cidgtcev9.edgeone.dev/IMG_3520.jpg"
-                                alt="Sarthak Mathapati - Photo 3"
-                                class="profile-img morph-shape responsive-img glass-card interactive-card"
-                                loading="lazy">
-                        </div>
-                        <div class="carousel-track">
-                            <img src="https://tasteless-amber-k7iaa4q0o2-8uawoj7jkh.edgeone.dev/IMG_3045.jpg"
-                                alt="Sarthak Mathapati - Photo 4"
-                                class="profile-img morph-shape responsive-img glass-card interactive-card"
-                                loading="lazy">
-                        </div>
-                        -->
-
                         <!-- CLEAN CAROUSEL TRACKS WITH PROPER CORNERS -->
                         <div class="carousel-track active">
                             <img src="https://scrawny-maroon-wwjdpftgcz.edgeone.app/WhatsApp%20Image%202025-10-05%20at%2000.21.05_0bb32ab9.jpg"
-                                alt="Sarthak Mathapati"
-                                class="profile-img morph-shape responsive-img">
+                                alt="Sarthak Mathapati - AI Software Engineer"
+                                class="profile-img morph-shape responsive-img"
+                                width="400" height="400"
+                                fetchpriority="high"
+                                decoding="async">
                         </div>
                         <div class="carousel-track">
                             <img src="https://prior-tomato-eep3ntlclj-j8rbppfdom.edgeone.dev/IMG_3747.jpg"
                                 alt="Sarthak Mathapati - Photo 2"
                                 class="profile-img morph-shape responsive-img"
-                                loading="lazy">
+                                width="400" height="400"
+                                loading="lazy" decoding="async">
                         </div>
                         <div class="carousel-track">
                             <img src="https://spotty-violet-jpvcsmo1an-1cidgtcev9.edgeone.dev/IMG_3520.jpg"
                                 alt="Sarthak Mathapati - Photo 3"
                                 class="profile-img morph-shape responsive-img"
-                                loading="lazy">
+                                width="400" height="400"
+                                loading="lazy" decoding="async">
                         </div>
                         <div class="carousel-track">
                             <img src="https://tasteless-amber-k7iaa4q0o2-8uawoj7jkh.edgeone.dev/IMG_3045.jpg"
                                 alt="Sarthak Mathapati - Photo 4"
                                 class="profile-img morph-shape responsive-img"
-                                loading="lazy">
+                                width="400" height="400"
+                                loading="lazy" decoding="async">
                         </div>
-
                     </div>
                     <!-- Navigation dots -->
                     <div class="carousel-dots"></div>
                 </div>
 
-                <!-- [OLD HERO BUTTONS WITH TESTIMONIAL CARD - COMMENTED OUT]
-                <div class="hero-buttons testimonial-card glass-card interactive-card fade-in">
-                -->
                 <div class="hero-buttons fade-in">
                     <a href="#projects" class="hero-btn btn-3d">
                         <span>View My Work <i class="fas fa-arrow-right"></i></span>
@@ -444,11 +420,6 @@
                     <a href="#contact" class="hero-btn btn-3d primary">
                         <span>Get In Touch <i class="fas fa-envelope"></i></span>
                     </a>
-                    <!-- <a href="#" class="hero-btn btn-3d"
-                        onclick="alert('Resume download would start here!'); return false;" aria-label="Download Resume"
-                        style="margin-top: 10px;">
-                        <span>Download CV <i class="fas fa-download"></i></span>
-                    </a> -->
                 </div>
             </div>
         </section>
@@ -1161,6 +1132,7 @@
                                             https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85 800w,
                                             https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85 1200w"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    width="800" height="420"
                                     alt="E-commerce Platform" class="responsive-img" loading="lazy" decoding="async">
                                 <div class="slide-content">
                                     <h3 class="slide-title">E-commerce Platform</h3>
@@ -1175,6 +1147,7 @@
                                             https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85 800w,
                                             https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85 1200w"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    width="800" height="420"
                                     alt="Task Management App" class="responsive-img" loading="lazy" decoding="async">
                                 <div class="slide-content">
                                     <h3 class="slide-title">Task Management App</h3>
@@ -1189,6 +1162,7 @@
                                             https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85 800w,
                                             https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=85 1200w"
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    width="800" height="420"
                                     alt="Social Media Dashboard" class="responsive-img" loading="lazy" decoding="async">
                                 <div class="slide-content">
                                     <h3 class="slide-title">Social Media Dashboard</h3>
@@ -1209,7 +1183,8 @@
                     <!-- Project 1 -->
                     <article class="project-card glass-card interactive-card" data-category="web fullstack">
                         <div class="image-hover-zoom">
-                            <img class="project-img responsive-img" loading="lazy"
+                            <img class="project-img responsive-img" loading="lazy" decoding="async"
+                                width="800" height="500"
                                 src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
                                 alt="E-commerce Platform">
                         </div>
@@ -1238,7 +1213,8 @@
                     <!-- Project 2 -->
                     <article class="project-card glass-card" data-category="web">
                         <div class="image-hover-zoom">
-                            <img class="project-img responsive-img" loading="lazy"
+                            <img class="project-img responsive-img" loading="lazy" decoding="async"
+                                width="800" height="500"
                                 src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
                                 alt="Task Management App">
                         </div>
@@ -1266,7 +1242,8 @@
                     <!-- Project 3 -->
                     <article class="project-card glass-card interactive-card" data-category="ai fullstack">
                         <div class="image-hover-zoom">
-                            <img class="project-img responsive-img" loading="lazy"
+                            <img class="project-img responsive-img" loading="lazy" decoding="async"
+                                width="800" height="500"
                                 src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
                                 alt="Social Media Dashboard">
                         </div>
@@ -1294,7 +1271,7 @@
                 </div>
 
                 <!-- Case Study Modal -->
-                <div class="case-study-modal" id="caseStudyModal">
+                <div class="case-study-modal" id="caseStudyModal" role="dialog" aria-modal="true" aria-label="Case Study Details">
                     <div class="modal-content glass-card">
                         <button class="modal-close" id="closeModal" aria-label="Close modal">
                             <i class="fas fa-times"></i>
@@ -1578,8 +1555,10 @@
                 </h2>
                 <div class="blog-grid stagger-animation">
                     <div class="blog-card glass-card interactive-card">
-                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
-                            alt="AI in Web Development" class="blog-image responsive-img" loading="lazy">
+                        <div class="image-hover-zoom">
+                            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
+                                alt="The Future of AI in Web Development" class="blog-image responsive-img" width="800" height="500" loading="lazy" decoding="async">
+                        </div>
                         <div class="blog-content">
                             <div class="blog-meta">
                                 <span><i class="far fa-calendar"></i>March 15, 2024</span>
@@ -1594,8 +1573,10 @@
                         </div>
                     </div>
                     <div class="blog-card glass-card interactive-card">
-                        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
-                            alt="React Performance" class="blog-image responsive-img" loading="lazy">
+                        <div class="image-hover-zoom">
+                            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
+                                alt="Optimizing React Performance" class="blog-image responsive-img" width="800" height="500" loading="lazy" decoding="async">
+                        </div>
                         <div class="blog-content">
                             <div class="blog-meta">
                                 <span><i class="far fa-calendar"></i>February 28, 2024</span>
@@ -1610,8 +1591,10 @@
                         </div>
                     </div>
                     <div class="blog-card glass-card interactive-card">
-                        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
-                            alt="Startup Journey" class="blog-image responsive-img" loading="lazy">
+                        <div class="image-hover-zoom">
+                            <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=85"
+                                alt="My Startup Journey: Lessons Learned" class="blog-image responsive-img" width="800" height="500" loading="lazy" decoding="async">
+                        </div>
                         <div class="blog-content">
                             <div class="blog-meta">
                                 <span><i class="far fa-calendar"></i>February 10, 2024</span>
@@ -1648,8 +1631,8 @@
                                 to detail and technical expertise made the entire process smooth and efficient.
                             </div>
                             <div class="testimonial-author">
-                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                                    alt="Client" class="author-avatar responsive-img" loading="lazy">
+                                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+                                    alt="Arpita Patil - CTO, TechSolutions Inc." class="author-avatar responsive-img" width="50" height="50" loading="lazy" decoding="async">
                                 <div class="author-info">
                                     <h4>Arpita Patil</h4>
                                     <p>CTO, TechSolutions Inc.</p>
@@ -1664,7 +1647,7 @@
                             </div>
                             <div class="testimonial-author">
                                 <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                                    alt="Client" class="author-avatar responsive-img" loading="lazy">
+                                    alt="Rahul Diwedi - Marketing Director, Innovate Co." class="author-avatar responsive-img" width="50" height="50" loading="lazy" decoding="async">
                                 <div class="author-info">
                                     <h4>Rahul Diwedi</h4>
                                     <p>Marketing Director, Innovate Co.</p>
@@ -1678,7 +1661,7 @@
                             </div>
                             <div class="testimonial-author">
                                 <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-                                    alt="Client" class="author-avatar responsive-img" loading="lazy">
+                                    alt="Siddhi Miglani - Founder, Creative Studio" class="author-avatar responsive-img" width="50" height="50" loading="lazy" decoding="async">
                                 <div class="author-info">
                                     <h4>Siddhi Miglani</h4>
                                     <p>Founder, Creative Studio</p>
@@ -1743,18 +1726,6 @@
                         </p>
                     </div>
                 </div>
-
-                <!-- GitHub Contribution Graph Placeholder -->
-                <!-- <div class="glass-card interactive-card p-lg m-md text-center">
-                    <h3 class="text-gradient">GitHub Activity</h3>
-                    <div class="location-map">
-                        <div class="map-overlay">
-                            <img src="https://ghchart.rshah.org/skens-git-code" alt="GitHub Contribution Graph"
-                                class="responsive-img" loading="lazy" style="width: 100%; min-height: 100px;">
-                        </div>
-                    </div>
-                </div>
-            </div> -->
             </div>
         </section>
 
@@ -2008,9 +1979,9 @@ function InteractiveButton({ children, onClick }) {
                         </div>
                     </div>
                     <div class="text-center m-md">
-                        <button class="cta-button">
+                        <a href="https://github.com/skens-git-code" target="_blank" rel="noopener noreferrer" class="cta-button" aria-label="View more projects on GitHub">
                             <i class="fab fa-github"></i>View More on GitHub
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -2180,6 +2151,7 @@ function InteractiveButton({ children, onClick }) {
     <!-- ============================================================
          FLOATING BOTTOM NAVIGATION – MOBILE ONLY
          ============================================================ -->
+    <div class="bottom-nav-backdrop" id="bottomNavBackdrop" aria-hidden="true"></div>
     <nav class="bottom-nav-mobile" id="bottomNav" role="navigation" aria-label="Mobile navigation">
         <div class="bottom-nav-inner">
             <a href="#home" class="bottom-nav-link active" data-section="home" aria-label="Home">
@@ -2235,14 +2207,14 @@ function InteractiveButton({ children, onClick }) {
     </nav>
 
     <!-- Command Palette -->
-    <div id="commandPalette" class="command-palette-overlay">
+    <div id="commandPalette" class="command-palette-overlay" role="dialog" aria-modal="true" aria-label="Command Palette">
         <div class="command-palette">
             <div class="cmd-input-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" class="cmd-input" placeholder="Type a command or search..." autofocus>
-                <div class="cmd-shortcut">ESC</div>
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input type="text" class="cmd-input" placeholder="Type a command or search..." aria-label="Search commands">
+                <div class="cmd-shortcut" aria-hidden="true">ESC</div>
             </div>
-            <div class="cmd-results">
+            <div class="cmd-results" role="region" aria-live="polite">
                 <!-- Results injected by JS -->
             </div>
         </div>
@@ -2250,78 +2222,7 @@ function InteractiveButton({ children, onClick }) {
 
     <!-- Footer -->
     <footer role="contentinfo">
-        <!-- ============================================================
-             [OLD NESTED FOOTER CARD CLASSES - COMMENTED OUT]
-             ============================================================
-            <div class="container testimonial-card glass-card">
-            <div class="footer-content">
-                <div class="footer-about interactive-card testimonial-card glass-card bouncing-text">
-                    <div class="footer-logo">
-                        <i class="fas fa-code text-gradient" aria-hidden="true"></i> Sarthak Mathapati
-                    </div>
-                    <p class="elegant-text">Software Engineer & Web Developer creating digital experiences that make a
-                        difference. Passionate about building innovative solutions with modern technologies.</p>
-                    <div class="social-icons">
-                        <a href="https://github.com/skens-git-code" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="GitHub"><i
-                                class="fab fa-github"></i></a>
-                        <a href="https://www.linkedin.com/in/sarthak-mathapati-b2b04430a/" target="_blank" rel="noopener noreferrer" class="social-icon"
-                            aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                        <a href="https://x.com/mathapatism8" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter"><i
-                                class="fab fa-twitter"></i></a>
-                        <a href="https://www.instagram.com/mathapati.i8/" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram"><i
-                                class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-
-                <div class="footer-links testimonial-card glass-card interactive-card">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="#about">About</a></li>
-                        <li><a href="#projects">Projects</a></li>
-                        <li><a href="#services">Services</a></li>
-                        <li><a href="#experience">Experience</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-links testimonial-card glass-card interactive-card">
-                    <h3>Services</h3>
-                    <ul>
-                        <li><a href="#services">Web Development</a></li>
-                        <li><a href="#services">Responsive Design</a></li>
-                        <li><a href="#services">UI/UX Design</a></li>
-                        <li><a href="#services">Performance Optimization</a></li>
-                    </ul>
-                </div>
-
-            </div>
-
-                <div class="trust-badges">
-                    <div class="trust-badge">
-                        <i class="fas fa-certificate text-gradient"></i>
-                        <span>Quality Assured</span>
-                    </div>
-                    <div class="trust-badge">
-                        <i class="fas fa-rocket text-gradient"></i>
-                        <span>Fast Delivery</span>
-                    </div>
-                    <div class="trust-badge">
-                        <i class="fas fa-shield-alt text-gradient"></i>
-                        <span>Secure & Reliable</span>
-                    </div>
-                </div>
-
-                <div class="copyright testimonial-card glass-card interactive-card">
-                    <p>
-                        🌟 Grateful For Your Time ! Dream Big , Shine Bright ✨, And Make The Magic Happen. 🌟 <br>
-                        &copy; All Rights Reserved By Sarthak Mathapati.
-                    </p>
-                </div>
-        </div>
-        ============================================================ -->
-
         <!-- CLEAN, BALANCED & MODERN FOOTER LAYOUT -->
-        <!-- [OLD] <div class="container glass-card"> -->
         <div class="container footer-container">
             <div class="footer-content">
                 <div class="footer-about">
@@ -2387,48 +2288,6 @@ function InteractiveButton({ children, onClick }) {
             </div>
         </div>
     </footer>
-
-    <!-- Voice Control Widget -->
-    <!-- <div id="voiceWidget" class="voice-widget-btn">
-        <i class="fas fa-microphone"></i>
-        <div class="pulse-ring"></div>
-    </div> -->
-
-    <!-- Voice Overlay -->
-    <!-- <div id="voiceOverlay" class="voice-overlay"> -->
-        <!-- <div class="voice-content">
-            <div class="voice-animation">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
-            <p id="voiceStatus">Listening...</p>
-            <p class="voice-commands">Try saying: "Go to Projects", "Open Chat", "Switch Theme"</p>
-        </div>
-    </div> -->
-
-    <!-- Project Details Modal -->
-    <!-- <div id="projectModal" class="project-modal glass-card">
-        <div class="modal-content glass-card">
-            <span class="close-modal" id="closeProjectModal">&times;</span>
-            <div class="modal-body">
-                <div class="modal-image-container">
-                    <img id="modalProjectImage" src="" alt="Project Preview" class="modal-image">
-                </div>
-                <div class="modal-info">
-                    <h2 id="modalProjectTitle" class="text-gradient">Project Title</h2>
-                    <p id="modalProjectDesc" class="elegant-text">Project description goes here...</p>
-                    <div class="modal-tabs">
-                        <button class="tab-btn active">Overview</button>
-                        <button class="tab-btn">Tech Stack</button>
-                        <button class="tab-btn">Challenges</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
 
 
     <script src="js/main.js" defer></script>

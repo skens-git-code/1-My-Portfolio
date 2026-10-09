@@ -26,8 +26,8 @@
   // Configuration
   const CONFIG = {
     loading: {
-      minDisplayTime: 800,
-      maxDisplayTime: 4500
+      minDisplayTime: 400,
+      maxDisplayTime: 3500
     },
     animations: {
       scrollThrottle: 16,
@@ -356,7 +356,7 @@
     simulateLoadingProgress() {
       return new Promise((resolve) => {
         let lastProgress = 0;
-        const duration = AppState.prefersReducedMotion ? 0 : 1350;
+        const duration = AppState.prefersReducedMotion ? 0 : (document.readyState === 'complete' ? 500 : 800);
         const startedAt = performance.now();
 
         const updateProgress = () => {
@@ -625,6 +625,8 @@
 
     createCursorTrail(x, y) {
       if (this.isDestroyed || AppState.prefersReducedMotion) return;
+      if (!this.activeTrailCount) this.activeTrailCount = 0;
+      if (this.activeTrailCount >= 10) return;
 
       const trail = document.createElement('div');
       trail.className = 'cursor-trail';
@@ -636,12 +638,14 @@
       trail.style.height = `${size}px`;
 
       document.body.appendChild(trail);
+      this.activeTrailCount++;
 
       setTimeout(() => {
         if (trail.parentNode) {
           trail.parentNode.removeChild(trail);
         }
-      }, 1000);
+        this.activeTrailCount = Math.max(0, this.activeTrailCount - 1);
+      }, 700);
     }
 
     createParticles() {
@@ -677,6 +681,10 @@
         particle.removeEventListener('animationend', onEnd);
         if (this.particlesContainer && particle.parentNode === this.particlesContainer) {
           this.particlesContainer.removeChild(particle);
+        }
+        const idx = this.particleElements.indexOf(particle);
+        if (idx !== -1) {
+          this.particleElements.splice(idx, 1);
         }
       };
       particle.addEventListener('animationend', onEnd);
@@ -777,11 +785,6 @@
       this.themeToggle = document.getElementById('themeToggle');
       this.backToTop = document.getElementById('backToTop');
       this.navIndicator = document.querySelector('.nav-indicator');
-      /* ============================================================
-         [OLD NAV LINKS SELECTOR - COMMENTED OUT]
-         ============================================================
-      this.navLinks = document.querySelectorAll('.nav-link');
-      ============================================================ */
       this.navLinks = document.querySelectorAll('#mainNav .nav-link, .nav-container .nav-link');
       this.sectionDots = document.querySelectorAll('.section-dot');
       this.boundHandlers = {
@@ -912,11 +915,6 @@
 
     resetIndicator() {
       if (AppState.isMobile) return;
-      /* ============================================================
-         [OLD ACTIVE LINK SELECTOR - COMMENTED OUT]
-         ============================================================
-      const activeLink = document.querySelector('.nav-link.active');
-      ============================================================ */
       const activeLink = document.querySelector('#mainNav .nav-link.active, .nav-container .nav-link.active');
       if (activeLink) {
         this.moveIndicator(activeLink);
@@ -1025,6 +1023,7 @@
       this.bottomNavDropdownLinks = document.querySelectorAll('.bottom-nav-dropdown-link:not(#bottomThemeToggle):not(#bottomContrastToggle)');
       this.bottomNavMore = document.getElementById('bottomNavMore');
       this.bottomNavDropdown = document.getElementById('bottomNavDropdown');
+      this.bottomNavBackdrop = document.getElementById('bottomNavBackdrop');
       this.bottomThemeToggle = document.getElementById('bottomThemeToggle');
       this.bottomContrastToggle = document.getElementById('bottomContrastToggle');
       this.lastScrollY = window.scrollY || 0;
@@ -1070,6 +1069,14 @@
           const isOpen = this.bottomNavDropdown.classList.toggle('open');
           this.bottomNavMore.classList.toggle('active', isOpen);
           this.bottomNavMore.setAttribute('aria-expanded', String(isOpen));
+          this.bottomNavBackdrop?.classList.toggle('active', isOpen);
+        });
+      }
+
+      // Tap on backdrop closes dropdown
+      if (this.bottomNavBackdrop) {
+        this.bottomNavBackdrop.addEventListener('click', () => {
+          this.closeBottomDropdown();
         });
       }
 
@@ -1127,6 +1134,9 @@
       if (this.bottomNavMore) {
         this.bottomNavMore.classList.remove('active');
         this.bottomNavMore.setAttribute('aria-expanded', 'false');
+      }
+      if (this.bottomNavBackdrop) {
+        this.bottomNavBackdrop.classList.remove('active');
       }
     }
 
@@ -1293,16 +1303,24 @@
 
     initScrollIndicator() {
       const scrollIndicator = document.getElementById('scrollIndicator');
-      if (!scrollIndicator) return;
+      const scrollProgress = document.getElementById('scrollProgress');
+      if (!scrollIndicator && !scrollProgress) return;
 
-      this.scrollIndicatorHandler = Utils.throttle(() => {
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-        const maxScroll = Math.max(1, documentHeight - windowHeight);
-        const scrollPercent = Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100));
-        scrollIndicator.style.width = `${scrollPercent}%`;
-      }, CONFIG.animations.scrollThrottle);
+      let ticking = false;
+      this.scrollIndicatorHandler = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(() => {
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+          const maxScroll = Math.max(1, documentHeight - windowHeight);
+          const scrollPercent = Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100));
+          if (scrollIndicator) scrollIndicator.style.width = `${scrollPercent}%`;
+          if (scrollProgress) scrollProgress.style.width = `${scrollPercent}%`;
+          ticking = false;
+        });
+      };
 
       window.addEventListener('scroll', this.scrollIndicatorHandler, { passive: true });
       this.scrollIndicatorHandler();
@@ -1461,15 +1479,30 @@
         if (!btn) return;
         const originalContent = btn.innerHTML;
 
-        const name = (form.querySelector('#name')?.value || '').trim();
-        const email = (form.querySelector('#email')?.value || '').trim();
-        const message = (form.querySelector('#message')?.value || '').trim();
+        const nameInput = form.querySelector('#name');
+        const emailInput = form.querySelector('#email');
+        const messageInput = form.querySelector('#message');
+
+        const name = (nameInput?.value || '').trim();
+        const email = (emailInput?.value || '').trim();
+        const message = (messageInput?.value || '').trim();
+
+        // Reset aria validation states
+        [nameInput, emailInput, messageInput].forEach(input => {
+          if (input) {
+            input.removeAttribute('aria-invalid');
+            input.setAttribute('aria-describedby', 'contactStatus');
+          }
+        });
 
         // Basic validation
         if (!name || !email || !message) {
+          if (!name && nameInput) nameInput.setAttribute('aria-invalid', 'true');
+          if (!email && emailInput) emailInput.setAttribute('aria-invalid', 'true');
+          if (!message && messageInput) messageInput.setAttribute('aria-invalid', 'true');
           if (status) {
             status.textContent = 'Please fill in all fields.';
-            status.style.color = 'var(--error)';
+            status.style.color = 'var(--error, #ff4444)';
           }
           return;
         }
@@ -1477,9 +1510,10 @@
         // Email format validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
+          if (emailInput) emailInput.setAttribute('aria-invalid', 'true');
           if (status) {
             status.textContent = 'Please enter a valid email address.';
-            status.style.color = 'var(--error)';
+            status.style.color = 'var(--error, #ff4444)';
           }
           return;
         }
@@ -1500,11 +1534,11 @@
           window.location.href = mailtoLink;
 
           btn.innerHTML = '<span><i class="fas fa-check"></i> Mail Client Opened!</span>';
-          btn.style.backgroundColor = '#00C851';
-          btn.style.borderColor = '#00C851';
+          btn.style.backgroundColor = 'var(--clr-green, #00C851)';
+          btn.style.borderColor = 'var(--clr-green, #00C851)';
           if (status) {
             status.textContent = '✅ Your mail client opened with the message pre-filled. Just hit Send!';
-            status.style.color = 'var(--success)';
+            status.style.color = 'var(--success, var(--clr-green, #00C851))';
           }
 
           form.reset();
@@ -1526,55 +1560,6 @@
         }, 600);
       });
     }
-
-    /* ============================================================
-       [OLD 3D TILT INTERACTION - COMMENTED OUT]
-       ============================================================
-    initInteractiveCards() {
-      this.cardCleanups = [];
-      document.querySelectorAll('.interactive-card').forEach(card => {
-        if (AppState.isMobile || AppState.prefersReducedMotion) return;
-
-        let ticking = false;
-
-        const onMouseMove = (e) => {
-          if (ticking) return;
-          const clientX = e.clientX;
-          const clientY = e.clientY;
-          ticking = true;
-
-          requestAnimationFrame(() => {
-            const rect = card.getBoundingClientRect();
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-
-            const rotateX = ((y - centerY) / centerY) * -10;
-            const rotateY = ((x - centerX) / centerX) * 10;
-
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-            card.style.transition = 'transform 0.1s ease';
-            ticking = false;
-          });
-        };
-
-        const onMouseLeave = () => {
-          card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-          card.style.transition = 'transform 0.5s ease';
-        };
-
-        card.addEventListener('mousemove', onMouseMove);
-        card.addEventListener('mouseleave', onMouseLeave);
-
-        this.cardCleanups.push(() => {
-          card.removeEventListener('mousemove', onMouseMove);
-          card.removeEventListener('mouseleave', onMouseLeave);
-        });
-      });
-    }
-    ============================================================ */
 
     /* NEW REFINED, JITTER-FREE 3D TILT INTERACTION */
     initInteractiveCards() {
@@ -1855,7 +1840,7 @@
               nextEl,
               prevEl,
             } : false,
-            autoplay: {
+            autoplay: AppState.prefersReducedMotion ? false : {
               delay: 4500,
               disableOnInteraction: false
             },
@@ -1890,7 +1875,7 @@
                 spaceBetween: 30,
               },
             },
-            autoplay: {
+            autoplay: AppState.prefersReducedMotion ? false : {
               delay: 3000,
               disableOnInteraction: false,
               pauseOnMouseEnter: true
@@ -1992,6 +1977,10 @@
       this.timeoutId = null;
 
       if (this.txtElement && this.words.length > 0) {
+        if (AppState.prefersReducedMotion) {
+          this.txtElement.innerHTML = `<span class="txt">${Utils.escapeHtml(this.words[0])}</span>`;
+          return;
+        }
         this.type();
       }
     }
@@ -2008,7 +1997,7 @@
         this.txt = fullTxt.substring(0, this.txt.length + 1);
       }
 
-      this.txtElement.innerHTML = `<span class="txt">${this.txt}</span>`;
+      this.txtElement.innerHTML = `<span class="txt">${this.txt || '&nbsp;'}</span>`;
 
       let typeSpeed = 100;
 
@@ -2104,21 +2093,27 @@
 
     open() {
       if (!this.overlay) return;
+      this.previousActiveElement = document.activeElement;
       this.overlay.classList.add('active');
-      if (this.input) {
-        this.input.value = '';
-        this.input.focus();
-      }
       this.renderResults(this.commands);
       this.isOpen = true;
+      document.body.style.overflow = 'hidden';
+      if (this.input) {
+        this.input.value = '';
+        setTimeout(() => this.input.focus(), 60);
+      }
     }
 
     close() {
       if (!this.overlay) return;
       this.overlay.classList.remove('active');
       this.isOpen = false;
+      document.body.style.overflow = '';
       if (this.input) {
         this.input.value = '';
+      }
+      if (this.previousActiveElement && typeof this.previousActiveElement.focus === 'function') {
+        this.previousActiveElement.focus();
       }
     }
 
@@ -2140,7 +2135,7 @@
       if (!this.resultsContainer) return;
 
       if (commands.length === 0) {
-        this.resultsContainer.innerHTML = '<div class="cmd-no-results">No results found</div>';
+        this.resultsContainer.innerHTML = '<div class="cmd-no-results" role="status">No results found</div>';
         this.activeRenderedCommands = [];
         return;
       }
@@ -2493,6 +2488,8 @@
 
     initScrollProgress() {
       if (!this.scrollProgress) return;
+      // Coordinated with AnimationManager to avoid duplicate scroll listener overhead
+      if (window.portfolioApp?.animationManager?.scrollIndicatorHandler) return;
 
       this.scrollProgressHandler = () => {
         if (this.ticking) return;
@@ -3863,6 +3860,9 @@
       if (this.modal) {
         this.modal.classList.remove('active');
       }
+      if (this.caseStudyModal) {
+        this.caseStudyModal.classList.remove('active');
+      }
       document.body.style.overflow = '';
     }
 
@@ -3985,11 +3985,6 @@
     if (window.portfolioApp) return;
     window.portfolioApp = new PortfolioApp();
     window.portfolioApp.init();
-
-    const carouselContainer = document.querySelector('.image-carousel');
-    if (carouselContainer && !window.imageCarousel) {
-      window.imageCarousel = new ImageCarousel(carouselContainer);
-    }
   };
 
   if (document.readyState === 'loading') {
