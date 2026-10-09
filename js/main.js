@@ -1283,7 +1283,23 @@
     }
 
     initIntersectionObserver() {
-      if (AppState.prefersReducedMotion || typeof IntersectionObserver === 'undefined') return;
+      if (AppState.prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
+        // Under reduced motion or unsupported observer, immediately reveal all content
+        document.querySelectorAll('.fade-in').forEach((el) => {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+        });
+        document.querySelectorAll('.stagger-animation').forEach((parent) => {
+          Array.from(parent.children).forEach((child) => {
+            child.style.opacity = '1';
+            child.style.transform = 'none';
+          });
+        });
+        document.querySelectorAll('.skill-progress').forEach((bar) => {
+          bar.style.width = bar.getAttribute('data-width') || '100%';
+        });
+        return;
+      }
 
       const observerOptions = {
         threshold: CONFIG.animations.intersectionThreshold,
@@ -1307,13 +1323,16 @@
 
       this.animObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          // Freezes animation loop when not visible on screen
-          entry.target.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+          // Pause/resume marquee track based on wrapper visibility without calculating overflow width
+          const track = entry.target.querySelector('.skills-track') || entry.target.querySelector('.ticker-track');
+          if (track) {
+            track.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+          }
         });
-      }, { threshold: 0.1 });
+      }, { threshold: 0, rootMargin: '100px 0px' });
 
-      // Observe your marquee and carousel tracks
-      document.querySelectorAll('.ticker-track, .carousel-track, .skills-track, .skills-carousel').forEach((el) => {
+      // Observe the visible wrapper container rather than arbitrary overflow tracks
+      document.querySelectorAll('.skills-carousel').forEach((el) => {
         this.animObserver.observe(el);
       });
     }
@@ -1353,6 +1372,11 @@
 
     setInitialAnimationState(element) {
       if (!element) return;
+      if (AppState.prefersReducedMotion) {
+        element.style.opacity = '1';
+        element.style.transform = 'none';
+        return;
+      }
       Object.assign(element.style, {
         opacity: '0',
         transform: 'translateY(20px)',
@@ -2257,6 +2281,7 @@
       this.currentIndex = 0;
       this.interval = null;
       this.autoScrollDelay = 4000;
+      this.isPaused = false;
       this.boundKeyHandler = null;
       this.boundVisibilityHandler = null;
 
@@ -2271,20 +2296,27 @@
       this.startAutoScroll();
       this.addEventListeners();
 
-      this.container.addEventListener('mouseenter', () => this.stopAutoScroll());
-      this.container.addEventListener('mouseleave', () => this.startAutoScroll());
+      this.container.addEventListener('mouseenter', () => {
+        this.isPaused = true;
+        this.stopAutoScroll();
+      });
+      this.container.addEventListener('mouseleave', () => {
+        this.isPaused = false;
+        this.startAutoScroll();
+      });
 
       // Auto-pause carousel interval when scrolled off-screen
       if (typeof IntersectionObserver !== 'undefined') {
         this.intersectionObserver = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
+              this.isPaused = false;
               this.startAutoScroll();
             } else {
               this.stopAutoScroll();
             }
           });
-        }, { threshold: 0.1 });
+        }, { threshold: 0, rootMargin: '100px 0px' });
         this.intersectionObserver.observe(this.container);
       }
     }
@@ -2347,8 +2379,12 @@
 
     startAutoScroll() {
       this.stopAutoScroll();
-      if (AppState.prefersReducedMotion || document.hidden) return;
-      this.interval = setInterval(() => this.nextSlide(), this.autoScrollDelay);
+      if (AppState.prefersReducedMotion || document.hidden || this.isPaused) return;
+      this.interval = setInterval(() => {
+        if (!this.isPaused && !document.hidden) {
+          this.nextSlide();
+        }
+      }, this.autoScrollDelay);
     }
 
     stopAutoScroll() {
@@ -4001,21 +4037,6 @@
     if (window.portfolioApp) return;
     window.portfolioApp = new PortfolioApp();
     window.portfolioApp.init();
-
-    // Auto-Pause Animations When Off-Screen (Drop-in observer)
-    if (typeof IntersectionObserver !== 'undefined') {
-      const animObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          // Freezes animation loop when not visible on screen
-          entry.target.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
-        });
-      }, { threshold: 0.1 });
-
-      // Observe your marquee and carousel tracks
-      document.querySelectorAll('.ticker-track, .carousel-track, .skills-track').forEach((el) => {
-        animObserver.observe(el);
-      });
-    }
   };
 
   if (document.readyState === 'loading') {
