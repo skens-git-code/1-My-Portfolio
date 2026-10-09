@@ -341,17 +341,19 @@ button {
 .gradients-container {
     position: absolute;
     inset: 0;
-    filter: blur(90px);
-    opacity: .55;
-    /* Removed will-change: transform — was causing compositing flashes */
+    filter: blur(80px);
+    opacity: .70;
     contain: layout;
     isolation: isolate;
+    pointer-events: none;
 }
 
 .gradient {
     position: absolute;
     border-radius: 50%;
     mix-blend-mode: screen;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
 }
 
 /* ============================================================
@@ -454,99 +456,141 @@ button {
 
 /* ── TRUE COMPLETE BLACK OLED AMBIENT ACCENTS ── */
 .gradient-1 {
-    width: 60vw;
-    height: 60vw;
-    top: -15vw;
+    width: 58vw;
+    height: 58vw;
+    top: -14vw;
     left: -10vw;
-    background: radial-gradient(circle, rgba(0, 212, 255, .08) 0%, transparent 70%);
-    animation: orbFloat1 24s ease-in-out infinite alternate;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.16) 0%, rgba(0, 136, 204, 0.04) 50%, transparent 70%);
+    animation: orbFloat1 28s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
 .gradient-2 {
-    width: 50vw;
-    height: 50vw;
+    width: 52vw;
+    height: 52vw;
     bottom: -10vw;
     right: -6vw;
-    background: radial-gradient(circle, rgba(0, 212, 255, .06) 0%, transparent 70%);
-    animation: orbFloat2 28s ease-in-out infinite alternate-reverse;
+    background: radial-gradient(circle, rgba(136, 85, 255, 0.13) 0%, rgba(111, 0, 255, 0.03) 50%, transparent 70%);
+    animation: orbFloat2 32s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
 .gradient-3 {
     width: 44vw;
     height: 44vw;
-    top: 38%;
-    left: 28%;
-    background: radial-gradient(circle, rgba(255, 255, 255, .02) 0%, transparent 65%);
-    animation: orbFloat3 20s ease-in-out infinite alternate;
+    top: 36%;
+    left: 26%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, rgba(0, 160, 255, 0.02) 50%, transparent 68%);
+    animation: orbFloat3 24s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
 .gradient-4 {
-    width: 36vw;
-    height: 36vw;
-    top: 12%;
-    right: 14%;
-    background: radial-gradient(circle, rgba(0, 212, 255, .05) 0%, transparent 68%);
-    animation: orbFloat1 18s ease-in-out infinite alternate-reverse;
+    width: 38vw;
+    height: 38vw;
+    top: 14%;
+    right: 12%;
+    background: radial-gradient(circle, rgba(160, 32, 240, 0.10) 0%, transparent 68%);
+    animation: orbFloat1 34s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite reverse;
 }
 
 .gradient-5 {
     width: 42vw;
     height: 42vw;
-    bottom: 10%;
+    bottom: 12%;
     left: 10%;
-    background: radial-gradient(circle, rgba(255, 255, 255, .018) 0%, transparent 65%);
-    animation: orbFloat2 22s ease-in-out infinite alternate;
+    background: radial-gradient(circle, rgba(0, 255, 180, 0.07) 0%, transparent 65%);
+    animation: orbFloat2 26s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite reverse;
 }
 
-/* Subtle OLED grid without wash */
+/* Subtle OLED grid with organic radial mask */
 .grid-overlay {
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+        linear-gradient(rgba(0, 212, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.035) 1px, transparent 1px);
     background-size: 64px 64px;
-    opacity: .12;
-    animation: gridPulse 12s ease-in-out infinite alternate;
-}
-
-/* Spotlights */
-.spotlight {
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(0, 212, 255, .03) 0%, transparent 70%);
-    filter: blur(40px);
+    mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 25%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 25%, transparent 85%);
+    opacity: .35;
+    animation: gridPulse 16s ease-in-out infinite alternate;
     pointer-events: none;
 }
 
+/* Spotlights with 3D compositing */
+.spotlight {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.05) 0%, rgba(111, 0, 255, 0.015) 45%, transparent 70%);
+    filter: blur(50px);
+    pointer-events: none;
+    will-change: transform, opacity;
+    transform: translate3d(0, 0, 0);
+}
+
 .spotlight-1 {
-    width: 420px;
-    height: 420px;
-    top: 8%;
+    width: 480px;
+    height: 480px;
+    top: 6%;
     left: 4%;
-    animation: spotPulse 14s infinite alternate;
+    animation: spotFloat1 24s ease-in-out infinite alternate;
 }
 
 .spotlight-2 {
-    width: 360px;
-    height: 360px;
-    top: 52%;
-    right: 8%;
-    animation: spotPulse 18s infinite alternate-reverse;
+    width: 400px;
+    height: 400px;
+    top: 50%;
+    right: 6%;
+    animation: spotFloat2 28s ease-in-out infinite alternate-reverse;
 }
 
 .spotlight-3 {
-    width: 300px;
-    height: 300px;
+    width: 340px;
+    height: 340px;
     bottom: 8%;
-    left: 22%;
-    animation: spotPulse 20s infinite alternate;
+    left: 20%;
+    animation: spotFloat1 32s ease-in-out infinite alternate;
 }
 
 .gradient-bg {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 50% 50%, rgba(0, 212, 255, .025) 0%, transparent 70%);
+    background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 212, 255, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    transition: background 0.2s ease-out;
+}
+
+/* ── Light Theme Ambient Support ── */
+[data-theme="light"] .gradients-container,
+body.light-theme .gradients-container {
+    opacity: .45;
+    filter: blur(70px);
+}
+
+[data-theme="light"] .gradient,
+body.light-theme .gradient {
+    mix-blend-mode: multiply;
+}
+
+[data-theme="light"] .gradient-1,
+body.light-theme .gradient-1 {
+    background: radial-gradient(circle, rgba(0, 136, 204, 0.16) 0%, transparent 70%);
+}
+
+[data-theme="light"] .gradient-2,
+body.light-theme .gradient-2 {
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+}
+
+[data-theme="light"] .gradient-3,
+body.light-theme .gradient-3 {
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.10) 0%, transparent 68%);
+}
+
+[data-theme="light"] .grid-overlay,
+body.light-theme .grid-overlay {
+    background-image:
+        linear-gradient(rgba(0, 136, 204, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 136, 204, 0.04) 1px, transparent 1px);
+    opacity: .25;
 }
 
 /* ============================================================
@@ -1499,17 +1543,18 @@ body.light-theme .skill-item {
 /* ── Profile carousel ── */
 .profile-container {
     position: relative;
-    margin: 0 auto 12px;
-    max-width: 280px;
+    margin: 0 auto 16px;
+    width: min(440px, 92vw);
+    max-width: 440px;
     height: auto;
 }
 
 .image-carousel {
     position: relative;
-    width: 240px;
-    height: 270px;
-    aspect-ratio: 8 / 9;
-    border-radius: 26px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border-radius: 22px;
     overflow: hidden;
     margin: 0 auto;
     border: 1px solid rgba(0, 212, 255, 0.28);
@@ -1550,8 +1595,9 @@ body.light-theme .image-carousel {
 .image-carousel img {
     width: 100% !important;
     height: 100% !important;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
-    object-position: center 20%;
+    object-position: center 22%;
     display: block;
     border-radius: inherit;
     user-select: none;
@@ -2202,7 +2248,7 @@ body.light-theme .container.testimonial-card.glass-card .p-lg.m-md.text-center {
     overflow: hidden;
     border-radius: var(--card-radius) var(--card-radius) 0 0;
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     background: var(--c-surface-solid, rgba(255, 255, 255, 0.02));
     position: relative;
     contain: paint;
@@ -2212,7 +2258,7 @@ body.light-theme .container.testimonial-card.glass-card .p-lg.m-md.text-center {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     display: block;
     transition: transform .5s cubic-bezier(0.16, 1, 0.3, 1), filter .4s ease;
     will-change: transform;
@@ -2846,8 +2892,8 @@ body.light-theme .tech-item span {
 
 .swiper {
     width: 100%;
-    height: clamp(260px, 50vw, 420px);
-    aspect-ratio: 16 / 10;
+    height: clamp(260px, 50vw, 450px);
+    aspect-ratio: 16 / 9;
 }
 
 .swiper-slide {
@@ -2856,6 +2902,7 @@ body.light-theme .tech-item span {
     overflow: hidden;
     width: 100%;
     height: 100%;
+    aspect-ratio: 16 / 9;
     background: var(--c-surface-solid, rgba(255, 255, 255, 0.02));
     contain: paint;
 }
@@ -2956,7 +3003,7 @@ body.light-theme .tech-item span {
 .project-img {
     width: 100%;
     height: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     display: block;
 }
@@ -4242,7 +4289,7 @@ body.light-theme footer .copyright p {
     display: block;
     width: 100%;
     height: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     background: var(--c-bg-alt);
     border-radius: var(--card-radius) var(--card-radius) 0 0;
@@ -5333,53 +5380,85 @@ img.skeleton-loading {
    ------------------------------------------------------------ */
 @keyframes orbFloat1 {
     0% {
-        transform: translate(0, 0) scale(1);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
     }
-
+    33% {
+        transform: translate3d(6vw, 8vw, 0) scale(1.08) rotate(35deg);
+    }
+    66% {
+        transform: translate3d(-4vw, 10vw, 0) scale(0.94) rotate(70deg);
+    }
     100% {
-        transform: translate(10vw, 14vw) scale(1.14);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
     }
 }
 
 @keyframes orbFloat2 {
     0% {
-        transform: translate(0, 0) scale(1);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
     }
-
+    33% {
+        transform: translate3d(-7vw, -6vw, 0) scale(1.10) rotate(-45deg);
+    }
+    66% {
+        transform: translate3d(5vw, -8vw, 0) scale(0.92) rotate(-90deg);
+    }
     100% {
-        transform: translate(-11vw, -9vw) scale(.88);
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
     }
 }
 
 @keyframes orbFloat3 {
     0% {
-        transform: translate(0, 0);
+        transform: translate3d(0, 0, 0) scale(1);
     }
-
+    50% {
+        transform: translate3d(5vw, -6vw, 0) scale(1.06);
+    }
     100% {
-        transform: translate(-7vw, 11vw);
+        transform: translate3d(0, 0, 0) scale(1);
     }
 }
 
 @keyframes gridPulse {
     0% {
-        opacity: .22;
+        opacity: .25;
     }
-
+    50% {
+        opacity: .40;
+    }
     100% {
-        opacity: .48;
+        opacity: .25;
     }
 }
 
-@keyframes spotPulse {
+@keyframes spotFloat1 {
     0% {
-        opacity: .38;
-        transform: scale(1);
+        opacity: .45;
+        transform: translate3d(0, 0, 0) scale(1);
     }
-
+    50% {
+        opacity: .65;
+        transform: translate3d(3vw, 4vw, 0) scale(1.08);
+    }
     100% {
-        opacity: .75;
-        transform: scale(1.14);
+        opacity: .45;
+        transform: translate3d(-2vw, 6vw, 0) scale(0.96);
+    }
+}
+
+@keyframes spotFloat2 {
+    0% {
+        opacity: .40;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+        opacity: .60;
+        transform: translate3d(-4vw, -3vw, 0) scale(1.06);
+    }
+    100% {
+        opacity: .40;
+        transform: translate3d(3vw, -5vw, 0) scale(0.94);
     }
 }
 
@@ -5726,17 +5805,18 @@ body.high-contrast .stat-number {
         height: 14px !important;
     }
 
-    /* Profile image — constrained for mobile to prevent overflow */
+    /* Profile image — constrained for mobile with 16:9 ratio */
     .profile-container {
-        width: min(200px, 58vw) !important;
-        max-width: 200px !important;
+        width: min(320px, 86vw) !important;
+        max-width: 320px !important;
         height: auto !important;
         margin: 14px auto 16px !important;
     }
 
     .image-carousel {
-        width: min(200px, 58vw) !important;
-        height: min(224px, 65vw) !important;
+        width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        height: auto !important;
         border-radius: 18px !important;
     }
 
@@ -6331,9 +6411,25 @@ body.high-contrast .stat-number {
 /* ── Mobile performance ── */
 @media (max-width:768px) {
 
-    .gradients-container,
-    .falling-stars,
+    .gradients-container {
+        display: block !important;
+        opacity: .40;
+        filter: blur(50px);
+    }
+
+    .gradient-3,
+    .gradient-4,
+    .gradient-5,
     .spotlight {
+        display: none !important;
+    }
+
+    .gradient-1,
+    .gradient-2 {
+        animation-duration: 38s;
+    }
+
+    .falling-stars {
         display: none !important;
     }
 
@@ -7005,7 +7101,7 @@ body.light-theme .bottom-nav-more.active span {
     .project-img {
         width: 100%;
         height: 100%;
-        aspect-ratio: 16 / 10;
+        aspect-ratio: 16 / 9;
         object-fit: cover;
     }
 
@@ -7022,7 +7118,7 @@ body.light-theme .bottom-nav-more.active span {
     .blog-image {
         width: 100%;
         height: 100%;
-        aspect-ratio: 16 / 10;
+        aspect-ratio: 16 / 9;
         object-fit: cover;
     }
 
@@ -7061,12 +7157,13 @@ body.light-theme .bottom-nav-more.active span {
     }
 
     .profile-container {
-        max-width: 260px;
+        max-width: 380px;
     }
 
     .image-carousel {
-        width: 220px;
-        height: 248px;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        height: auto;
     }
 
     .hero-buttons {
@@ -7129,15 +7226,16 @@ body.light-theme .bottom-nav-more.active span {
     }
 
     .profile-container {
-        width: min(178px, 52vw) !important;
-        max-width: 178px !important;
+        width: min(280px, 80vw) !important;
+        max-width: 280px !important;
         margin: 10px auto 12px !important;
     }
 
     .image-carousel {
-        width: min(178px, 52vw) !important;
-        height: min(214px, 62vw) !important;
-        border-radius: 18px !important;
+        width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        height: auto !important;
+        border-radius: 16px !important;
     }
 
     .hero-buttons {
@@ -7268,13 +7366,15 @@ body.light-theme .bottom-nav-more.active span {
         min-height: 44px !important;
     }
 
-    .profile-container,
-    .image-carousel {
-        width: 172px !important;
+    .profile-container {
+        width: min(260px, calc(100vw - 36px)) !important;
+        max-width: 260px !important;
     }
 
     .image-carousel {
-        height: 206px !important;
+        width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        height: auto !important;
     }
 
     .bottom-nav-mobile {

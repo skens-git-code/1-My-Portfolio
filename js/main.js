@@ -599,24 +599,33 @@
     }
 
     initCursorInteractions() {
-      let lastTime = 0;
+      let rafId = null;
+      let targetX = 50;
+      let targetY = 50;
+      let currentX = 50;
+      let currentY = 50;
+
+      const updateMouseProperties = () => {
+        if (this.isDestroyed || !this.animatedBackground) return;
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+        this.animatedBackground.style.setProperty('--mouse-x', `${currentX.toFixed(2)}%`);
+        this.animatedBackground.style.setProperty('--mouse-y', `${currentY.toFixed(2)}%`);
+
+        if (Math.abs(targetX - currentX) > 0.05 || Math.abs(targetY - currentY) > 0.05) {
+          rafId = requestAnimationFrame(updateMouseProperties);
+        } else {
+          rafId = null;
+        }
+      };
 
       this.mouseMoveHandler = (e) => {
         if (this.isDestroyed) return;
-        const x = e.clientX;
-        const y = e.clientY;
-        const now = Date.now();
+        targetX = (e.clientX / window.innerWidth) * 100;
+        targetY = (e.clientY / window.innerHeight) * 100;
 
-        if (this.animatedBackground) {
-          const xPct = (x / window.innerWidth) * 100;
-          const yPct = (y / window.innerHeight) * 100;
-          this.animatedBackground.style.setProperty('--mouse-x', `${xPct}%`);
-          this.animatedBackground.style.setProperty('--mouse-y', `${yPct}%`);
-        }
-
-        if (now - lastTime > 100) {
-          this.createCursorTrail(x, y);
-          lastTime = now;
+        if (!rafId) {
+          rafId = requestAnimationFrame(updateMouseProperties);
         }
       };
 
@@ -649,68 +658,13 @@
     }
 
     createParticles() {
-      if (!this.particlesContainer) return;
-
-      const particleCount = AppState.isMobile ?
-        CONFIG.particles.count.mobile :
-        CONFIG.particles.count.desktop;
-
-      for (let i = 0; i < particleCount; i++) {
-        this.createParticle();
-      }
-    }
-
-    createParticle() {
-      if (!this.particlesContainer) return;
-
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-
-      const size = Utils.random(2, 5);
-      const startLeft = Utils.random(0, 100);
-      const duration = Utils.random(15, 25);
-      const delay = Utils.random(0, 10);
-
-      particle.style.width = `${size}px`;
-      particle.style.height = `${size}px`;
-      particle.style.left = `${startLeft}%`;
-      particle.style.animationDuration = `${duration}s`;
-      particle.style.animationDelay = `-${delay}s`;
-
-      const onEnd = () => {
-        particle.removeEventListener('animationend', onEnd);
-        if (this.particlesContainer && particle.parentNode === this.particlesContainer) {
-          this.particlesContainer.removeChild(particle);
-        }
-        const idx = this.particleElements.indexOf(particle);
-        if (idx !== -1) {
-          this.particleElements.splice(idx, 1);
-        }
-      };
-      particle.addEventListener('animationend', onEnd);
-      particle._cleanup = () => particle.removeEventListener('animationend', onEnd);
-
-      this.particlesContainer.appendChild(particle);
-      this.particleElements.push(particle);
+      // Decorative DOM particles retired in favor of GPU-accelerated Three.js ambient particles
+      return;
     }
 
     createFallingStars() {
-      if (!this.fallingStarsContainer) return;
-
-      const scheduleNextStar = () => {
-        if (this.isDestroyed) return;
-
-        if (!document.hidden && this.activeStars.size < 8) {
-          this.createFallingStar();
-        }
-
-        const minDelay = CONFIG.particles.starInterval?.min || 500;
-        const maxDelay = CONFIG.particles.starInterval?.max || 1500;
-        const nextStarDelay = Utils.random(minDelay, maxDelay);
-        this.starTimer = setTimeout(scheduleNextStar, nextStarDelay);
-      };
-
-      scheduleNextStar();
+      // Decorative falling stars retired for maximum compositor smoothness
+      return;
     }
 
     createFallingStar() {
@@ -2708,7 +2662,8 @@
       this.motionScale = isMobile ? 0.58 : isTablet ? 0.78 : 1;
       const particleCount = [72, 220, 520][this.tier];
       const maxPixelRatio = [1.0, 1.1, 1.25][this.tier];
-      this.frameInterval = 1000 / (isMobile ? 30 : isTablet ? 40 : 45);
+      // Native v-sync refresh rate (60/120/144Hz) on desktop; battery-conscious 60Hz on mobile
+      this.frameInterval = isMobile ? (1000 / 60) : 0;
 
       try {
         // 1. Scene Setup
@@ -3422,7 +3377,7 @@
 
       this.animationId = requestAnimationFrame(this.animate);
 
-      if (timestamp - this.lastFrameTime < this.frameInterval) return;
+      if (this.frameInterval > 0 && (timestamp - this.lastFrameTime < this.frameInterval)) return;
       this.lastFrameTime = timestamp;
 
       const dt = Math.min(0.05, this.clock.getDelta()) || 0.016;
