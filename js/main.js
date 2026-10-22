@@ -615,17 +615,17 @@
         if (this.isDestroyed || !this.animatedBackground) return;
         currentX += (targetX - currentX) * 0.08;
         currentY += (targetY - currentY) * 0.08;
-        this.animatedBackground.style.setProperty('--mouse-x', `${currentX.toFixed(2)}%`);
-        this.animatedBackground.style.setProperty('--mouse-y', `${currentY.toFixed(2)}%`);
+        this.animatedBackground.style.setProperty('--mouse-x', `${currentX.toFixed(1)}%`);
+        this.animatedBackground.style.setProperty('--mouse-y', `${currentY.toFixed(1)}%`);
 
-        if (Math.abs(targetX - currentX) > 0.05 || Math.abs(targetY - currentY) > 0.05) {
+        if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
           rafId = requestAnimationFrame(updateMouseProperties);
         } else {
           rafId = null;
         }
       };
 
-      this.mouseMoveHandler = (e) => {
+      this.mouseMoveHandler = Utils.throttle((e) => {
         if (this.isDestroyed) return;
         targetX = (e.clientX / window.innerWidth) * 100;
         targetY = (e.clientY / window.innerHeight) * 100;
@@ -633,34 +633,13 @@
         if (!rafId) {
           rafId = requestAnimationFrame(updateMouseProperties);
         }
-      };
+      }, 30);
 
       window.addEventListener('mousemove', this.mouseMoveHandler, { passive: true });
     }
 
     createCursorTrail(x, y) {
-      if (this.isDestroyed || AppState.prefersReducedMotion) return;
-      if (!this.activeTrailCount) this.activeTrailCount = 0;
-      if (this.activeTrailCount >= 10) return;
-
-      const trail = document.createElement('div');
-      trail.className = 'cursor-trail';
-      trail.style.left = `${x}px`;
-      trail.style.top = `${y}px`;
-
-      const size = Math.random() * 3 + 2;
-      trail.style.width = `${size}px`;
-      trail.style.height = `${size}px`;
-
-      document.body.appendChild(trail);
-      this.activeTrailCount++;
-
-      setTimeout(() => {
-        if (trail.parentNode) {
-          trail.parentNode.removeChild(trail);
-        }
-        this.activeTrailCount = Math.max(0, this.activeTrailCount - 1);
-      }, 700);
+      return;
     }
 
     createParticles() {
@@ -674,41 +653,41 @@
     }
 
     createFallingStar() {
-      if (!this.fallingStarsContainer || this.isDestroyed) return;
-
-      const star = document.createElement('div');
-      star.className = 'star';
-      star.style.willChange = 'transform, opacity';
-
-      const startX = Utils.random(0, window.innerWidth);
-      const duration = Utils.random(0.5, 1.5);
-
-      star.style.left = `${startX}px`;
-      star.style.animationDuration = `${duration}s`;
-
-      const colors = [
-        'var(--primary)', 'var(--accent-1)', 'var(--accent-2)',
-        'var(--accent-3)', '#ff00ff', '#00ffff', '#ffff00'
-      ];
-      star.style.background = colors[Math.floor(Math.random() * colors.length)];
-
-      const size = Utils.random(2, 5);
-      star.style.width = `${size}px`;
-      star.style.height = `${size}px`;
-
-      this.fallingStarsContainer.appendChild(star);
-      this.activeStars.add(star);
-
-      setTimeout(() => {
-        this.activeStars.delete(star);
-        if (star.parentNode) {
-          star.parentNode.removeChild(star);
-        }
-      }, duration * 1000);
+      return;
     }
 
     optimizeForDevices() {
-      // Logic for device adaptation
+      if (typeof window === 'undefined') return;
+      const isLowTier = AppState.isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+      
+      // Hardware-accelerate background layer and reduce compositor redraws
+      if (this.animatedBackground) {
+        this.animatedBackground.style.transform = 'translateZ(0)';
+        this.animatedBackground.style.backfaceVisibility = 'hidden';
+        this.animatedBackground.style.perspective = '1000px';
+      }
+
+      // Optimize blur filters and gradient layers dynamically on low-power devices
+      const gradientsContainer = document.querySelector('.gradients-container');
+      if (gradientsContainer) {
+        gradientsContainer.style.transform = 'translateZ(0)';
+        gradientsContainer.style.backfaceVisibility = 'hidden';
+        if (isLowTier) {
+          gradientsContainer.style.filter = 'blur(40px)';
+          // Limit active gradient blobs on low-end hardware to reduce GPU fill rate
+          const extraBlobs = document.querySelectorAll('.gradient-3, .gradient-4, .gradient-5, .spotlight-2, .spotlight-3');
+          extraBlobs.forEach(blob => {
+            blob.style.display = 'none';
+          });
+        }
+      }
+
+      // Force GPU promotion on gradient orbs
+      document.querySelectorAll('.gradient, .spotlight').forEach(el => {
+        el.style.transform = 'translate3d(0, 0, 0)';
+        el.style.willChange = 'transform';
+        el.style.backfaceVisibility = 'hidden';
+      });
     }
 
     destroy() {
@@ -1329,16 +1308,21 @@
 
       this.animObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          // Pause/resume marquee track based on wrapper visibility without calculating overflow width
-          const track = entry.target.querySelector('.skills-track') || entry.target.querySelector('.ticker-track');
-          if (track) {
+          // Pause/resume marquee and slider tracks based on container viewport visibility
+          const tracks = entry.target.querySelectorAll('.skills-track, .ai-marquee-track, .ticker-track');
+          tracks.forEach(track => {
             track.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
-          }
+            if (entry.isIntersecting) {
+              track.style.willChange = 'transform';
+            } else {
+              track.style.willChange = 'auto';
+            }
+          });
         });
-      }, { threshold: 0, rootMargin: '100px 0px' });
+      }, { threshold: 0, rootMargin: '120px 0px' });
 
-      // Observe the visible wrapper container rather than arbitrary overflow tracks
-      document.querySelectorAll('.skills-carousel').forEach((el) => {
+      // Observe all sliding strip wrappers across the entire portfolio
+      document.querySelectorAll('.skills-carousel, .ai-strip-container, .ai-marquee-wrapper').forEach((el) => {
         this.animObserver.observe(el);
       });
     }
@@ -2802,12 +2786,16 @@
 
       const isMobile = window.innerWidth <= 768;
       const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
-      this.tier = isMobile ? 0 : isTablet ? 1 : 2;
+      const hwConcurrency = typeof navigator !== 'undefined' && navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4;
+      const devMemory = typeof navigator !== 'undefined' && navigator.deviceMemory ? navigator.deviceMemory : 4;
+      const isLowEndDevice = isMobile || hwConcurrency <= 4 || devMemory <= 4;
+
+      this.tier = isLowEndDevice ? 0 : isTablet ? 1 : 2;
       this.motionScale = isMobile ? 0.58 : isTablet ? 0.78 : 1;
-      const particleCount = [72, 220, 520][this.tier];
-      const maxPixelRatio = [1.0, 1.1, 1.25][this.tier];
-      // Native v-sync refresh rate (60/120/144Hz) on desktop; battery-conscious 60Hz on mobile
-      this.frameInterval = isMobile ? (1000 / 60) : 0;
+      const particleCount = [48, 160, 420][this.tier];
+      const maxPixelRatio = [1.0, 1.0, 1.2][this.tier];
+      // Adapt frame rate to device tier: 45fps on low-end/mobile saves huge GPU/battery, v-sync on high-end desktop
+      this.frameInterval = isLowEndDevice ? (1000 / 45) : (isMobile ? (1000 / 60) : 0);
 
       try {
         // 1. Scene Setup
