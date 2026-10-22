@@ -26,8 +26,8 @@
   // Configuration
   const CONFIG = {
     loading: {
-      minDisplayTime: 400,
-      maxDisplayTime: 3500
+      minDisplayTime: 4000,
+      maxDisplayTime: 7000
     },
     animations: {
       scrollThrottle: 16,
@@ -270,10 +270,10 @@
       this.minDisplayTime = CONFIG.loading.minDisplayTime;
       this.maxDisplayTime = CONFIG.loading.maxDisplayTime;
       this.loadingMessages = [
-        'Warming up the experience…',
-        'Loading the visual system…',
-        'Connecting the details…',
-        'Almost ready to explore.'
+        'Initializing Skens Space protocols…',
+        'Calibrating neural visual engines…',
+        'Connecting full-stack architectures…',
+        'Entering the Skens Space.'
       ];
       this.currentMessageIndex = 0;
       this.isHidden = false;
@@ -285,6 +285,10 @@
         const circumference = 2 * Math.PI * 43;
         this.progressRing.style.strokeDasharray = `${circumference}`;
       }
+
+      // Tag Clarity Session on load
+      AnalyticsTracker.setTag('loading_screen', 'skens_space');
+      AnalyticsTracker.sendEvent('skens_space_loader_start');
     }
 
     async init() {
@@ -295,16 +299,10 @@
       this.setupForceHide();
 
       try {
-        // Start loading simulation immediately
+        // Start loading simulation tuned for 4-second experience
         await this.simulateLoadingProgress();
 
-        // Wait for window load OR timeout
-        await Promise.race([
-          this.waitForCriticalAssets(),
-          this.timeoutPromise(1400)
-        ]);
-
-        // Ensure minimum display time (skip if fast/testing parameter provided)
+        // Wait for window load OR minimum display time (4 seconds)
         const isFastMode = new URLSearchParams(window.location.search).has('fast') || new URLSearchParams(window.location.search).has('skipLoader');
         if (!isFastMode) {
           const elapsed = performance.now() - this.startTime;
@@ -356,7 +354,8 @@
     simulateLoadingProgress() {
       return new Promise((resolve) => {
         let lastProgress = 0;
-        const duration = AppState.prefersReducedMotion ? 0 : (document.readyState === 'complete' ? 500 : 800);
+        // 4 seconds duration (3800ms + buffer) for smooth pacing
+        const duration = AppState.prefersReducedMotion ? 0 : 3800;
         const startedAt = performance.now();
 
         const updateProgress = () => {
@@ -366,10 +365,13 @@
           }
 
           const elapsed = performance.now() - startedAt;
-          this.progress = duration === 0 ? 100 : Math.min(100, (elapsed / duration) * 100);
+          // Smooth progressive easing curve
+          const rawRatio = Math.min(1, elapsed / duration);
+          const easeOutQuad = rawRatio * (2 - rawRatio);
+          this.progress = duration === 0 ? 100 : Math.min(100, easeOutQuad * 100);
           this.updateProgressElements();
 
-          if (this.progress - lastProgress >= 25 || this.progress >= 100) {
+          if (this.progress - lastProgress >= 24 || this.progress >= 100) {
             lastProgress = this.progress;
             this.currentMessageIndex = Math.min(
               Math.floor(this.progress / 25),
@@ -383,7 +385,7 @@
             return;
           }
 
-          this.progressTimeout = setTimeout(updateProgress, 32);
+          this.progressTimeout = setTimeout(updateProgress, 28);
         };
 
         this.updateProgressElements();
@@ -446,10 +448,14 @@
       if (this.loadingPercentage) {
         this.loadingPercentage.innerHTML = `
                 <span>100%</span>
-                <div>Ready to explore.</div>`;
+                <div>Welcome to the Skens Space.</div>`;
       }
 
-      await this.timeoutPromise(AppState.prefersReducedMotion ? 0 : 220);
+      AnalyticsTracker.sendEvent('skens_space_loader_complete', {
+        duration_ms: Math.round(performance.now() - this.startTime)
+      });
+
+      await this.timeoutPromise(AppState.prefersReducedMotion ? 0 : 250);
 
       if (this.loadingScreen) {
         this.loadingScreen.style.transition = 'opacity 0.45s ease, visibility 0.45s ease';

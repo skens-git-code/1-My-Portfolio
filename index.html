@@ -143,21 +143,27 @@
     <!-- Custom cursor disabled -->
 
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Loading portfolio">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Loading Skens Space">
         <div class="loader-ambient loader-ambient-one" aria-hidden="true"></div>
         <div class="loader-ambient loader-ambient-two" aria-hidden="true"></div>
         <div class="loader-shell">
             <div class="loader-brand">
-                <span class="loader-monogram" aria-hidden="true">SM</span>
-                <span class="loader-brand-copy">
-                    <small>PORTFOLIO / 2026</small>
+                <span class="loader-monogram" aria-hidden="true">SK</span>
+                <div class="loader-brand-copy">
+                    <small>SKENS.INC / 2026</small>
                     <strong>Sarthak Mathapati</strong>
-                </span>
+                </div>
+                <div class="loader-clarity-badge" title="Microsoft Clarity Active Telemetry">
+                    <span class="clarity-dot"></span>
+                    <i class="fab fa-microsoft"></i>
+                    <span>Clarity Active</span>
+                </div>
             </div>
 
-            <p class="loader-kicker">Designing digital experiences with intent</p>
-            <p class="loader-title" role="presentation">Building <span>what comes next.</span></p>
-            <p class="loader-subtitle">Preparing a thoughtful space for ideas, code, and meaningful work.</p>
+            <p class="loader-kicker">Welcome to the Next-Gen Digital Realm</p>
+            <h1 class="loader-title" role="presentation">Entering in the <span class="text-gradient text-shimmer">Skens Space</span></h1>
+            <p class="loader-subtitle">Preparing an intelligent ecosystem of full-stack engineering, AI architectures, and interactive experiences.</p>
 
             <div class="loader-progress-row">
                 <div class="loader-progress-ring" aria-hidden="true">
@@ -170,7 +176,7 @@
                 <div class="loader-progress-copy">
                     <div class="loading-percentage" id="loadingPercentage">
                         <span>0%</span>
-                        <div>Warming up the experience…</div>
+                        <div>Initializing Skens Space protocols…</div>
                     </div>
                     <div class="loader-progress-track" aria-hidden="true">
                         <div class="progress-bar" id="progressBar"></div>
@@ -179,8 +185,8 @@
             </div>
 
             <div class="loader-footer">
-                <span><i class="fas fa-star" aria-hidden="true"></i> A small universe is loading</span>
-                <span>v1.0.0</span>
+                <span><i class="fas fa-satellite-dish" aria-hidden="true"></i> Neural systems online</span>
+                <span>v2.0 • Skens Space</span>
             </div>
         </div>
     </div>
@@ -241,20 +247,29 @@
     <!-- Header -->
     <header role="banner">
         <div class="header-inner">
-            <a href="#home" class="port mobile-brand" aria-label="Sarthak Mathapati — home">
-                <svg class="brand-logo-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-                    <polygon points="12,2 21,7.5 21,16.5 12,22 3,16.5 3,7.5" stroke="#00f0ff" stroke-width="2" fill="rgba(0,240,255,0.12)"/>
-                    <polyline points="9,9 6,12 9,15" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <polyline points="15,9 18,12 15,15" stroke="#8855ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <line x1="13" y1="8" x2="11" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span>Me</span>
-            </a>
-            
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mainNav">
-                <i class="fas fa-bars" aria-hidden="true"></i>
-            </button>
+            <!-- Mobile Top Floating Bar Island -->
+            <div class="mobile-top-bar" aria-label="Mobile Navigation Bar">
+                <a href="#home" class="port mobile-brand" aria-label="Sarthak Mathapati — home">
+                    <svg class="brand-logo-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
+                        <polygon points="12,2 21,7.5 21,16.5 12,22 3,16.5 3,7.5" stroke="#00f0ff" stroke-width="2" fill="rgba(0,240,255,0.12)"/>
+                        <polyline points="9,9 6,12 9,15" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="15,9 18,12 15,15" stroke="#8855ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="13" y1="8" x2="11" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Skens</span>
+                </a>
 
+                <div class="mobile-top-actions">
+                    <button class="mobile-top-btn theme-toggle" id="mobileThemeQuickToggle" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
+                    </button>
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mainNav">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Container (Desktop Floating Pill / Mobile Drawer) -->
             <nav class="nav-container glass-card" id="mainNav" role="navigation" aria-label="Main navigation">
                 <div class="nav-indicator"></div>
                 
@@ -266,7 +281,7 @@
                             <polyline points="15,9 18,12 15,15" stroke="#8855ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <line x1="13" y1="8" x2="11" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
                         </svg>
-                        <span>Me</span>
+                        <span>Skens</span>
                     </span>
                     <button class="drawer-close-btn" id="drawerCloseBtn" aria-label="Close navigation menu">
                         <i class="fas fa-times" aria-hidden="true"></i>
@@ -280,15 +295,16 @@
                         <polyline points="15,9 18,12 15,15" stroke="#8855ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         <line x1="13" y1="8" x2="11" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    <span>Me</span>
+                    <span>Skens</span>
                 </a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="#tech-stack" class="nav-link">Stack</a>
-                <a href="#routine" class="nav-link">Routine</a>
-                <a href="#projects" class="nav-link">Projects</a>
-                <a href="#open-source" class="nav-link">Open Source</a>
-                <a href="#experience" class="nav-link">Journey</a>
-                <a href="#contact" class="nav-link">Contact</a>
+                <a href="#home" class="nav-link mobile-only-link"><i class="fas fa-home" aria-hidden="true"></i><span>Home</span></a>
+                <a href="#about" class="nav-link"><i class="fas fa-user mobile-icon" aria-hidden="true"></i><span>About</span></a>
+                <a href="#tech-stack" class="nav-link"><i class="fas fa-microchip mobile-icon" aria-hidden="true"></i><span>Stack</span></a>
+                <a href="#routine" class="nav-link"><i class="fas fa-clock mobile-icon" aria-hidden="true"></i><span>Routine</span></a>
+                <a href="#projects" class="nav-link"><i class="fas fa-briefcase mobile-icon" aria-hidden="true"></i><span>Projects</span></a>
+                <a href="#open-source" class="nav-link"><i class="fas fa-code-branch mobile-icon" aria-hidden="true"></i><span>Open Source</span></a>
+                <a href="#experience" class="nav-link"><i class="fas fa-chart-line mobile-icon" aria-hidden="true"></i><span>Journey</span></a>
+                <a href="#contact" class="nav-link"><i class="fas fa-envelope mobile-icon" aria-hidden="true"></i><span>Contact</span></a>
                 
                 <div class="nav-actions">
                     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
@@ -354,21 +370,39 @@
                 </p>
 
                 <!-- Skills Carousel -->
-                <div class="skills-carousel fade-in">
+                <div class="skills-carousel fade-in" aria-label="Core Technology & AI Stack">
                     <div class="skills-track">
+                        <!-- Primary Set -->
+                        <div class="skill-item"><i class="fas fa-microchip icon-claude-mini"></i><span>Claude</span></div>
+                        <div class="skill-item"><i class="fas fa-robot icon-gpt-mini"></i><span>Open AI</span></div>
+                        <div class="skill-item"><i class="fas fa-atom icon-deepseek-mini"></i><span>DeepSeek</span></div>
+                        <div class="skill-item"><i class="fas fa-meteor icon-antigravity-mini"></i><span>Antigravity</span></div>
+                        <div class="skill-item"><i class="fas fa-sparkles icon-gemini-mini"></i><span>Gemini 2.0</span></div>
                         <div class="skill-item"><i class="fab fa-react"></i><span>React.js</span></div>
                         <div class="skill-item"><i class="fab fa-node-js"></i><span>Node.js</span></div>
                         <div class="skill-item"><i class="fab fa-python"></i><span>Python</span></div>
+                        <div class="skill-item"><i class="fas fa-link icon-langchain-mini"></i><span>LangChain</span></div>
+                        <div class="skill-item"><i class="fas fa-fire icon-pytorch-mini"></i><span>PyTorch</span></div>
                         <div class="skill-item"><i class="fas fa-database"></i><span>MongoDB</span></div>
-                        <div class="skill-item"><i class="fab fa-js"></i><span>JavaScript</span></div>
+                        <div class="skill-item"><i class="fab fa-js"></i><span>TypeScript/JS</span></div>
                         <div class="skill-item"><i class="fas fa-cloud"></i><span>AWS</span></div>
-                        <!-- Duplicate for seamless loop -->
-                        <div class="skill-item"><i class="fab fa-react"></i><span>React.js</span></div>
-                        <div class="skill-item"><i class="fab fa-node-js"></i><span>Node.js</span></div>
-                        <div class="skill-item"><i class="fab fa-python"></i><span>Python</span></div>
-                        <div class="skill-item"><i class="fas fa-database"></i><span>MongoDB</span></div>
-                        <div class="skill-item"><i class="fab fa-js"></i><span>JavaScript</span></div>
-                        <div class="skill-item"><i class="fas fa-cloud"></i><span>AWS</span></div>
+                        <div class="skill-item"><i class="fab fa-docker"></i><span>Docker</span></div>
+
+                        <!-- Duplicate Set for Seamless 100% Infinite Loop -->
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-microchip icon-claude-mini"></i><span>Claude </span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-robot icon-gpt-mini"></i><span>Open Ai</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-atom icon-deepseek-mini"></i><span>DeepSeek R1</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-meteor icon-antigravity-mini"></i><span>Antigravity</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-sparkles icon-gemini-mini"></i><span>Gemini 2.0</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fab fa-react"></i><span>React.js</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fab fa-node-js"></i><span>Node.js</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fab fa-python"></i><span>Python</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-link icon-langchain-mini"></i><span>LangChain</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-fire icon-pytorch-mini"></i><span>PyTorch</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-database"></i><span>MongoDB</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fab fa-js"></i><span>TypeScript/JS</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fas fa-cloud"></i><span>AWS</span></div>
+                        <div class="skill-item" aria-hidden="true"><i class="fab fa-docker"></i><span>Docker</span></div>
                     </div>
                 </div>
 
@@ -610,6 +644,384 @@
                     <p class="elegant-text tech-stack-summary">
                         A curated toolkit of robust technologies, modern frameworks, and cloud architectures I leverage to build performant, enterprise-grade digital experiences.
                     </p>
+                </div>
+
+                <!-- 20+ TOP AI MODELS & AUTONOMOUS AGENTS SLIDING STRIP -->
+                <div class="ai-strip-container glass-card interactive-card">
+                    <div class="ai-strip-header">
+                        <div class="ai-strip-title">
+                            <span class="ai-live-badge"><i class="fas fa-brain"></i> AI AGENTS & MODELS</span>
+                            <h3>Autonomous Intelligence Ecosystem</h3>
+                        </div>
+                        <span class="ai-strip-sub">24+ Frontier LLMs, Autonomous Agents & Neural Engines</span>
+                    </div>
+
+                    <div class="ai-marquee-wrapper" aria-label="Top AI Agents and Foundation Models">
+                        <div class="ai-marquee-track">
+                            <!-- ITEM 1: Claude -->
+                            <div class="ai-agent-item" data-agent="claude">
+                                <span class="ai-agent-icon icon-claude"><i class="fas fa-microchip"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Claude 3.7 Sonnet</span>
+                                    <span class="ai-agent-creator">Anthropic</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 2: GPT-4o -->
+                            <div class="ai-agent-item" data-agent="gpt">
+                                <span class="ai-agent-icon icon-gpt"><i class="fas fa-robot"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">GPT-4o / o3</span>
+                                    <span class="ai-agent-creator">OpenAI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 3: DeepSeek -->
+                            <div class="ai-agent-item" data-agent="deepseek">
+                                <span class="ai-agent-icon icon-deepseek"><i class="fas fa-atom"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">DeepSeek R1 / V3</span>
+                                    <span class="ai-agent-creator">DeepSeek AI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 4: Antigravity -->
+                            <div class="ai-agent-item" data-agent="antigravity">
+                                <span class="ai-agent-icon icon-antigravity"><i class="fas fa-meteor"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Antigravity</span>
+                                    <span class="ai-agent-creator">Google DeepMind</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 5: Gemini -->
+                            <div class="ai-agent-item" data-agent="gemini">
+                                <span class="ai-agent-icon icon-gemini"><i class="fas fa-sparkles"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Gemini 2.0 Flash</span>
+                                    <span class="ai-agent-creator">Google</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 6: Cursor -->
+                            <div class="ai-agent-item" data-agent="cursor">
+                                <span class="ai-agent-icon icon-cursor"><i class="fas fa-terminal"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Cursor AI</span>
+                                    <span class="ai-agent-creator">Anysphere</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 7: GitHub Copilot -->
+                            <div class="ai-agent-item" data-agent="copilot">
+                                <span class="ai-agent-icon icon-copilot"><i class="fab fa-github"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">GitHub Copilot</span>
+                                    <span class="ai-agent-creator">Microsoft</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 8: Perplexity -->
+                            <div class="ai-agent-item" data-agent="perplexity">
+                                <span class="ai-agent-icon icon-perplexity"><i class="fas fa-search"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Perplexity AI</span>
+                                    <span class="ai-agent-creator">Perplexity</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 9: Midjourney -->
+                            <div class="ai-agent-item" data-agent="midjourney">
+                                <span class="ai-agent-icon icon-midjourney"><i class="fas fa-palette"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Midjourney v6</span>
+                                    <span class="ai-agent-creator">Midjourney</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 10: Grok -->
+                            <div class="ai-agent-item" data-agent="grok">
+                                <span class="ai-agent-icon icon-grok"><i class="fas fa-bolt"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Grok 3</span>
+                                    <span class="ai-agent-creator">xAI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 11: Mistral -->
+                            <div class="ai-agent-item" data-agent="mistral">
+                                <span class="ai-agent-icon icon-mistral"><i class="fas fa-wind"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Mistral Large</span>
+                                    <span class="ai-agent-creator">Mistral AI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 12: Llama 3 -->
+                            <div class="ai-agent-item" data-agent="llama">
+                                <span class="ai-agent-icon icon-llama"><i class="fas fa-shield-alt"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Llama 3.3 70B</span>
+                                    <span class="ai-agent-creator">Meta AI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 13: LangChain -->
+                            <div class="ai-agent-item" data-agent="langchain">
+                                <span class="ai-agent-icon icon-langchain"><i class="fas fa-link"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">LangChain Agents</span>
+                                    <span class="ai-agent-creator">LangChain</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 14: AutoGPT -->
+                            <div class="ai-agent-item" data-agent="autogpt">
+                                <span class="ai-agent-icon icon-autogpt"><i class="fas fa-cogs"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">AutoGPT</span>
+                                    <span class="ai-agent-creator">Autonomous</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 15: Hugging Face -->
+                            <div class="ai-agent-item" data-agent="huggingface">
+                                <span class="ai-agent-icon icon-huggingface"><i class="fas fa-smile"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Smolagents</span>
+                                    <span class="ai-agent-creator">Hugging Face</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 16: CrewAI -->
+                            <div class="ai-agent-item" data-agent="crewai">
+                                <span class="ai-agent-icon icon-crewai"><i class="fas fa-users-cog"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">CrewAI Multi-Agent</span>
+                                    <span class="ai-agent-creator">CrewAI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 17: Cohere -->
+                            <div class="ai-agent-item" data-agent="cohere">
+                                <span class="ai-agent-icon icon-cohere"><i class="fas fa-network-wired"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Command R+</span>
+                                    <span class="ai-agent-creator">Cohere</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 18: ElevenLabs -->
+                            <div class="ai-agent-item" data-agent="elevenlabs">
+                                <span class="ai-agent-icon icon-elevenlabs"><i class="fas fa-waveform-path"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">ElevenLabs Conversational</span>
+                                    <span class="ai-agent-creator">ElevenLabs</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 19: Runway -->
+                            <div class="ai-agent-item" data-agent="runway">
+                                <span class="ai-agent-icon icon-runway"><i class="fas fa-video"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Runway Gen-3</span>
+                                    <span class="ai-agent-creator">RunwayML</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 20: OpenAI Sora -->
+                            <div class="ai-agent-item" data-agent="sora">
+                                <span class="ai-agent-icon icon-sora"><i class="fas fa-film"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Sora Video</span>
+                                    <span class="ai-agent-creator">OpenAI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 21: OpenAI Whisper -->
+                            <div class="ai-agent-item" data-agent="whisper">
+                                <span class="ai-agent-icon icon-whisper"><i class="fas fa-headphones"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Whisper v3</span>
+                                    <span class="ai-agent-creator">OpenAI Speech</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 22: Qwen -->
+                            <div class="ai-agent-item" data-agent="qwen">
+                                <span class="ai-agent-icon icon-qwen"><i class="fas fa-microchip"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Qwen 2.5 Max</span>
+                                    <span class="ai-agent-creator">Alibaba Cloud</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 23: Stable Diffusion -->
+                            <div class="ai-agent-item" data-agent="stablediffusion">
+                                <span class="ai-agent-icon icon-stablediffusion"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Stable Diffusion 3.5</span>
+                                    <span class="ai-agent-creator">Stability AI</span>
+                                </div>
+                            </div>
+                            <!-- ITEM 24: Devin AI -->
+                            <div class="ai-agent-item" data-agent="devin">
+                                <span class="ai-agent-icon icon-devin"><i class="fas fa-code-branch"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Devin Agent</span>
+                                    <span class="ai-agent-creator">Cognition AI</span>
+                                </div>
+                            </div>
+
+                            <!-- DUPLICATE SET FOR INFINITE SEAMLESS LOOP -->
+                            <div class="ai-agent-item" data-agent="claude" aria-hidden="true">
+                                <span class="ai-agent-icon icon-claude"><i class="fas fa-microchip"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Claude 3.7 Sonnet</span>
+                                    <span class="ai-agent-creator">Anthropic</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="gpt" aria-hidden="true">
+                                <span class="ai-agent-icon icon-gpt"><i class="fas fa-robot"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">GPT-4o / o3</span>
+                                    <span class="ai-agent-creator">OpenAI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="deepseek" aria-hidden="true">
+                                <span class="ai-agent-icon icon-deepseek"><i class="fas fa-atom"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">DeepSeek R1 / V3</span>
+                                    <span class="ai-agent-creator">DeepSeek AI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="antigravity" aria-hidden="true">
+                                <span class="ai-agent-icon icon-antigravity"><i class="fas fa-meteor"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Antigravity</span>
+                                    <span class="ai-agent-creator">Google DeepMind</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="gemini" aria-hidden="true">
+                                <span class="ai-agent-icon icon-gemini"><i class="fas fa-sparkles"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Gemini 2.0 Flash</span>
+                                    <span class="ai-agent-creator">Google</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="cursor" aria-hidden="true">
+                                <span class="ai-agent-icon icon-cursor"><i class="fas fa-terminal"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Cursor AI</span>
+                                    <span class="ai-agent-creator">Anysphere</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="copilot" aria-hidden="true">
+                                <span class="ai-agent-icon icon-copilot"><i class="fab fa-github"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">GitHub Copilot</span>
+                                    <span class="ai-agent-creator">Microsoft</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="perplexity" aria-hidden="true">
+                                <span class="ai-agent-icon icon-perplexity"><i class="fas fa-search"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Perplexity AI</span>
+                                    <span class="ai-agent-creator">Perplexity</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="midjourney" aria-hidden="true">
+                                <span class="ai-agent-icon icon-midjourney"><i class="fas fa-palette"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Midjourney v6</span>
+                                    <span class="ai-agent-creator">Midjourney</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="grok" aria-hidden="true">
+                                <span class="ai-agent-icon icon-grok"><i class="fas fa-bolt"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Grok 3</span>
+                                    <span class="ai-agent-creator">xAI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="mistral" aria-hidden="true">
+                                <span class="ai-agent-icon icon-mistral"><i class="fas fa-wind"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Mistral Large</span>
+                                    <span class="ai-agent-creator">Mistral AI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="llama" aria-hidden="true">
+                                <span class="ai-agent-icon icon-llama"><i class="fas fa-shield-alt"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Llama 3.3 70B</span>
+                                    <span class="ai-agent-creator">Meta AI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="langchain" aria-hidden="true">
+                                <span class="ai-agent-icon icon-langchain"><i class="fas fa-link"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">LangChain Agents</span>
+                                    <span class="ai-agent-creator">LangChain</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="autogpt" aria-hidden="true">
+                                <span class="ai-agent-icon icon-autogpt"><i class="fas fa-cogs"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">AutoGPT</span>
+                                    <span class="ai-agent-creator">Autonomous</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="huggingface" aria-hidden="true">
+                                <span class="ai-agent-icon icon-huggingface"><i class="fas fa-smile"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Smolagents</span>
+                                    <span class="ai-agent-creator">Hugging Face</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="crewai" aria-hidden="true">
+                                <span class="ai-agent-icon icon-crewai"><i class="fas fa-users-cog"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">CrewAI Multi-Agent</span>
+                                    <span class="ai-agent-creator">CrewAI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="cohere" aria-hidden="true">
+                                <span class="ai-agent-icon icon-cohere"><i class="fas fa-network-wired"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Command R+</span>
+                                    <span class="ai-agent-creator">Cohere</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="elevenlabs" aria-hidden="true">
+                                <span class="ai-agent-icon icon-elevenlabs"><i class="fas fa-waveform-path"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">ElevenLabs Conversational</span>
+                                    <span class="ai-agent-creator">ElevenLabs</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="runway" aria-hidden="true">
+                                <span class="ai-agent-icon icon-runway"><i class="fas fa-video"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Runway Gen-3</span>
+                                    <span class="ai-agent-creator">RunwayML</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="sora" aria-hidden="true">
+                                <span class="ai-agent-icon icon-sora"><i class="fas fa-film"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Sora Video</span>
+                                    <span class="ai-agent-creator">OpenAI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="whisper" aria-hidden="true">
+                                <span class="ai-agent-icon icon-whisper"><i class="fas fa-headphones"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Whisper v3</span>
+                                    <span class="ai-agent-creator">OpenAI Speech</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="qwen" aria-hidden="true">
+                                <span class="ai-agent-icon icon-qwen"><i class="fas fa-microchip"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Qwen 2.5 Max</span>
+                                    <span class="ai-agent-creator">Alibaba Cloud</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="stablediffusion" aria-hidden="true">
+                                <span class="ai-agent-icon icon-stablediffusion"><i class="fas fa-wand-magic-sparkles"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Stable Diffusion 3.5</span>
+                                    <span class="ai-agent-creator">Stability AI</span>
+                                </div>
+                            </div>
+                            <div class="ai-agent-item" data-agent="devin" aria-hidden="true">
+                                <span class="ai-agent-icon icon-devin"><i class="fas fa-code-branch"></i></span>
+                                <div class="ai-agent-info">
+                                    <span class="ai-agent-name">Devin Agent</span>
+                                    <span class="ai-agent-creator">Cognition AI</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="tech-stack-categories">
@@ -2273,62 +2685,14 @@ function InteractiveButton({ children, onClick }) {
     </main>
 
     <!-- ============================================================
-         FLOATING BOTTOM NAVIGATION – MOBILE ONLY
+         FLOATING BOTTOM NAVIGATION (DEPRECATED – NAVBAR MOVED TO TOP)
          ============================================================ -->
+    <!--
     <div class="bottom-nav-backdrop" id="bottomNavBackdrop" aria-hidden="true"></div>
     <nav class="bottom-nav-mobile" id="bottomNav" role="navigation" aria-label="Mobile navigation">
-        <div class="bottom-nav-inner">
-            <a href="#home" class="bottom-nav-link active" data-section="home" aria-label="Home">
-                <i class="fas fa-home" aria-hidden="true"></i>
-                <span>Home</span>
-            </a>
-            <a href="#about" class="bottom-nav-link" data-section="about" aria-label="About">
-                <i class="fas fa-user" aria-hidden="true"></i>
-                <span>About</span>
-            </a>
-            <a href="#projects" class="bottom-nav-link" data-section="projects" aria-label="Projects">
-                <i class="fas fa-briefcase" aria-hidden="true"></i>
-                <span>Projects</span>
-            </a>
-            <a href="#contact" class="bottom-nav-link" data-section="contact" aria-label="Contact">
-                <i class="fas fa-envelope" aria-hidden="true"></i>
-                <span>Contact</span>
-            </a>
-            <button class="bottom-nav-more" id="bottomNavMore" aria-label="More options" aria-expanded="false">
-                <i class="fas fa-ellipsis-v" aria-hidden="true"></i>
-                <span>More</span>
-            </button>
-        </div>
-
-        <!-- Expandable More Menu -->
-        <div class="bottom-nav-dropdown" id="bottomNavDropdown" role="menu">
-            <a href="#tech-stack" class="bottom-nav-dropdown-link" data-section="tech-stack" role="menuitem">
-                <i class="fas fa-cogs" aria-hidden="true"></i>
-                <span>Stack</span>
-            </a>
-            <a href="#routine" class="bottom-nav-dropdown-link" data-section="routine" role="menuitem">
-                <i class="fas fa-clock" aria-hidden="true"></i>
-                <span>Routine</span>
-            </a>
-            <a href="#open-source" class="bottom-nav-dropdown-link" data-section="open-source" role="menuitem">
-                <i class="fas fa-code-branch" aria-hidden="true"></i>
-                <span>Open Source</span>
-            </a>
-            <a href="#experience" class="bottom-nav-dropdown-link" data-section="experience" role="menuitem">
-                <i class="fas fa-chart-line" aria-hidden="true"></i>
-                <span>Journey</span>
-            </a>
-            <div class="bottom-nav-divider"></div>
-            <button class="bottom-nav-dropdown-link theme-toggle" id="bottomThemeToggle" role="menuitem">
-                <i class="fas fa-moon" aria-hidden="true"></i>
-                <span>Theme</span>
-            </button>
-            <button class="bottom-nav-dropdown-link mobile-contrast-btn" id="bottomContrastToggle" role="menuitem">
-                <i class="fas fa-adjust" aria-hidden="true"></i>
-                <span>Contrast</span>
-            </button>
-        </div>
+        ...
     </nav>
+    -->
 
     <!-- Command Palette -->
     <div id="commandPalette" class="command-palette-overlay" role="dialog" aria-modal="true" aria-label="Command Palette">
