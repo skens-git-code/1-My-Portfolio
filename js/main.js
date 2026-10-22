@@ -1988,22 +1988,34 @@
 
   // Typewriter
   class Typewriter {
-    constructor(elementId, words, wait = 3000) {
+    constructor(elementId, words, wait = 2600) {
       this.txtElement = document.getElementById(elementId);
-      this.words = Array.isArray(words) ? words : [];
-      this.txt = '';
+      this.words = Array.isArray(words) && words.length > 0 ? words : ['a Software Engineer'];
       this.wordIndex = 0;
-      this.wait = parseInt(wait, 10) || 3000;
+      this.wait = parseInt(wait, 10) || 2600;
       this.isDeleting = false;
       this.timeoutId = null;
 
-      if (this.txtElement && this.words.length > 0) {
-        if (AppState.prefersReducedMotion) {
-          this.txtElement.innerHTML = `<span class="txt">${Utils.escapeHtml(this.words[0])}</span>`;
-          return;
-        }
-        this.type();
+      if (!this.txtElement) {
+        console.warn(`[Typewriter] Element #${elementId} not found.`);
+        return;
       }
+
+      // Initialize text to the full first word so there is never an empty flicker
+      this.txt = this.words[0];
+      this.render();
+
+      // Start the typing loop after an initial display pause
+      this.timeoutId = setTimeout(() => {
+        this.isDeleting = true;
+        this.type();
+      }, this.wait);
+    }
+
+    render() {
+      if (!this.txtElement) return;
+      const textToDisplay = this.txt || '';
+      this.txtElement.innerHTML = `<span class="txt">${textToDisplay ? Utils.escapeHtml(textToDisplay) : '&nbsp;'}</span>`;
     }
 
     type() {
@@ -2013,18 +2025,14 @@
       const fullTxt = this.words[current];
 
       if (this.isDeleting) {
-        this.txt = fullTxt.substring(0, this.txt.length - 1);
+        this.txt = fullTxt.substring(0, Math.max(0, this.txt.length - 1));
       } else {
         this.txt = fullTxt.substring(0, this.txt.length + 1);
       }
 
-      this.txtElement.innerHTML = `<span class="txt">${this.txt || '&nbsp;'}</span>`;
+      this.render();
 
-      let typeSpeed = 100;
-
-      if (this.isDeleting) {
-        typeSpeed /= 2;
-      }
+      let typeSpeed = this.isDeleting ? 45 : 95;
 
       if (!this.isDeleting && this.txt === fullTxt) {
         typeSpeed = this.wait;
@@ -2032,7 +2040,7 @@
       } else if (this.isDeleting && this.txt === '') {
         this.isDeleting = false;
         this.wordIndex++;
-        typeSpeed = 500;
+        typeSpeed = 400;
       }
 
       this.timeoutId = setTimeout(() => this.type(), typeSpeed);
@@ -2280,10 +2288,12 @@
       this.dotsContainer = container.querySelector('.carousel-dots') || container.parentElement?.querySelector('.carousel-dots');
       this.currentIndex = 0;
       this.interval = null;
-      this.autoScrollDelay = 4000;
+      this.autoScrollDelay = 3500;
       this.isPaused = false;
       this.boundKeyHandler = null;
       this.boundVisibilityHandler = null;
+      this.touchStartX = 0;
+      this.touchEndX = 0;
 
       this.init();
     }
@@ -2305,6 +2315,20 @@
         this.startAutoScroll();
       });
 
+      // Touch / swipe support for mobile
+      this.container.addEventListener('touchstart', (e) => {
+        this.touchStartX = e.changedTouches[0].screenX;
+        this.isPaused = true;
+        this.stopAutoScroll();
+      }, { passive: true });
+
+      this.container.addEventListener('touchend', (e) => {
+        this.touchEndX = e.changedTouches[0].screenX;
+        this.handleSwipe();
+        this.isPaused = false;
+        this.startAutoScroll();
+      }, { passive: true });
+
       // Auto-pause carousel interval when scrolled off-screen
       if (typeof IntersectionObserver !== 'undefined') {
         this.intersectionObserver = new IntersectionObserver((entries) => {
@@ -2316,8 +2340,19 @@
               this.stopAutoScroll();
             }
           });
-        }, { threshold: 0, rootMargin: '100px 0px' });
+        }, { threshold: 0.1, rootMargin: '50px 0px' });
         this.intersectionObserver.observe(this.container);
+      }
+    }
+
+    handleSwipe() {
+      const swipeDistance = this.touchEndX - this.touchStartX;
+      if (Math.abs(swipeDistance) > 40) {
+        if (swipeDistance < 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
       }
     }
 
@@ -2341,29 +2376,33 @@
       if (index < 0) index = this.tracks.length - 1;
       if (index >= this.tracks.length) index = 0;
 
-      this.tracks.forEach(track => {
-        track.classList.remove('active', 'prev', 'next');
-        track.style.opacity = '0';
-        track.style.zIndex = '0';
-        track.style.transform = 'scale(0.95)';
+      this.tracks.forEach((track, i) => {
+        if (i === index) {
+          track.classList.add('active');
+          track.style.opacity = '1';
+          track.style.zIndex = '2';
+          track.style.transform = 'scale(1)';
+          track.style.pointerEvents = 'auto';
+        } else {
+          track.classList.remove('active');
+          track.style.opacity = '0';
+          track.style.zIndex = '0';
+          track.style.transform = 'scale(0.97)';
+          track.style.pointerEvents = 'none';
+        }
       });
-
-      const currentTrack = this.tracks[index];
-      if (currentTrack) {
-        currentTrack.classList.add('active');
-        currentTrack.style.opacity = '1';
-        currentTrack.style.zIndex = '2';
-        currentTrack.style.transform = 'scale(1)';
-      }
 
       if (this.dotsContainer) {
         const dots = this.dotsContainer.querySelectorAll('.carousel-dot');
-        dots.forEach(dot => dot.classList.remove('active'));
-        dots.forEach(dot => dot.setAttribute('aria-current', 'false'));
-        if (dots[index]) {
-          dots[index].classList.add('active');
-          dots[index].setAttribute('aria-current', 'true');
-        }
+        dots.forEach((dot, i) => {
+          if (i === index) {
+            dot.classList.add('active');
+            dot.setAttribute('aria-current', 'true');
+          } else {
+            dot.classList.remove('active');
+            dot.setAttribute('aria-current', 'false');
+          }
+        });
       }
 
       this.currentIndex = index;
@@ -2379,7 +2418,7 @@
 
     startAutoScroll() {
       this.stopAutoScroll();
-      if (AppState.prefersReducedMotion || document.hidden || this.isPaused) return;
+      if (document.hidden || this.isPaused) return;
       this.interval = setInterval(() => {
         if (!this.isPaused && !document.hidden) {
           this.nextSlide();
@@ -2401,6 +2440,8 @@
           if (dot) {
             const index = parseInt(dot.dataset.index, 10);
             this.showSlide(index);
+            // Restart auto scroll after manual interaction
+            this.startAutoScroll();
           }
         });
       }
@@ -3956,6 +3997,33 @@
           await this.loadingManager.init();
         }
 
+        // Initialize hero typewriter immediately so animation starts right away
+        try {
+          this.typewriter = new Typewriter('typewriter', [
+            'a Software Engineer',
+            'a Full-Stack Developer',
+            'an AI & ML Enthusiast',
+            'a UI/UX Designer',
+            'a Cinematographer',
+            'a Creative Director',
+            'a Chief Executive Officer',
+            'a Tech Entrepreneur',
+            'a Problem Solver'
+          ]);
+        } catch (twErr) {
+          console.error('[Typewriter] Init error:', twErr);
+        }
+
+        // Initialize hero image carousel immediately alongside typewriter
+        try {
+          const carouselContainer = document.querySelector('.image-carousel');
+          if (carouselContainer && !window.imageCarousel) {
+            window.imageCarousel = new ImageCarousel(carouselContainer);
+          }
+        } catch (carErr) {
+          console.error('[ImageCarousel] Init error:', carErr);
+        }
+
         AnalyticsTracker.init();
 
         this.backgroundEffects.init();
@@ -3967,18 +4035,6 @@
         this.commandPaletteManager.init();
         this.cinematic3D.init();
         this.projectManager.init();
-
-        this.typewriter = new Typewriter('typewriter', [
-          'a Software Engineer',
-          'a Web Developer',
-          'a UI/UX Designer',
-          'a Problem Solver'
-        ]);
-
-        const carouselContainer = document.querySelector('.image-carousel');
-        if (carouselContainer && !window.imageCarousel) {
-          window.imageCarousel = new ImageCarousel(carouselContainer);
-        }
 
         AppState.isInitialized = true;
         console.log('🚀 Portfolio app initialized successfully');
