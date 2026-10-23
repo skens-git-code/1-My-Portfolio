@@ -2410,6 +2410,9 @@
         { name: 'Toggle Dark Mode', action: () => this.toggleTheme(), icon: 'fa-moon', category: 'Theme' },
         { name: 'Toggle High Contrast', action: () => this.toggleHighContrast(), icon: 'fa-adjust', category: 'Theme' },
 
+        // Language & Translation
+        { name: 'Translate Page / Language', action: () => this.openTranslate(), icon: 'fa-language', category: 'Language' },
+
         // Actions
         { name: 'Open Chat', action: () => this.openChat(), icon: 'fa-comments', category: 'Actions' },
         { name: 'Scroll to Top', action: () => this.scrollToTop(), icon: 'fa-arrow-up', category: 'Actions' },
@@ -2578,6 +2581,10 @@
     toggleHighContrast() {
       const btn = document.getElementById('highContrastToggle') || document.querySelector('.mobile-contrast-btn');
       btn?.click();
+    }
+
+    openTranslate() {
+      window.portfolioApp?.translationManager?.openModal();
     }
 
     openChat() {
@@ -4400,6 +4407,380 @@
     }
   }
 
+  // Translation Manager - Google Inbuilt Page Translation System
+  class TranslationManager {
+    constructor() {
+      this.modalOverlay = document.getElementById('translateModal');
+      this.closeBtn = document.getElementById('translateCloseBtn');
+      this.resetBtn = document.getElementById('btnResetLanguage');
+      this.currentLabel = document.getElementById('currentLanguageLabel');
+      this.quickGrid = document.getElementById('quickLangGrid');
+      this.translateToggles = document.querySelectorAll('.translate-toggle, #translateToggle, #mobileTranslateQuickToggle, #drawerTranslateBtn');
+      this.currentLang = 'en';
+      this.languages = [
+        { code: 'en', name: 'English', native: 'English', flag: '🇺🇸' },
+        { code: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
+        { code: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
+        { code: 'de', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
+        { code: 'hi', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳' },
+        { code: 'ja', name: 'Japanese', native: '日本語', flag: '🇯🇵' },
+        { code: 'zh-CN', name: 'Chinese', native: '简体中文', flag: '🇨🇳' },
+        { code: 'ar', name: 'Arabic', native: 'العربية', flag: '🇸🇦' },
+        { code: 'ru', name: 'Russian', native: 'Русский', flag: '🇷🇺' },
+        { code: 'pt', name: 'Portuguese', native: 'Português', flag: '🇧🇷' },
+        { code: 'it', name: 'Italian', native: 'Italiano', flag: '🇮🇹' },
+        { code: 'ko', name: 'Korean', native: '한국어', flag: '🇰🇷' },
+        { code: 'nl', name: 'Dutch', native: 'Nederlands', flag: '🇳🇱' },
+        { code: 'tr', name: 'Turkish', native: 'Türkçe', flag: '🇹🇷' },
+        { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt', flag: '🇻🇳' },
+        { code: 'mr', name: 'Marathi', native: 'मराठी', flag: '🇮🇳' }
+      ];
+      this.isOpen = false;
+      this.previousActiveElement = null;
+    }
+
+    init() {
+      this.initLayoutShiftProtection();
+      this.detectCurrentLanguage();
+      this.renderQuickGrid();
+      this.bindEvents();
+      this.observeGoogleCombo();
+      
+      // Listen for custom ready event
+      window.addEventListener('googleTranslateReady', () => {
+        this.observeGoogleCombo();
+        // If a language was previously selected, ensure it is applied
+        if (this.currentLang && this.currentLang !== 'en') {
+          this.triggerGoogleCombo(this.currentLang);
+        }
+      });
+    }
+
+    /* Prevent Google Translate from injecting top: 40px layout shifts across all browser engines */
+    initLayoutShiftProtection() {
+      const resetTop = () => {
+        if (document.body && document.body.style.top && document.body.style.top !== '0px') {
+          document.body.style.setProperty('top', '0px', 'important');
+        }
+        if (document.documentElement && document.documentElement.style.top && document.documentElement.style.top !== '0px') {
+          document.documentElement.style.setProperty('top', '0px', 'important');
+        }
+      };
+
+      resetTop();
+
+      try {
+        const observer = new MutationObserver(resetTop);
+        if (document.body) {
+          observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+        if (document.documentElement) {
+          observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+      } catch (_) {}
+    }
+
+    /* Cross-browser Cookie Setting (Safari ITP, Firefox ETP, Chrome, Edge) */
+    setGoogleTransCookie(langCode) {
+      const val = `/en/${langCode}`;
+      const host = window.location.hostname;
+      const expireDate = new Date(Date.now() + 30 * 864e5).toUTCString();
+
+      // Raw unencoded value is strictly required by Google Translate element.js
+      document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; SameSite=Lax`;
+
+      if (host && host !== 'localhost' && !/^[0-9.]+$/.test(host)) {
+        document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; domain=${host}; SameSite=Lax`;
+        document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; domain=.${host}; SameSite=Lax`;
+
+        const parts = host.split('.');
+        if (parts.length > 2) {
+          const rootDomain = parts.slice(-2).join('.');
+          document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; domain=.${rootDomain}; SameSite=Lax`;
+        }
+      }
+
+      try {
+        localStorage.setItem('googtrans_pref', langCode);
+      } catch (_) {}
+    }
+
+    clearGoogleTransCookie() {
+      const expire = 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
+      document.cookie = `googtrans=; ${expire}`;
+
+      const host = window.location.hostname;
+      if (host && host !== 'localhost' && !/^[0-9.]+$/.test(host)) {
+        document.cookie = `googtrans=; domain=${host}; ${expire}`;
+        document.cookie = `googtrans=; domain=.${host}; ${expire}`;
+
+        const parts = host.split('.');
+        if (parts.length > 2) {
+          const rootDomain = parts.slice(-2).join('.');
+          document.cookie = `googtrans=; domain=.${rootDomain}; ${expire}`;
+        }
+      }
+
+      try {
+        localStorage.removeItem('googtrans_pref');
+      } catch (_) {}
+    }
+
+    getGoogleTransCookie() {
+      const match = document.cookie.match(/(?:^|;\s*)googtrans=([^;]*)/);
+      if (match && match[1]) {
+        const raw = decodeURIComponent(match[1]);
+        const parts = raw.split('/');
+        if (parts.length >= 3 && parts[2]) {
+          return parts[2];
+        }
+      }
+      try {
+        return localStorage.getItem('googtrans_pref') || 'en';
+      } catch (_) {
+        return 'en';
+      }
+    }
+
+    detectCurrentLanguage() {
+      const detected = this.getGoogleTransCookie();
+      if (detected) {
+        this.currentLang = detected;
+      }
+      this.updateStatusDisplay();
+    }
+
+    renderQuickGrid() {
+      if (!this.quickGrid) return;
+      this.quickGrid.innerHTML = this.languages.map(lang => {
+        const isActive = this.currentLang === lang.code;
+        return `
+          <button type="button" class="lang-btn ${isActive ? 'active' : ''}" data-code="${lang.code}" aria-pressed="${isActive}">
+            <span class="lang-flag" aria-hidden="true">${lang.flag}</span>
+            <div class="lang-names">
+              <span class="lang-name-primary notranslate">${lang.native}</span>
+              <span class="lang-name-secondary notranslate">${lang.name}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    bindEvents() {
+      this.translateToggles.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.toggleModal();
+        });
+      });
+
+      this.closeBtn?.addEventListener('click', () => this.closeModal());
+
+      this.modalOverlay?.addEventListener('click', (e) => {
+        if (e.target === this.modalOverlay) {
+          this.closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.isOpen) {
+          this.closeModal();
+        }
+      });
+
+      this.resetBtn?.addEventListener('click', () => {
+        this.resetToOriginal();
+      });
+
+      this.quickGrid?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.lang-btn');
+        if (!btn) return;
+        const code = btn.getAttribute('data-code');
+        if (code) {
+          this.changeLanguage(code);
+        }
+      });
+    }
+
+    observeGoogleCombo() {
+      const checkAndBind = () => {
+        const combo = document.querySelector('.goog-te-combo');
+        if (combo && !combo.dataset.bound) {
+          combo.dataset.bound = 'true';
+          combo.addEventListener('change', () => {
+            if (combo.value) {
+              this.currentLang = combo.value;
+              this.setGoogleTransCookie(combo.value);
+              this.updateStatusDisplay();
+              this.updateActiveGridBtn(combo.value);
+            }
+          });
+          // If we had a preferred language, sync it to the combo
+          if (this.currentLang && this.currentLang !== 'en' && combo.value !== this.currentLang) {
+            this.triggerGoogleCombo(this.currentLang);
+          }
+          return true;
+        }
+        return false;
+      };
+
+      if (!checkAndBind()) {
+        const checkInterval = setInterval(() => {
+          if (checkAndBind()) {
+            clearInterval(checkInterval);
+          }
+        }, 300);
+        setTimeout(() => clearInterval(checkInterval), 15000);
+      }
+    }
+
+    /* Triple-event dispatch ensures translation fires in Safari, Firefox, Chrome, and Edge */
+    triggerGoogleCombo(langCode) {
+      const combo = document.querySelector('.goog-te-combo');
+      if (!combo) return false;
+
+      combo.value = langCode;
+
+      // 1. Standard HTML5 Custom/UI Event
+      try {
+        combo.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+      } catch (_) {}
+
+      // 2. Direct onchange invocation (required by some Google Translate builds)
+      if (typeof combo.onchange === 'function') {
+        try {
+          combo.onchange();
+        } catch (_) {}
+      }
+
+      // 3. Legacy WebKit / DOM Level 2 Event for older Safari versions
+      try {
+        const evt = document.createEvent('HTMLEvents');
+        evt.initEvent('change', true, true);
+        combo.dispatchEvent(evt);
+      } catch (_) {}
+
+      return true;
+    }
+
+    changeLanguage(langCode) {
+      if (langCode === 'en') {
+        this.resetToOriginal();
+        return;
+      }
+
+      this.currentLang = langCode;
+      this.setGoogleTransCookie(langCode);
+
+      this.updateStatusDisplay();
+      this.updateActiveGridBtn(langCode);
+
+      const triggered = this.triggerGoogleCombo(langCode);
+      if (!triggered) {
+        // If combo is not yet injected, wait for it or reload cleanly with the cookie
+        let attempts = 0;
+        const poll = setInterval(() => {
+          attempts++;
+          if (this.triggerGoogleCombo(langCode)) {
+            clearInterval(poll);
+          } else if (attempts > 25) {
+            clearInterval(poll);
+            window.location.reload();
+          }
+        }, 120);
+      }
+
+      setTimeout(() => {
+        this.closeModal();
+      }, 280);
+    }
+
+    resetToOriginal() {
+      this.currentLang = 'en';
+      this.clearGoogleTransCookie();
+      this.setGoogleTransCookie('en');
+
+      this.updateStatusDisplay();
+      this.updateActiveGridBtn('en');
+
+      this.triggerGoogleCombo('');
+
+      try {
+        const bannerFrame = document.querySelector('.goog-te-banner-frame');
+        if (bannerFrame && bannerFrame.contentWindow) {
+          const closeBtn = bannerFrame.contentWindow.document.querySelector('.goog-close-link, [id*="close"], [id*="restore"]');
+          if (closeBtn) closeBtn.click();
+        }
+      } catch (_) {}
+
+      setTimeout(() => {
+        this.closeModal();
+        if (document.documentElement.classList.contains('translated-ltr') ||
+            document.documentElement.classList.contains('translated-rtl') ||
+            document.querySelector('font[color]')) {
+          window.location.reload();
+        }
+      }, 300);
+    }
+
+    updateActiveGridBtn(code) {
+      if (!this.quickGrid) return;
+      this.quickGrid.querySelectorAll('.lang-btn').forEach(btn => {
+        const isActive = btn.getAttribute('data-code') === code;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', String(isActive));
+      });
+    }
+
+    updateStatusDisplay() {
+      const found = this.languages.find(l => l.code === this.currentLang);
+      const label = found ? `${found.native} (${found.name})` : (this.currentLang === 'en' ? 'English (Original)' : this.currentLang.toUpperCase());
+      if (this.currentLabel) {
+        this.currentLabel.textContent = label;
+      }
+      this.translateToggles.forEach(toggle => {
+        toggle.classList.toggle('is-active', this.currentLang !== 'en');
+        toggle.setAttribute('aria-expanded', String(this.isOpen));
+      });
+    }
+
+    openModal() {
+      if (!this.modalOverlay) return;
+      this.previousActiveElement = document.activeElement;
+      this.modalOverlay.classList.add('active');
+      this.modalOverlay.setAttribute('aria-hidden', 'false');
+      this.isOpen = true;
+      document.body.style.overflow = 'hidden';
+      this.updateStatusDisplay();
+      this.updateActiveGridBtn(this.currentLang);
+
+      setTimeout(() => {
+        const firstFocus = this.modalOverlay.querySelector('.lang-btn.active, .lang-btn, button');
+        firstFocus?.focus();
+      }, 60);
+
+      if (window.AnalyticsTracker) {
+        AnalyticsTracker.sendEvent('translate_modal_open');
+      }
+    }
+
+    closeModal() {
+      if (!this.modalOverlay) return;
+      this.modalOverlay.classList.remove('active');
+      this.modalOverlay.setAttribute('aria-hidden', 'true');
+      this.isOpen = false;
+      document.body.style.overflow = '';
+
+      if (this.previousActiveElement && typeof this.previousActiveElement.focus === 'function') {
+        this.previousActiveElement.focus();
+      }
+    }
+
+    toggleModal() {
+      this.isOpen ? this.closeModal() : this.openModal();
+    }
+  }
+
   // Main Portfolio App
   class PortfolioApp {
     constructor() {
@@ -4416,6 +4797,7 @@
       this.cinematic3D = new Cinematic3DExperience();
       this.projectManager = new ProjectManager();
       this.heroTunnel = new HeroTunnelIntro();
+      this.translationManager = new TranslationManager();
       this.typewriter = null;
     }
 
@@ -4468,6 +4850,7 @@
 
         this.backgroundEffects.init();
         this.navigationManager.init();
+        this.translationManager.init();
         this.animationManager.init();
         this.interactiveManager.init();
         this.swiperManager.init();

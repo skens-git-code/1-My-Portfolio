@@ -83,7 +83,11 @@
     }
     </script>
 
-    <!-- Preload & Preconnect Critical Resources (Optimized for MS Clarity & GA4 Telemetry) -->
+    <!-- Preload & Preconnect Critical Resources (Optimized for MS Clarity, GA4 Telemetry & Google Inbuilt Translate) -->
+    <link rel="preconnect" href="https://translate.google.com">
+    <link rel="preconnect" href="https://translate.googleapis.com">
+    <link rel="dns-prefetch" href="https://translate.google.com">
+    <link rel="dns-prefetch" href="https://translate.googleapis.com">
     <link rel="preconnect" href="https://www.clarity.ms">
     <link rel="preconnect" href="https://c.clarity.ms" crossorigin>
     <link rel="preconnect" href="https://scripts.clarity.ms">
@@ -101,9 +105,9 @@
         href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Fira+Code:wght@400;500;600&family=Orbitron:wght@400;600;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
 
-    <!-- Security: Content Security Policy (Optimized for MS Clarity Telemetry & Anti-Clickjacking) -->
+    <!-- Security: Content Security Policy (Optimized for MS Clarity Telemetry, GA4 & Google Translate) -->
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://scripts.clarity.ms https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://formsubmit.co https://generativelanguage.googleapis.com https://*.clarity.ms https://scripts.clarity.ms https://c.clarity.ms https://k.clarity.ms https://z.clarity.ms https://*.bing.com https://c.bing.com https://www.google-analytics.com https://*.google-analytics.com https://region1.google-analytics.com https://analytics.google.com; img-src 'self' https: data: blob: https://c.clarity.ms https://*.clarity.ms https://*.bing.com https://c.bing.com https://www.google-analytics.com; font-src 'self' https: data:; worker-src 'self' blob:; child-src 'self' blob:;">
+        content="default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms https://*.clarity.ms https://scripts.clarity.ms https://www.googletagmanager.com https://www.google-analytics.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://translate.google.com https://translate.googleapis.com; connect-src 'self' https://formsubmit.co https://generativelanguage.googleapis.com https://*.clarity.ms https://scripts.clarity.ms https://c.clarity.ms https://k.clarity.ms https://z.clarity.ms https://*.bing.com https://c.bing.com https://www.google-analytics.com https://*.google-analytics.com https://region1.google-analytics.com https://analytics.google.com https://translate.googleapis.com https://translate.google.com; img-src 'self' https: data: blob: https://c.clarity.ms https://*.clarity.ms https://*.bing.com https://c.bing.com https://www.google-analytics.com https://translate.google.com https://translate.googleapis.com https://www.google.com https://*.gstatic.com; font-src 'self' https: data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https: data: https://fonts.googleapis.com https://translate.googleapis.com https://www.gstatic.com; frame-src 'self' https://translate.google.com https://translate.googleapis.com; worker-src 'self' blob:; child-src 'self' blob: https://translate.google.com https://translate.googleapis.com;">
     <meta http-equiv="X-Frame-Options" content="DENY">
 
 
@@ -290,6 +294,10 @@
                 </a>
 
                 <div class="mobile-top-actions">
+                    <button class="mobile-top-btn translate-toggle" id="mobileTranslateQuickToggle"
+                        aria-label="Translate page" title="Translate Page" aria-haspopup="dialog" aria-expanded="false" aria-controls="translateModal">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                    </button>
                     <button class="mobile-top-btn theme-toggle" id="mobileThemeQuickToggle"
                         aria-label="Toggle dark mode">
                         <i class="fas fa-moon" aria-hidden="true"></i>
@@ -338,6 +346,10 @@
                         aria-hidden="true"></i><span>Contact</span></a>
 
                 <div class="nav-actions">
+                    <button class="translate-toggle" id="translateToggle" aria-label="Translate page"
+                        title="Translate Page" aria-haspopup="dialog" aria-expanded="false" aria-controls="translateModal">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                    </button>
                     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
                         <i class="fas fa-moon" aria-hidden="true"></i>
                     </button>
@@ -347,6 +359,11 @@
                 </div>
 
                 <div class="drawer-footer">
+                    <button class="drawer-btn translate-toggle" id="drawerTranslateBtn" aria-label="Translate page"
+                        aria-haspopup="dialog" aria-expanded="false" aria-controls="translateModal">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                        <span>Translate</span>
+                    </button>
                     <button class="drawer-btn theme-toggle" aria-label="Toggle dark mode">
                         <i class="fas fa-moon" aria-hidden="true"></i>
                         <span>Theme</span>
@@ -2899,6 +2916,65 @@ function InteractiveButton({ children, onClick }) {
     </nav>
     -->
 
+    <!-- Google Inbuilt Page Translation Modal -->
+    <div id="translateModal" class="translate-modal-overlay" role="dialog" aria-modal="true"
+        aria-labelledby="translateModalTitle" aria-hidden="true">
+        <div class="translate-modal glass-card">
+            <div class="translate-modal-header">
+                <div class="translate-header-info">
+                    <div class="translate-badge">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                        <span>Google Inbuilt Translation</span>
+                    </div>
+                    <h3 id="translateModalTitle" class="translate-title">Translate Website</h3>
+                    <p class="translate-subtitle">Whole-page neural machine translation powered by Google Translate.</p>
+                </div>
+                <button class="translate-close-btn" id="translateCloseBtn" aria-label="Close translation modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="translate-modal-body">
+                <!-- Status & Reset Bar -->
+                <div class="translate-status-bar">
+                    <div class="translate-status-left">
+                        <span class="status-indicator-dot" aria-hidden="true"></span>
+                        <span class="status-text">Active: <strong id="currentLanguageLabel">English (Original)</strong></span>
+                    </div>
+                    <button type="button" class="btn-reset-lang" id="btnResetLanguage" aria-label="Reset to original English language">
+                        <i class="fas fa-rotate-left" aria-hidden="true"></i>
+                        <span>Reset Original</span>
+                    </button>
+                </div>
+
+                <!-- Popular Languages Quick Selector -->
+                <div class="translate-quick-section">
+                    <span class="translate-section-label">Popular Languages</span>
+                    <div class="translate-grid" id="quickLangGrid" role="group" aria-label="Quick language selector">
+                        <!-- Populated dynamically by TranslationManager -->
+                    </div>
+                </div>
+
+                <!-- Full Google Inbuilt Translate Widget (100+ Languages) -->
+                <div class="translate-all-section">
+                    <div class="translate-all-header">
+                        <i class="fas fa-globe text-gradient" aria-hidden="true"></i>
+                        <span class="translate-section-label" style="margin-bottom: 0;">All 100+ Languages (Google Translate Element)</span>
+                    </div>
+                    <div id="google_translate_element" class="google-translate-container" aria-label="Select any language from Google Translate"></div>
+                </div>
+            </div>
+
+            <div class="translate-modal-footer">
+                <div class="translate-brand-badge">
+                    <i class="fab fa-google" aria-hidden="true"></i>
+                    <span>Official Google Translate Engine</span>
+                </div>
+                <span class="translate-hint"><kbd>ESC</kbd> to dismiss</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Command Palette -->
     <div id="commandPalette" class="command-palette-overlay" role="dialog" aria-modal="true"
         aria-label="Command Palette">
@@ -2986,6 +3062,24 @@ function InteractiveButton({ children, onClick }) {
         </div>
     </footer>
 
+
+    <!-- Google Inbuilt Whole-Page Translation Integration -->
+    <script>
+        function googleTranslateElementInit() {
+            try {
+                if (window.google && window.google.translate) {
+                    new google.translate.TranslateElement({
+                        pageLanguage: 'en',
+                        autoDisplay: false
+                    }, 'google_translate_element');
+                    window.dispatchEvent(new CustomEvent('googleTranslateReady'));
+                }
+            } catch (err) {
+                console.warn('[GoogleTranslate] Initialization notice:', err);
+            }
+        }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
 
     <!-- Embla Carousel Vanilla (Ultralight, Hardware-Accelerated) -->
     <script src="https://cdn.jsdelivr.net/npm/embla-carousel@8.6.0/embla-carousel.umd.js" defer></script>
