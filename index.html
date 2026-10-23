@@ -111,6 +111,15 @@
 
     <script>
         (() => {
+            // Strictly reset scroll to top on reload and disable browser auto-scroll restoration
+            if ('scrollRestoration' in history) {
+                history.scrollRestoration = 'manual';
+            }
+            if (window.location.hash) {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            window.scrollTo(0, 0);
+
             let theme = 'dark';
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -162,7 +171,7 @@
 
 
     <!-- Loading Screen -->
-    <!-- <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Initializing Skens.Space">
+    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Initializing Skens.Space">
     <div class="loader-ambient loader-ambient-one" aria-hidden="true"></div>
     <div class="loader-ambient loader-ambient-two" aria-hidden="true"></div>
     <div class="loader-shell">
@@ -211,7 +220,7 @@
             <span>skens.space // v2.6</span>
         </div>
     </div>
-</div> -->
+</div>
 
 
     <!-- Perfect Animated Background & Cinematic 3D Scene -->
@@ -477,42 +486,63 @@
                     </div>
 
                     <!-- LAYER 4: Elite Minimalist Editorial Display (Distraction-Free) -->
-                    
-                        
-<div class="tunnel-layer-4" id="tunnelLayer4">
-    <div class="tunnel-editorial-display">
+                    <div class="tunnel-layer-4" id="tunnelLayer4">
+                        <div class="tunnel-editorial-display">
+                            <!-- High-Precision Cyber/Editorial Corner Brackets -->
+                            <span class="editorial-corner-bracket bracket-tl" aria-hidden="true"></span>
+                            <span class="editorial-corner-bracket bracket-tr" aria-hidden="true"></span>
+                            <span class="editorial-corner-bracket bracket-bl" aria-hidden="true"></span>
+                            <span class="editorial-corner-bracket bracket-br" aria-hidden="true"></span>
 
-        <div class="editorial-author-row">
-            <h1 class="hero-title-fade-in text-gradient dynamic-color">
-                Hello, I’m Sarthak M.
-            </h1>
-        </div>
+                            <!-- Top Eyebrow Row with Luminous Flank Gradient Lines -->
+                            <div class="editorial-eyebrow-row">
+                                <span class="editorial-flank-line flank-left" aria-hidden="true"></span>
+                                <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span>PORTFOLIO // ARCHITECT &bull; 2026</span>
+                                <span class="editorial-flank-line flank-right" aria-hidden="true"></span>
+                            </div>
 
-        <div
-            class="editorial-baseline-rule text-gradient hero-title-fade-in"
-            aria-hidden="true">
-        </div>
+                            <!-- Author Greeting Row -->
+                            <div class="editorial-author-row">
+                                <h1 class="hero-title-fade-in text-gradient dynamic-color">
+                                    <span class="greeting-prefix">Hello, I’m</span> <span class="name-gradient text-gradient dynamic-color">Sarthak M.</span>
+                                </h1>
+                            </div>
 
-        <div class="editorial-line editorial-line-primary">
-            <p class="editorial-primary-text">
-                Architecting Intelligent Systems.
-                Engineering High-Precision Interfaces.
-            </p>
-        </div>
+                            <!-- Luminous Gradient Baseline Rule (Underline Beam with Center Diamond Gem) -->
+                            <div class="editorial-baseline-rule text-gradient hero-title-fade-in" aria-hidden="true">
+                                <span class="rule-core-beam"></span>
+                                <span class="rule-center-gem"></span>
+                            </div>
 
-        <div class="editorial-line editorial-line-secondary">
-            <p class="editorial-secondary-text">
-                Scalable Full-Stack Engineering
-                <span class="bullet-sep" aria-hidden="true">•</span>
-                Deep Learning Architectures
-                <span class="bullet-sep" aria-hidden="true">•</span>
-                Spatial &amp; Experiential Design
-            </p>
-        </div>
+                            <!-- Primary Editorial Headline -->
+                            <div class="editorial-line editorial-line-primary">
+                                <p class="editorial-primary-text">
+                                    <span class="phrase-lead">Architecting Intelligent Systems.</span>
+                                    <span class="phrase-slash" aria-hidden="true">//</span>
+                                    <span class="phrase-trail">Engineering High-Precision Interfaces.</span>
+                                </p>
+                            </div>
 
-    </div>
-</div>
+                            <!-- Middle Gradient Accent Line -->
+                            <div class="editorial-mid-gradient-line" aria-hidden="true">
+                                <span class="mid-line-beam"></span>
+                                <span class="mid-line-dot"></span>
+                            </div>
 
+                            <!-- Secondary Editorial Discipline Row -->
+                            <div class="editorial-line editorial-line-secondary">
+                                <p class="editorial-secondary-text">
+                                    <span class="discipline-tag">Scalable Full-Stack Engineering</span>
+                                    <span class="bullet-sep" aria-hidden="true">•</span>
+                                    <span class="discipline-tag">Deep Learning Architectures</span>
+                                    <span class="bullet-sep" aria-hidden="true">•</span>
+                                    <span class="discipline-tag">Spatial &amp; Experiential Design</span>
+                                </p>
+                            </div>
+
+                            <!-- Bottom Micro Gradient Anchor Line -->
+                            <div class="editorial-bottom-anchor-line" aria-hidden="true"></div>
+                        </div>
                     </div>
                 </div>
             </div>
