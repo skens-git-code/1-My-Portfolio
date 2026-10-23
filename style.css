@@ -995,13 +995,16 @@ header.scrolled .nav-container {
     pointer-events: none;
 }
 
-/* Logo SVG & Micro-Interactions */
-.brand-logo-svg {
+/* Logo SVG / Image & Micro-Interactions */
+.brand-logo-svg,
+.brand-logo-img {
     display: inline-block;
     vertical-align: middle;
     flex-shrink: 0;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
     filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.65));
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
 }
@@ -1041,7 +1044,8 @@ header.scrolled .nav-container {
     transform: scale(1.02);
 }
 
-.port:hover .brand-logo-svg {
+.port:hover .brand-logo-svg,
+.port:hover .brand-logo-img {
     transform: rotate(15deg) scale(1.1);
     filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.95)) drop-shadow(0 0 20px rgba(136, 85, 255, 0.5));
 }
@@ -7690,15 +7694,20 @@ body.high-contrast .stat-number {
         pointer-events: auto;
     }
 
-    .mobile-brand .brand-logo-svg {
+    .mobile-brand .brand-logo-svg,
+    .mobile-brand .brand-logo-img {
         width: 22px;
         height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
         filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.75));
         transition: transform 0.3s var(--ease-spring), filter 0.3s ease;
     }
 
     .mobile-brand:hover .brand-logo-svg,
-    .mobile-brand:active .brand-logo-svg {
+    .mobile-brand:hover .brand-logo-img,
+    .mobile-brand:active .brand-logo-svg,
+    .mobile-brand:active .brand-logo-img {
         transform: rotate(15deg) scale(1.1);
         filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.95)) drop-shadow(0 0 20px rgba(136, 85, 255, 0.5));
     }
