@@ -9451,23 +9451,48 @@ body.light-theme .bottom-nav-more.active span {
 
     /* Projects Mobile Responsive Refinement */
     .projects-intro {
-        margin-bottom: 20px !important;
+        margin-bottom: 18px !important;
     }
 
+    .projects-summary {
+        font-size: 0.84rem !important;
+        line-height: 1.55 !important;
+    }
+
+    /* Filter pills: horizontal smooth swipe with no clipping */
     .project-filters {
-        margin-bottom: 22px !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        justify-content: flex-start !important;
         gap: 8px !important;
-        justify-content: center !important;
+        margin-bottom: 22px !important;
+        padding: 4px 6px 12px 6px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+    }
+
+    .project-filters::-webkit-scrollbar {
+        display: none !important;
     }
 
     .filter-btn {
-        min-height: 36px !important;
+        flex: 0 0 auto !important;
+        min-height: 34px !important;
         padding: 6px 14px !important;
-        font-size: 0.78rem !important;
+        font-size: 0.76rem !important;
+        white-space: nowrap !important;
     }
 
+    /* Portfolio Featured Carousel Mobile Optimization */
     .portfolio-carousel {
-        margin-bottom: 26px !important;
+        margin-bottom: 24px !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        width: 100% !important;
     }
 
     .portfolio-carousel .embla,
@@ -9475,18 +9500,134 @@ body.light-theme .bottom-nav-more.active span {
         aspect-ratio: 16 / 9 !important;
         width: 100% !important;
         height: auto !important;
-        min-height: 0 !important;
+        min-height: 220px !important;
+        position: relative !important;
     }
 
+    .portfolio-carousel .embla__slide,
+    .portfolio-carousel .swiper-slide {
+        aspect-ratio: 16 / 9 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .portfolio-carousel .embla__slide img,
+    .portfolio-carousel .swiper-slide img {
+        width: 100% !important;
+        height: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        object-fit: cover !important;
+        object-position: center !important;
+    }
+
+    /* Mobile Slide Content: Scaled typography & gradient protection */
+    .portfolio-carousel .slide-content {
+        padding: 14px 14px 12px 14px !important;
+        background: linear-gradient(180deg, transparent 0%, rgba(4, 6, 15, 0.45) 25%, rgba(4, 6, 15, 0.92) 80%, rgba(4, 6, 15, 0.98) 100%) !important;
+        gap: 4px !important;
+        max-width: 100% !important;
+    }
+
+    .portfolio-carousel .slide-title {
+        font-size: clamp(0.95rem, 0.85rem + 1vw, 1.15rem) !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
+        margin: 0 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        max-width: 82% !important;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .portfolio-carousel .slide-desc {
+        font-size: 0.74rem !important;
+        line-height: 1.35 !important;
+        margin: 0 0 6px 0 !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        max-width: 85% !important;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .portfolio-carousel .slide-content .cta-button {
+        font-size: 0.74rem !important;
+        padding: 6px 14px !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        min-width: 110px !important;
+        box-shadow: 0 3px 12px rgba(0, 212, 255, 0.4) !important;
+    }
+
+    /* Compact Mobile Navigation Arrows (Placed neatly on sides without obscuring center content) */
+    .portfolio-carousel .embla__prev,
+    .portfolio-carousel .embla__next,
+    .portfolio-carousel .swiper-button-prev,
+    .portfolio-carousel .swiper-button-next {
+        width: 32px !important;
+        height: 32px !important;
+        background: rgba(10, 15, 28, 0.82) !important;
+        border: 1px solid rgba(0, 212, 255, 0.45) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+        top: 50% !important;
+    }
+
+    .portfolio-carousel .embla__prev,
+    .portfolio-carousel .swiper-button-prev {
+        left: 8px !important;
+    }
+
+    .portfolio-carousel .embla__next,
+    .portfolio-carousel .swiper-button-next {
+        right: 8px !important;
+    }
+
+    .portfolio-carousel .embla__prev::after,
+    .portfolio-carousel .swiper-button-prev::after,
+    .portfolio-carousel .embla__next::after,
+    .portfolio-carousel .swiper-button-next::after {
+        font-size: 0.7rem !important;
+    }
+
+    /* Carousel Pagination Dots on Mobile */
+    .portfolio-carousel .embla__dots,
+    .portfolio-carousel .swiper-pagination {
+        bottom: 8px !important;
+        right: 12px !important;
+        left: auto !important;
+        gap: 5px !important;
+    }
+
+    .portfolio-carousel .embla__dot,
+    .portfolio-carousel .swiper-pagination-bullet {
+        width: 6px !important;
+        height: 6px !important;
+    }
+
+    /* Mobile Projects Grid */
     .projects-grid {
         grid-template-columns: 1fr !important;
         gap: 18px !important;
+        width: 100% !important;
+    }
+
+    .project-card {
+        border-radius: 16px !important;
     }
 
     .project-card .image-hover-zoom {
         width: 100% !important;
         aspect-ratio: 16 / 9 !important;
         height: auto !important;
+        border-radius: 16px 16px 0 0 !important;
     }
 
     .project-card .project-img {
@@ -9496,9 +9637,31 @@ body.light-theme .bottom-nav-more.active span {
         object-fit: cover !important;
     }
 
+    .project-card .project-badge {
+        top: 10px !important;
+        right: 10px !important;
+        padding: 4px 10px !important;
+        font-size: 0.68rem !important;
+    }
+
     .project-content {
-        padding: 18px 16px !important;
+        padding: 16px 14px !important;
         gap: 10px !important;
+    }
+
+    .project-title {
+        font-size: 1.05rem !important;
+        line-height: 1.3 !important;
+    }
+
+    .project-desc {
+        font-size: 0.8rem !important;
+        line-height: 1.55 !important;
+    }
+
+    .tech-tag {
+        font-size: 0.68rem !important;
+        padding: 3px 8px !important;
     }
 
     .project-links {
