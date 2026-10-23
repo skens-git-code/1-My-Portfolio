@@ -228,6 +228,10 @@ body {
     min-height: 100vh;
     min-height: 100dvh;
     transition: background-color .4s ease, color .4s ease;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 img,
@@ -238,6 +242,20 @@ svg {
     display: block;
     max-width: 100%;
     height: auto;
+    -webkit-user-drag: none;
+    pointer-events: auto;
+}
+
+/* Allow text selection in form controls & contact info so users can fill forms and copy email */
+input,
+textarea,
+select,
+.contact-item p,
+.contact-item a {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
 }
 
 input,

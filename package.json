@@ -4,7 +4,6 @@
   "description": "<div align=\"center\">",
   "main": "index.js",
   "scripts": {
-    "optimize-images": "node optimize-images.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,8 +17,5 @@
   "bugs": {
     "url": "https://github.com/skens-git-code/1-My-Portfolio/issues"
   },
-  "homepage": "https://github.com/skens-git-code/1-My-Portfolio#readme",
-  "devDependencies": {
-    "sharp": "^0.35.5"
-  }
+  "homepage": "https://github.com/skens-git-code/1-My-Portfolio#readme"
 }

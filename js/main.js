@@ -4130,6 +4130,93 @@
 
   window.addEventListener('beforeunload', () => window.portfolioApp?.destroy(), { once: true });
 
+  // ── Client-side Protection & Hardening Shield ──
+  const SecurityShield = {
+    init() {
+      // 1. Prevent context menu (right click) except inside input fields
+      document.addEventListener('contextmenu', (e) => {
+        const target = e.target;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+          return true; // Allow user to paste/cut in forms
+        }
+        e.preventDefault();
+        return false;
+      }, { capture: true });
+
+      // 2. Block drag-and-drop of images and media onto the desktop
+      document.addEventListener('dragstart', (e) => {
+        if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'PICTURE' || e.target.tagName === 'SVG')) {
+          e.preventDefault();
+          return false;
+        }
+      }, { capture: true });
+
+      // 3. Block developer tools, inspection, and view-source shortcuts
+      document.addEventListener('keydown', (e) => {
+        const isMac = navigator.platform && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+        const shiftKey = e.shiftKey;
+        const altKey = e.altKey;
+        const key = (e.key || '').toLowerCase();
+        const keyCode = e.keyCode || e.which;
+
+        // F12 or F12 keycode
+        if (key === 'f12' || keyCode === 123) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Ctrl/Cmd + Shift + I (Inspect)
+        // Ctrl/Cmd + Shift + J (Console)
+        // Ctrl/Cmd + Shift + C (Element Inspector)
+        if (ctrlKey && shiftKey && (key === 'i' || key === 'j' || key === 'c' || keyCode === 73 || keyCode === 74 || keyCode === 67)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Mac shortcut: Cmd + Option + I / Cmd + Option + J / Cmd + Option + C / Cmd + Option + U
+        if (isMac && e.metaKey && altKey && (key === 'i' || key === 'j' || key === 'c' || key === 'u')) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Ctrl/Cmd + U (View Source)
+        if (ctrlKey && (key === 'u' || keyCode === 85)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Ctrl/Cmd + S (Save webpage)
+        if (ctrlKey && (key === 's' || keyCode === 83)) {
+          // Allow in text inputs if needed, otherwise block full-page saving
+          if (!e.target || (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
+      }, { capture: true });
+
+      // 4. Prevent copying text outside of designated copy/form zones
+      document.addEventListener('copy', (e) => {
+        const target = e.target;
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.closest('.contact-item'))) {
+          return true; // Allow legitimate copying of contact emails or inputs
+        }
+        // Block bulk copying of site copy
+        if (!window.getSelection().toString().trim()) return;
+        e.preventDefault();
+        return false;
+      });
+    }
+  };
+
+  SecurityShield.init();
+
   window.AppState = AppState;
   window.Utils = Utils;
   performanceMonitor.mark('script_end');
