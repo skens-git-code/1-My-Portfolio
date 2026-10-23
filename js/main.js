@@ -322,7 +322,7 @@
           try {
             const refUrl = new URL(document.referrer);
             this.setTag('referrer_domain', refUrl.hostname);
-          } catch (_) {}
+          } catch (_) { }
         } else {
           this.setTag('referrer_domain', 'direct');
         }
@@ -333,7 +333,7 @@
           if (params.has('utm_source')) this.setTag('utm_source', params.get('utm_source'));
           if (params.has('utm_medium')) this.setTag('utm_medium', params.get('utm_medium'));
           if (params.has('utm_campaign')) this.setTag('utm_campaign', params.get('utm_campaign'));
-        } catch (_) {}
+        } catch (_) { }
       } catch (err) {
         // Fail silently
       }
@@ -405,7 +405,7 @@
                 if (domReady >= 0) this.setTag('perf_dom_ready', `${domReady}ms`);
                 if (pageLoad >= 0) this.setTag('perf_page_load', `${pageLoad}ms`);
               }
-            } catch (_) {}
+            } catch (_) { }
           }, 350);
         }, { once: true });
 
@@ -422,7 +422,7 @@
               }
             });
             paintObserver.observe({ type: 'paint', buffered: true });
-          } catch (_) {}
+          } catch (_) { }
 
           // 2. LCP (Largest Contentful Paint)
           try {
@@ -434,7 +434,7 @@
               }
             });
             lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
-          } catch (_) {}
+          } catch (_) { }
 
           // 3. CLS (Cumulative Layout Shift)
           try {
@@ -448,9 +448,9 @@
               }
             });
             clsObserver.observe({ type: 'layout-shift', buffered: true });
-          } catch (_) {}
+          } catch (_) { }
         }
-      } catch (_) {}
+      } catch (_) { }
     },
 
     initScrollDepthTracking() {
@@ -491,7 +491,7 @@
             ticking = true;
           }
         }, { passive: true });
-      } catch (_) {}
+      } catch (_) { }
     },
 
     initErrorMonitoring() {
@@ -502,7 +502,7 @@
             this.setTag('last_js_error', errorMsg);
             this.sendEvent('javascript_error', { message: errorMsg });
             this.upgradeSession('js_error_detected');
-          } catch (_) {}
+          } catch (_) { }
         });
 
         window.addEventListener('unhandledrejection', (event) => {
@@ -510,9 +510,9 @@
             const reason = (event.reason ? (event.reason.message || String(event.reason)) : 'Unhandled rejection').slice(0, 100);
             this.setTag('last_promise_error', reason);
             this.sendEvent('promise_rejection', { reason });
-          } catch (_) {}
+          } catch (_) { }
         });
-      } catch (_) {}
+      } catch (_) { }
     },
 
     initInteractionDelegation() {
@@ -544,9 +544,9 @@
               this.sendEvent('mailto_click', { target: href });
               this.upgradeSession('mailto_outbound');
             }
-          } catch (_) {}
+          } catch (_) { }
         }, { passive: true });
-      } catch (_) {}
+      } catch (_) { }
     },
 
     syncTelemetryBadge() {
@@ -556,7 +556,7 @@
           badge.classList.add('clarity-synced');
           badge.setAttribute('title', 'Microsoft Clarity Telemetry Active (y3pmrdcb5x)');
         }
-      } catch (_) {}
+      } catch (_) { }
     }
   };
 
@@ -784,7 +784,7 @@
 
         // Handle initial hash or section query param scrolling after loader is dismissed
         const rawTargetId = (window.location.hash ? window.location.hash.split('?')[0] : '') ||
-                            (new URLSearchParams(window.location.search).get('section') ? '#' + new URLSearchParams(window.location.search).get('section') : '');
+          (new URLSearchParams(window.location.search).get('section') ? '#' + new URLSearchParams(window.location.search).get('section') : '');
         if (rawTargetId) {
           try {
             const hashTarget = document.querySelector(rawTargetId);
@@ -800,7 +800,7 @@
                 }, 60);
               }
             }
-          } catch (e) {}
+          } catch (e) { }
         }
       }
     }
@@ -965,7 +965,7 @@
     optimizeForDevices() {
       if (typeof window === 'undefined') return;
       const isLowTier = AppState.isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
-      
+
       // Hardware-accelerate background layer and reduce compositor redraws
       if (this.animatedBackground) {
         this.animatedBackground.style.transform = 'translateZ(0)';
@@ -1819,9 +1819,9 @@
         btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending to skens.code@gmail.com...</span>';
         btn.disabled = true;
         btn.style.opacity = '0.85';
-        if (status) { 
-          status.textContent = 'Transmitting your message securely…'; 
-          status.style.color = 'var(--clr-primary, #00d4ff)'; 
+        if (status) {
+          status.textContent = 'Transmitting your message securely…';
+          status.style.color = 'var(--clr-primary, #00d4ff)';
         }
 
         try {
@@ -1861,7 +1861,7 @@
           }
         } catch (err) {
           console.warn('FormSubmit API fallback triggered:', err);
-          
+
           // Direct fallback: opens user's email client directly to skens.code@gmail.com
           const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
           const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
