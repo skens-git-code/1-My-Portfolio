@@ -1461,7 +1461,7 @@
       const form = document.getElementById('contactForm');
       if (!form) return;
 
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = form.querySelector('button[type="submit"]');
         const status = document.getElementById('contactStatus');
@@ -1510,43 +1510,76 @@
         AnalyticsTracker.sendEvent('contact_form_submit', { timestamp: Date.now() });
         AnalyticsTracker.upgradeSession('contact_form_submission');
 
-        btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending...</span>';
+        btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending to skens.code@gmail.com...</span>';
         btn.disabled = true;
-        btn.style.opacity = '0.8';
-        if (status) { status.textContent = 'Opening your mail client…'; status.style.color = ''; }
+        btn.style.opacity = '0.85';
+        if (status) { 
+          status.textContent = 'Transmitting your message securely…'; 
+          status.style.color = 'var(--clr-primary, #00d4ff)'; 
+        }
 
-        const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
-        const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-        const mailtoLink = `mailto:sarthakmathapati4@gmail.com?subject=${subject}&body=${body}`;
+        try {
+          // Prepare form data for FormSubmit API
+          const formData = new FormData(form);
 
-        setTimeout(() => {
-          window.location.href = mailtoLink;
+          const response = await fetch('https://formsubmit.co/ajax/skens.code@gmail.com', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json'
+            },
+            body: formData
+          });
 
-          btn.innerHTML = '<span><i class="fas fa-check"></i> Mail Client Opened!</span>';
-          btn.style.backgroundColor = 'var(--clr-green, #00C851)';
-          btn.style.borderColor = 'var(--clr-green, #00C851)';
+          const result = await response.json();
+
+          if (response.ok && (result.success === 'true' || result.success === true || result.message)) {
+            btn.innerHTML = '<span><i class="fas fa-check-circle"></i> Message Sent!</span>';
+            btn.style.background = 'linear-gradient(135deg, #00C851 0%, #007E33 100%)';
+            btn.style.borderColor = '#00C851';
+            btn.style.color = '#ffffff';
+
+            if (status) {
+              status.textContent = '✅ Thank you! Your message was delivered directly to skens.code@gmail.com.';
+              status.style.color = '#00E676';
+            }
+
+            form.reset();
+
+            const container = form.closest('.contact-form-container');
+            if (container) {
+              container.style.boxShadow = '0 0 24px rgba(0, 200, 81, 0.4)';
+              setTimeout(() => { container.style.boxShadow = ''; }, 3000);
+            }
+          } else {
+            throw new Error(result.message || 'Submission failed');
+          }
+        } catch (err) {
+          console.warn('FormSubmit API fallback triggered:', err);
+          
+          // Direct fallback: opens user's email client directly to skens.code@gmail.com
+          const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
+          const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+          window.location.href = `mailto:skens.code@gmail.com?subject=${subject}&body=${body}`;
+
+          btn.innerHTML = '<span><i class="fas fa-envelope-open-text"></i> Mail App Opened</span>';
+          btn.style.background = 'linear-gradient(135deg, #00d4ff 0%, #3a7bd5 100%)';
+          btn.style.color = '#000';
+
           if (status) {
-            status.textContent = '✅ Your mail client opened with the message pre-filled. Just hit Send!';
-            status.style.color = 'var(--success, var(--clr-green, #00C851))';
+            status.textContent = '📬 Prepared in your email client for skens.code@gmail.com. Just click send!';
+            status.style.color = 'var(--clr-primary, #00d4ff)';
           }
-
-          form.reset();
-
-          const container = form.closest('.contact-form-container');
-          if (container) {
-            container.style.boxShadow = '0 0 20px rgba(0, 200, 81, 0.3)';
-            setTimeout(() => { container.style.boxShadow = ''; }, 2000);
-          }
-
+        } finally {
           setTimeout(() => {
             btn.innerHTML = originalContent;
             btn.disabled = false;
-            btn.style.backgroundColor = '';
+            btn.style.background = '';
             btn.style.borderColor = '';
+            btn.style.color = '';
             btn.style.opacity = '1';
             if (status) { status.textContent = ''; status.style.color = ''; }
-          }, 4000);
-        }, 600);
+          }, 6000);
+        }
       });
     }
 
