@@ -26,7 +26,7 @@
   // Configuration
   const CONFIG = {
     loading: {
-      minDisplayTime: 4000,
+      minDisplayTime: 6000,
       maxDisplayTime: 7000
     },
     animations: {
@@ -605,10 +605,10 @@
       this.setupForceHide();
 
       try {
-        // Start loading simulation tuned for 4-second experience
+        // Start loading simulation tuned for exactly 6-second experience
         await this.simulateLoadingProgress();
 
-        // Wait for window load OR minimum display time (4 seconds)
+        // Wait for exactly 6 seconds minimum display time
         const isFastMode = new URLSearchParams(window.location.search).has('fast') || new URLSearchParams(window.location.search).has('skipLoader');
         if (!isFastMode) {
           const elapsed = performance.now() - this.startTime;
@@ -660,8 +660,8 @@
     simulateLoadingProgress() {
       return new Promise((resolve) => {
         let lastProgress = 0;
-        // 4 seconds duration (3800ms + buffer) for smooth pacing
-        const duration = AppState.prefersReducedMotion ? 0 : 3800;
+        // Exactly 6 seconds duration (5800ms + buffer) for smooth pacing
+        const duration = AppState.prefersReducedMotion ? 0 : 5800;
         const startedAt = performance.now();
 
         const updateProgress = () => {
@@ -829,6 +829,7 @@
 
       this.isHidden = true;
       window.dispatchEvent(new CustomEvent('loadingForced'));
+      window.dispatchEvent(new CustomEvent('loadingComplete'));
     }
 
     destroy() {
@@ -3246,7 +3247,7 @@
     buildQuantumCore() {
       this.coreGroup = new THREE.Group();
       // Positioned to the right of the centered hero card
-      this.coreGroup.position.set(2.4, 0.4, 0);
+      this.coreGroup.position.set(2.6, 0.2, -3.5);
       this.scene.add(this.coreGroup);
 
       const vertexShader = `
@@ -3362,7 +3363,7 @@
         color: isLight ? 0x0088cc : 0x49e8fa,
         wireframe: true,
         transparent: true,
-        opacity: isLight ? 0.15 : 0.35
+        opacity: isLight ? 0.05 : 0.09
       });
       this.coreWireMesh = new THREE.Mesh(wireGeo, wireMat);
       this.coreGroup.add(this.coreWireMesh);
@@ -3371,32 +3372,32 @@
       const nucleusMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         emissive: 0x00f0ff,
-        emissiveIntensity: 1.8,
-        roughness: 0.1,
-        metalness: 0.9,
+        emissiveIntensity: 0.6,
+        roughness: 0.2,
+        metalness: 0.8,
         transparent: true,
-        opacity: 0.95
+        opacity: 0.35
       });
       this.nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
       this.coreGroup.add(this.nucleusMesh);
 
       const ringConfigs = [
-        { r: 3.2, tube: 0.026, color: 0x00f0ff, rot: [0.75, 0.2, 0], speed: 0.40 },
-        { r: 4.0, tube: 0.022, color: 0x8855ff, rot: [-0.6, 0.85, 0.3], speed: -0.28 },
-        { r: 4.8, tube: 0.018, color: 0x00e5ff, rot: [0.35, -0.65, 0.75], speed: 0.22 }
+        { r: 3.2, tube: 0.008, color: 0x00f0ff, rot: [0.75, 0.2, 0], speed: 0.40 },
+        { r: 4.0, tube: 0.007, color: 0x8855ff, rot: [-0.6, 0.85, 0.3], speed: -0.28 },
+        { r: 4.8, tube: 0.006, color: 0x00e5ff, rot: [0.35, -0.65, 0.75], speed: 0.22 }
       ];
 
       this.gimbalRings = [];
       ringConfigs.forEach(cfg => {
-        const ringGeo = new THREE.TorusGeometry(cfg.r, cfg.tube, 12, 64);
+        const ringGeo = new THREE.TorusGeometry(cfg.r, cfg.tube, 8, 48);
         const ringMat = new THREE.MeshStandardMaterial({
           color: cfg.color,
           emissive: cfg.color,
-          emissiveIntensity: 0.65,
+          emissiveIntensity: 0.35,
           metalness: 0.85,
           roughness: 0.2,
           transparent: true,
-          opacity: isLight ? 0.45 : 0.75
+          opacity: isLight ? 0.04 : 0.08
         });
         const ringMesh = new THREE.Mesh(ringGeo, ringMat);
         ringMesh.rotation.set(...cfg.rot);
@@ -3404,8 +3405,8 @@
         this.coreGroup.add(ringMesh);
         this.gimbalRings.push(ringMesh);
 
-        const beadGeo = new THREE.SphereGeometry(0.08, 8, 8);
-        const beadMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const beadGeo = new THREE.SphereGeometry(0.025, 6, 6);
+        const beadMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
         const bead = new THREE.Mesh(beadGeo, beadMat);
         bead.position.x = cfg.r;
         ringMesh.add(bead);
@@ -4304,6 +4305,100 @@
       this.closeModal();
     }
   }
+  // ═══════════════════════════════════════════════════════════════════
+  // ═══  HERO BACKGROUND ZOOM-TUNNEL INTRO CONTROLLER (5.0 SECONDS) ═══
+  // ═══════════════════════════════════════════════════════════════════
+  class HeroTunnelIntro {
+    constructor() {
+      this.stage = document.getElementById('heroTunnelStage');
+      this.isPlaying = false;
+      this.isStarted = false;
+      this.duration = 5000;
+      this.completionTimer = null;
+      this.resizeHandler = this.onResize.bind(this);
+    }
+
+    init() {
+      if (!this.stage) return;
+
+      this.onResize();
+      window.addEventListener('resize', this.resizeHandler, { passive: true });
+
+      // STRICT SEQUENCE: Only start intro animation AFTER the 6-second loader completes!
+      const onLoadingFinished = () => {
+        window.removeEventListener('loadingComplete', onLoadingFinished);
+        window.removeEventListener('loadingForced', onLoadingFinished);
+        this.startIntro();
+      };
+
+      const loadingScreen = document.getElementById('loadingScreen');
+      if (!loadingScreen || loadingScreen.style.display === 'none' || window.loadingManager?.isHidden) {
+        // Loader is already dismissed or skipped
+        this.startIntro();
+      } else {
+        window.addEventListener('loadingComplete', onLoadingFinished, { once: true });
+        window.addEventListener('loadingForced', onLoadingFinished, { once: true });
+      }
+    }
+
+    onResize() {
+      const vW = window.innerWidth;
+      const vH = window.innerHeight;
+      // 1920x1080 cover scale calculation to ensure complete 100vw x 100vh full bleed
+      const scaleCover = Math.max(vW / 1920, vH / 1080) * 1.05;
+      document.documentElement.style.setProperty('--tunnel-cover-scale', scaleCover.toFixed(4));
+    }
+
+    startIntro() {
+      if (this.isStarted || !this.stage) return;
+      this.isStarted = true;
+      this.isPlaying = true;
+
+      // Honor user's reduced-motion preference
+      if (AppState.prefersReducedMotion) {
+        this.stage.classList.add('animate-tunnel');
+        this.stage.classList.add('tunnel-intro-completed');
+        this.revealMainComponents();
+        this.isPlaying = false;
+        return;
+      }
+
+      // Activate 5.0s tunnel animation strictly after 6-second loader has completed
+      this.stage.classList.remove('animate-tunnel');
+      this.stage.classList.remove('tunnel-intro-completed');
+      void this.stage.offsetWidth; // Force reflow
+      this.stage.classList.add('animate-tunnel');
+
+      // KEEP MAIN CARD COMPLETELY HIDDEN WHILE INTRO RUNS.
+      // Reveal main card and initial UI components ONLY after the full 5.0s animation has completed:
+      if (this.completionTimer) clearTimeout(this.completionTimer);
+      this.completionTimer = setTimeout(() => {
+        this.isPlaying = false;
+        if (this.stage) {
+          this.stage.classList.add('tunnel-intro-completed');
+        }
+        this.revealMainComponents();
+      }, this.duration);
+    }
+
+    revealMainComponents() {
+      document.body.classList.add('intro-completed');
+      const heroCard = document.querySelector('.hero-content');
+      if (heroCard) {
+        heroCard.classList.add('card-revealed');
+      }
+      window.dispatchEvent(new CustomEvent('introAnimationComplete'));
+
+      if (window.portfolioApp) {
+        window.portfolioApp.initTypewriter();
+      }
+    }
+
+    destroy() {
+      if (this.completionTimer) clearTimeout(this.completionTimer);
+      window.removeEventListener('resize', this.resizeHandler);
+    }
+  }
 
   // Main Portfolio App
   class PortfolioApp {
@@ -4320,7 +4415,27 @@
       this.proFeaturesManager = new ProFeaturesManager();
       this.cinematic3D = new Cinematic3DExperience();
       this.projectManager = new ProjectManager();
+      this.heroTunnel = new HeroTunnelIntro();
       this.typewriter = null;
+    }
+
+    initTypewriter() {
+      if (this.typewriter) return;
+      try {
+        this.typewriter = new Typewriter('typewriter', [
+          'a Software Engineer',
+          'a Full-Stack Developer',
+          'an AI & ML Enthusiast',
+          'a UI/UX Designer',
+          'a Cinematographer',
+          'a Creative Director',
+          'a Chief Executive Officer',
+          'a Tech Entrepreneur',
+          'a Problem Solver'
+        ]);
+      } catch (twErr) {
+        console.error('[Typewriter] Init error:', twErr);
+      }
     }
 
     async init() {
@@ -4332,21 +4447,11 @@
           await this.loadingManager.init();
         }
 
-        // Initialize hero typewriter immediately so animation starts right away
-        try {
-          this.typewriter = new Typewriter('typewriter', [
-            'a Software Engineer',
-            'a Full-Stack Developer',
-            'an AI & ML Enthusiast',
-            'a UI/UX Designer',
-            'a Cinematographer',
-            'a Creative Director',
-            'a Chief Executive Officer',
-            'a Tech Entrepreneur',
-            'a Problem Solver'
-          ]);
-        } catch (twErr) {
-          console.error('[Typewriter] Init error:', twErr);
+        // Initialize typewriter when intro animation finishes
+        if (document.body.classList.contains('intro-completed')) {
+          this.initTypewriter();
+        } else {
+          window.addEventListener('introAnimationComplete', () => this.initTypewriter(), { once: true });
         }
 
         // Initialize hero image carousel immediately alongside typewriter
@@ -4370,6 +4475,7 @@
         this.commandPaletteManager.init();
         this.cinematic3D.init();
         this.projectManager.init();
+        this.heroTunnel.init();
 
         AppState.isInitialized = true;
         console.log('🚀 Portfolio app initialized successfully');
@@ -4412,6 +4518,7 @@
       this.cinematic3D?.dispose?.();
       this.projectManager?.destroy?.();
       this.typewriter?.destroy?.();
+      this.heroTunnel?.destroy?.();
 
       if (window.imageCarousel?.destroy) {
         window.imageCarousel.destroy();
