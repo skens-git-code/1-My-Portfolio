@@ -214,17 +214,139 @@
 
   // Analytics & Microsoft Clarity Telemetry Helper
   const AnalyticsTracker = {
+    initialized: false,
+    perfTracked: false,
+    scrollTracked: false,
+    errorsTracked: false,
+    delegationTracked: false,
+
     init() {
-      this.setTag('theme', AppState.currentTheme || 'dark');
-      this.setTag('device_type', AppState.isMobile ? 'mobile' : 'desktop');
-      this.setTag('reduced_motion', AppState.prefersReducedMotion ? 'true' : 'false');
-      this.setTag('viewport', `${window.innerWidth}x${window.innerHeight}`);
+      // 1. Identify User & stitch cross-session journeys
+      this.identifyUser();
+
+      // 2. Set rich system, device, and contextual dimensions
+      this.syncContextTags();
+
+      // 3. Track Web Vitals (LCP, CLS, FCP, TTFB, Load times)
+      if (!this.perfTracked) {
+        this.initPerformanceTracking();
+        this.perfTracked = true;
+      }
+
+      // 4. Track passive scroll depth milestones (25%, 50%, 75%, 100%)
+      if (!this.scrollTracked) {
+        this.initScrollDepthTracking();
+        this.scrollTracked = true;
+      }
+
+      // 5. Track unhandled JS errors and unhandled promise rejections
+      if (!this.errorsTracked) {
+        this.initErrorMonitoring();
+        this.errorsTracked = true;
+      }
+
+      // 6. Outbound link & CTA delegation
+      if (!this.delegationTracked) {
+        this.initInteractionDelegation();
+        this.delegationTracked = true;
+      }
+
+      // 7. Visual telemetry badge synchronization
+      this.syncTelemetryBadge();
+
+      this.initialized = true;
+    },
+
+    identifyUser() {
+      try {
+        if (typeof window === 'undefined') return;
+
+        let userId;
+        try {
+          userId = localStorage.getItem('skens_clarity_uid');
+          if (!userId) {
+            userId = 'usr_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+            localStorage.setItem('skens_clarity_uid', userId);
+          }
+        } catch (_) {
+          userId = 'anon_' + Math.random().toString(36).substring(2, 9);
+        }
+
+        let sessionId;
+        try {
+          sessionId = sessionStorage.getItem('skens_clarity_sid');
+          if (!sessionId) {
+            sessionId = 'ses_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+            sessionStorage.setItem('skens_clarity_sid', sessionId);
+          }
+        } catch (_) {
+          sessionId = 'ses_' + Math.random().toString(36).substring(2, 9);
+        }
+
+        const isMob = window.innerWidth < 768;
+        const theme = AppState.currentTheme || (document.documentElement.getAttribute('data-theme') || 'dark');
+        const friendlyName = `Visitor (${isMob ? 'Mobile' : 'Desktop'} • ${theme})`;
+
+        if (typeof window.clarity === 'function') {
+          window.clarity('identify', userId, sessionId, window.location.pathname, friendlyName);
+        }
+      } catch (err) {
+        // Fail silently
+      }
+    },
+
+    syncContextTags() {
+      try {
+        const theme = AppState.currentTheme || (document.documentElement.getAttribute('data-theme') || 'dark');
+        const isMob = typeof AppState.isMobile !== 'undefined' ? AppState.isMobile : (window.innerWidth < 768);
+        const prefersReducedMotion = typeof AppState.prefersReducedMotion !== 'undefined' ? AppState.prefersReducedMotion : (window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false);
+
+        this.setTag('theme', theme);
+        this.setTag('device_type', isMob ? 'mobile' : (window.innerWidth < 1024 ? 'tablet' : 'desktop'));
+        this.setTag('reduced_motion', prefersReducedMotion ? 'true' : 'false');
+        this.setTag('viewport', `${window.innerWidth}x${window.innerHeight}`);
+        this.setTag('screen_res', `${window.screen?.width || 0}x${window.screen?.height || 0}`);
+        this.setTag('pixel_ratio', `${window.devicePixelRatio || 1}x`);
+        this.setTag('orientation', (window.matchMedia && window.matchMedia('(orientation: portrait)').matches) ? 'portrait' : 'landscape');
+        this.setTag('color_depth', `${window.screen?.colorDepth || 24}bit`);
+        this.setTag('touch_device', ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'true' : 'false');
+        this.setTag('language', navigator.language || 'en');
+
+        // Network connection type if supported
+        if (navigator.connection && navigator.connection.effectiveType) {
+          this.setTag('network_speed', navigator.connection.effectiveType);
+        }
+
+        // Referrer domain
+        if (document.referrer) {
+          try {
+            const refUrl = new URL(document.referrer);
+            this.setTag('referrer_domain', refUrl.hostname);
+          } catch (_) {}
+        } else {
+          this.setTag('referrer_domain', 'direct');
+        }
+
+        // UTM campaign tracking
+        try {
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('utm_source')) this.setTag('utm_source', params.get('utm_source'));
+          if (params.has('utm_medium')) this.setTag('utm_medium', params.get('utm_medium'));
+          if (params.has('utm_campaign')) this.setTag('utm_campaign', params.get('utm_campaign'));
+        } catch (_) {}
+      } catch (err) {
+        // Fail silently
+      }
     },
 
     setTag(key, value) {
       try {
         if (typeof window !== 'undefined' && typeof window.clarity === 'function') {
-          window.clarity('set', key, String(value));
+          if (Array.isArray(value)) {
+            window.clarity('set', key, value.map(v => String(v)));
+          } else {
+            window.clarity('set', key, String(value));
+          }
         }
       } catch (err) {
         // Fail silently without disrupting UI
@@ -249,13 +371,197 @@
     upgradeSession(reason) {
       try {
         if (typeof window !== 'undefined' && typeof window.clarity === 'function') {
-          window.clarity('upgrade', reason);
+          window.clarity('upgrade', String(reason));
         }
       } catch (err) {
         // Fail silently
       }
+    },
+
+    setConsent(consented = true) {
+      try {
+        if (typeof window !== 'undefined' && typeof window.clarity === 'function') {
+          window.clarity('consent', consented);
+        }
+      } catch (err) {
+        // Fail silently
+      }
+    },
+
+    initPerformanceTracking() {
+      try {
+        // Navigation Timing (TTFB, DOM Ready, Page Load)
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            try {
+              const navEntries = performance.getEntriesByType('navigation');
+              if (navEntries && navEntries.length > 0) {
+                const nav = navEntries[0];
+                const ttfb = Math.round(nav.responseStart - nav.requestStart);
+                const domReady = Math.round(nav.domContentLoadedEventEnd - nav.startTime);
+                const pageLoad = Math.round(nav.loadEventEnd - nav.startTime);
+
+                if (ttfb >= 0) this.setTag('perf_ttfb', `${ttfb}ms`);
+                if (domReady >= 0) this.setTag('perf_dom_ready', `${domReady}ms`);
+                if (pageLoad >= 0) this.setTag('perf_page_load', `${pageLoad}ms`);
+              }
+            } catch (_) {}
+          }, 350);
+        }, { once: true });
+
+        // Core Web Vitals via PerformanceObserver
+        if (typeof PerformanceObserver !== 'undefined') {
+          // 1. FCP (First Contentful Paint)
+          try {
+            const paintObserver = new PerformanceObserver((entryList) => {
+              for (const entry of entryList.getEntries()) {
+                if (entry.name === 'first-contentful-paint') {
+                  this.setTag('perf_fcp', `${Math.round(entry.startTime)}ms`);
+                  paintObserver.disconnect();
+                }
+              }
+            });
+            paintObserver.observe({ type: 'paint', buffered: true });
+          } catch (_) {}
+
+          // 2. LCP (Largest Contentful Paint)
+          try {
+            const lcpObserver = new PerformanceObserver((entryList) => {
+              const entries = entryList.getEntries();
+              const lastEntry = entries[entries.length - 1];
+              if (lastEntry) {
+                this.setTag('perf_lcp', `${Math.round(lastEntry.startTime)}ms`);
+              }
+            });
+            lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+          } catch (_) {}
+
+          // 3. CLS (Cumulative Layout Shift)
+          try {
+            let clsScore = 0;
+            const clsObserver = new PerformanceObserver((entryList) => {
+              for (const entry of entryList.getEntries()) {
+                if (!entry.hadRecentInput) {
+                  clsScore += entry.value;
+                  this.setTag('perf_cls', clsScore.toFixed(3));
+                }
+              }
+            });
+            clsObserver.observe({ type: 'layout-shift', buffered: true });
+          } catch (_) {}
+        }
+      } catch (_) {}
+    },
+
+    initScrollDepthTracking() {
+      try {
+        const milestones = { 25: false, 50: false, 75: false, 100: false };
+        let ticking = false;
+
+        const checkScroll = () => {
+          const docHeight = Math.max(
+            document.body.scrollHeight, document.documentElement.scrollHeight,
+            document.body.offsetHeight, document.documentElement.offsetHeight
+          ) - window.innerHeight;
+
+          if (docHeight <= 0) return;
+
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const pct = Math.min(100, Math.round((scrollTop / docHeight) * 100));
+
+          [25, 50, 75, 100].forEach((threshold) => {
+            if (pct >= threshold && !milestones[threshold]) {
+              milestones[threshold] = true;
+              this.setTag('max_scroll_depth', `${threshold}%`);
+              this.sendEvent(`scroll_depth_${threshold}`);
+
+              if (threshold === 75) {
+                this.upgradeSession('scroll_depth_75pct');
+              } else if (threshold === 100) {
+                this.upgradeSession('scroll_depth_100pct');
+              }
+            }
+          });
+          ticking = false;
+        };
+
+        window.addEventListener('scroll', () => {
+          if (!ticking) {
+            window.requestAnimationFrame(checkScroll);
+            ticking = true;
+          }
+        }, { passive: true });
+      } catch (_) {}
+    },
+
+    initErrorMonitoring() {
+      try {
+        window.addEventListener('error', (event) => {
+          try {
+            const errorMsg = (event.message || 'Unknown Error').slice(0, 100);
+            this.setTag('last_js_error', errorMsg);
+            this.sendEvent('javascript_error', { message: errorMsg });
+            this.upgradeSession('js_error_detected');
+          } catch (_) {}
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+          try {
+            const reason = (event.reason ? (event.reason.message || String(event.reason)) : 'Unhandled rejection').slice(0, 100);
+            this.setTag('last_promise_error', reason);
+            this.sendEvent('promise_rejection', { reason });
+          } catch (_) {}
+        });
+      } catch (_) {}
+    },
+
+    initInteractionDelegation() {
+      try {
+        document.addEventListener('click', (e) => {
+          try {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            if (!href) return;
+
+            if (href.startsWith('http')) {
+              const url = new URL(href, window.location.href);
+              if (url.hostname !== window.location.hostname) {
+                if (url.hostname.includes('github.com')) {
+                  this.sendEvent('outbound_github', { url: href });
+                  this.upgradeSession('outbound_github_click');
+                } else if (url.hostname.includes('linkedin.com')) {
+                  this.sendEvent('outbound_linkedin', { url: href });
+                  this.upgradeSession('outbound_linkedin_click');
+                } else if (url.hostname.includes('x.com') || url.hostname.includes('twitter.com')) {
+                  this.sendEvent('outbound_twitter', { url: href });
+                } else {
+                  this.sendEvent('outbound_link', { target: url.hostname });
+                }
+              }
+            } else if (href.startsWith('mailto:')) {
+              this.sendEvent('mailto_click', { target: href });
+              this.upgradeSession('mailto_outbound');
+            }
+          } catch (_) {}
+        }, { passive: true });
+      } catch (_) {}
+    },
+
+    syncTelemetryBadge() {
+      try {
+        const badge = document.querySelector('.loader-clarity-badge');
+        if (badge) {
+          badge.classList.add('clarity-synced');
+          badge.setAttribute('title', 'Microsoft Clarity Telemetry Active (y3pmrdcb5x)');
+        }
+      } catch (_) {}
     }
   };
+
+  // Run early telemetry bootstrap
+  AnalyticsTracker.init();
 
   // Loading Manager
   class LoadingManager {
@@ -2150,6 +2456,8 @@
       this.renderResults(this.commands);
       this.isOpen = true;
       document.body.style.overflow = 'hidden';
+      AnalyticsTracker.sendEvent('command_palette_open');
+      AnalyticsTracker.upgradeSession('command_palette_opened');
       if (this.input) {
         this.input.value = '';
         setTimeout(() => this.input.focus(), 60);

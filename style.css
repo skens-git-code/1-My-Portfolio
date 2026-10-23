@@ -6302,6 +6302,17 @@ body.light-theme footer .copyright p {
     font-size: 0.85rem;
 }
 
+.loader-clarity-badge.clarity-synced {
+    background: rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.35);
+    color: #00ff88;
+    box-shadow: 0 0 18px rgba(0, 255, 136, 0.18);
+}
+
+.loader-clarity-badge.clarity-synced i {
+    color: #00ff88;
+}
+
 .clarity-dot {
     width: 7px;
     height: 7px;
