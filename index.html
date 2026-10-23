@@ -153,14 +153,14 @@
     </script>
 
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-01X0CJSJKH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-01X0CJSJKH"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-  gtag('config', 'G-01X0CJSJKH');
-</script>
+        gtag('config', 'G-01X0CJSJKH');
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -171,7 +171,7 @@
 
 
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Initializing Skens.Space">
+    <!-- <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Initializing Skens.Space">
     <div class="loader-ambient loader-ambient-one" aria-hidden="true"></div>
     <div class="loader-ambient loader-ambient-two" aria-hidden="true"></div>
     <div class="loader-shell">
@@ -220,7 +220,7 @@
             <span>skens.space // v2.6</span>
         </div>
     </div>
-</div>
+</div> -->
 
 
     <!-- Perfect Animated Background & Cinematic 3D Scene -->
@@ -389,78 +389,110 @@
 
                     <!-- LAYER 1: Radial SVG (6 overlapping circles arranged in a radial petal pattern, stroke-width: 2px) -->
                     <div class="tunnel-concentric-container tunnel-layer-1" id="tunnelLayer1">
-                        <svg class="radial-petal-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="radial-petal-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet"
+                            xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="tunnelPetalGlow" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.8"/>
-                                    <stop offset="100%" stop-color="#7000ff" stop-opacity="0.15"/>
+                                    <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.8" />
+                                    <stop offset="100%" stop-color="#7000ff" stop-opacity="0.15" />
                                 </radialGradient>
                                 <filter id="laserHalo" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feGaussianBlur stdDeviation="2.5" result="glow"/>
+                                    <feGaussianBlur stdDeviation="2.5" result="glow" />
                                     <feMerge>
-                                        <feMergeNode in="glow"/>
-                                        <feMergeNode in="SourceGraphic"/>
+                                        <feMergeNode in="glow" />
+                                        <feMergeNode in="SourceGraphic" />
                                     </feMerge>
                                 </filter>
                             </defs>
                             <!-- Central 24x14 Alignment Seed Geometry & Focal Origin Marker -->
-                            <rect x="948" y="533" width="24" height="14" rx="2" fill="none" stroke="rgba(0, 240, 255, 0.95)" stroke-width="2"/>
-                            <circle cx="960" cy="540" r="10" fill="none" stroke="rgba(0, 240, 255, 0.95)" stroke-width="2"/>
-                            <line x1="940" y1="540" x2="980" y2="540" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2"/>
-                            <line x1="960" y1="520" x2="960" y2="560" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2"/>
+                            <rect x="948" y="533" width="24" height="14" rx="2" fill="none"
+                                stroke="rgba(0, 240, 255, 0.95)" stroke-width="2" />
+                            <circle cx="960" cy="540" r="10" fill="none" stroke="rgba(0, 240, 255, 0.95)"
+                                stroke-width="2" />
+                            <line x1="940" y1="540" x2="980" y2="540" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" />
+                            <line x1="960" y1="520" x2="960" y2="560" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" />
 
                             <!-- Bounding concentric guide rings -->
-                            <circle cx="960" cy="540" r="480" fill="none" stroke="rgba(0, 240, 255, 0.25)" stroke-width="2" stroke-dasharray="6 10"/>
-                            <circle cx="960" cy="540" r="240" fill="none" stroke="rgba(0, 240, 255, 0.9)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="960" cy="540" r="480" fill="none" stroke="rgba(0, 240, 255, 0.25)"
+                                stroke-width="2" stroke-dasharray="6 10" />
+                            <circle cx="960" cy="540" r="240" fill="none" stroke="rgba(0, 240, 255, 0.9)"
+                                stroke-width="2" filter="url(#laserHalo)" />
 
                             <!-- 6 Overlapping Circles Arranged in Radial Petal Pattern (Radius = 240, centers spaced 60 deg at distance 240) -->
                             <!-- Circle 0: 0° (Right) -->
-                            <circle cx="1200" cy="540" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="1200" cy="540" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" filter="url(#laserHalo)" />
                             <!-- Circle 1: 60° (Bottom-Right) -->
-                            <circle cx="1080" cy="747.85" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="1080" cy="747.85" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" filter="url(#laserHalo)" />
                             <!-- Circle 2: 120° (Bottom-Left) -->
-                            <circle cx="840" cy="747.85" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="840" cy="747.85" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" filter="url(#laserHalo)" />
                             <!-- Circle 3: 180° (Left) -->
-                            <circle cx="720" cy="540" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="720" cy="540" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" filter="url(#laserHalo)" />
                             <!-- Circle 4: 240° (Top-Left) -->
-                            <circle cx="840" cy="332.15" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="840" cy="332.15" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" filter="url(#laserHalo)" />
                             <!-- Circle 5: 300° (Top-Right) -->
-                            <circle cx="1080" cy="332.15" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)" stroke-width="2" filter="url(#laserHalo)"/>
+                            <circle cx="1080" cy="332.15" r="240" fill="none" stroke="rgba(0, 240, 255, 0.85)"
+                                stroke-width="2" filter="url(#laserHalo)" />
 
                             <!-- Precision Axis & Angle Ticks -->
-                            <line x1="420" y1="540" x2="1500" y2="540" stroke="rgba(0, 240, 255, 0.35)" stroke-width="2" stroke-dasharray="4 8"/>
-                            <line x1="960" y1="120" x2="960" y2="960" stroke="rgba(0, 240, 255, 0.35)" stroke-width="2" stroke-dasharray="4 8"/>
+                            <line x1="420" y1="540" x2="1500" y2="540" stroke="rgba(0, 240, 255, 0.35)" stroke-width="2"
+                                stroke-dasharray="4 8" />
+                            <line x1="960" y1="120" x2="960" y2="960" stroke="rgba(0, 240, 255, 0.35)" stroke-width="2"
+                                stroke-dasharray="4 8" />
                         </svg>
                     </div>
 
                     <!-- LAYER 2: Grid Overlay (4-column by 3-row structural wireframe grid, 2px line thickness, framed outer border) -->
                     <div class="tunnel-concentric-container tunnel-layer-2" id="tunnelLayer2">
-                        <svg class="structural-wireframe-grid" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="structural-wireframe-grid" viewBox="0 0 1920 1080"
+                            preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                             <!-- Framed Outer Border (2px line thickness) -->
-                            <rect x="96" y="54" width="1728" height="972" fill="none" stroke="rgba(0, 229, 255, 0.85)" stroke-width="2"/>
-                            
+                            <rect x="96" y="54" width="1728" height="972" fill="none" stroke="rgba(0, 229, 255, 0.85)"
+                                stroke-width="2" />
+
                             <!-- Precision Corner Alignment Brackets -->
-                            <path d="M76 96 L76 34 L138 34" fill="none" stroke="rgba(0, 240, 255, 0.95)" stroke-width="2"/>
-                            <path d="M1844 96 L1844 34 L1782 34" fill="none" stroke="rgba(0, 240, 255, 0.95)" stroke-width="2"/>
-                            <path d="M76 984 L76 1046 L138 1046" fill="none" stroke="rgba(0, 240, 255, 0.95)" stroke-width="2"/>
-                            <path d="M1844 984 L1844 1046 L1782 1046" fill="none" stroke="rgba(0, 240, 255, 0.95)" stroke-width="2"/>
+                            <path d="M76 96 L76 34 L138 34" fill="none" stroke="rgba(0, 240, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M1844 96 L1844 34 L1782 34" fill="none" stroke="rgba(0, 240, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M76 984 L76 1046 L138 1046" fill="none" stroke="rgba(0, 240, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M1844 984 L1844 1046 L1782 1046" fill="none" stroke="rgba(0, 240, 255, 0.95)"
+                                stroke-width="2" />
 
                             <!-- 4 Columns (3 interior vertical dividing lines at x = 528, 960, 1392) -->
-                            <line x1="528" y1="54" x2="528" y2="1026" stroke="rgba(0, 229, 255, 0.7)" stroke-width="2"/>
-                            <line x1="960" y1="54" x2="960" y2="1026" stroke="rgba(0, 229, 255, 0.9)" stroke-width="2"/>
-                            <line x1="1392" y1="54" x2="1392" y2="1026" stroke="rgba(0, 229, 255, 0.7)" stroke-width="2"/>
+                            <line x1="528" y1="54" x2="528" y2="1026" stroke="rgba(0, 229, 255, 0.7)"
+                                stroke-width="2" />
+                            <line x1="960" y1="54" x2="960" y2="1026" stroke="rgba(0, 229, 255, 0.9)"
+                                stroke-width="2" />
+                            <line x1="1392" y1="54" x2="1392" y2="1026" stroke="rgba(0, 229, 255, 0.7)"
+                                stroke-width="2" />
 
                             <!-- 3 Rows (2 interior horizontal dividing lines at y = 378, 702) -->
-                            <line x1="96" y1="378" x2="1824" y2="378" stroke="rgba(0, 229, 255, 0.7)" stroke-width="2"/>
-                            <line x1="96" y1="702" x2="1824" y2="702" stroke="rgba(0, 229, 255, 0.7)" stroke-width="2"/>
+                            <line x1="96" y1="378" x2="1824" y2="378" stroke="rgba(0, 229, 255, 0.7)"
+                                stroke-width="2" />
+                            <line x1="96" y1="702" x2="1824" y2="702" stroke="rgba(0, 229, 255, 0.7)"
+                                stroke-width="2" />
 
                             <!-- Intersection Crosshairs (+) (2px line thickness) -->
-                            <path d="M516 378 L540 378 M528 366 L528 390" stroke="rgba(255, 255, 255, 0.95)" stroke-width="2"/>
-                            <path d="M948 378 L972 378 M960 366 L960 390" stroke="rgba(255, 255, 255, 0.95)" stroke-width="2"/>
-                            <path d="M1380 378 L1404 378 M1392 366 L1392 390" stroke="rgba(255, 255, 255, 0.95)" stroke-width="2"/>
-                            <path d="M516 702 L540 702 M528 690 L528 714" stroke="rgba(255, 255, 255, 0.95)" stroke-width="2"/>
-                            <path d="M948 702 L972 702 M960 690 L960 714" stroke="rgba(255, 255, 255, 0.95)" stroke-width="2"/>
-                            <path d="M1380 702 L1404 702 M1392 690 L1392 714" stroke="rgba(255, 255, 255, 0.95)" stroke-width="2"/>
+                            <path d="M516 378 L540 378 M528 366 L528 390" stroke="rgba(255, 255, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M948 378 L972 378 M960 366 L960 390" stroke="rgba(255, 255, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M1380 378 L1404 378 M1392 366 L1392 390" stroke="rgba(255, 255, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M516 702 L540 702 M528 690 L528 714" stroke="rgba(255, 255, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M948 702 L972 702 M960 690 L960 714" stroke="rgba(255, 255, 255, 0.95)"
+                                stroke-width="2" />
+                            <path d="M1380 702 L1404 702 M1392 690 L1392 714" stroke="rgba(255, 255, 255, 0.95)"
+                                stroke-width="2" />
 
                         </svg>
                     </div>
@@ -471,83 +503,87 @@
                             <div class="media-fullbleed-backdrop"></div>
                             <!-- 45-degree Angled Geometric Corner Masks -->
                             <div class="angled-corner-mask mask-top-left" aria-hidden="true">
-                                <svg viewBox="0 0 120 120"><polygon points="0,0 120,0 0,120" fill="rgba(0, 240, 255, 0.7)"/></svg>
+                                <svg viewBox="0 0 120 120">
+                                    <polygon points="0,0 120,0 0,120" fill="rgba(0, 240, 255, 0.7)" />
+                                </svg>
                             </div>
                             <div class="angled-corner-mask mask-top-right" aria-hidden="true">
-                                <svg viewBox="0 0 120 120"><polygon points="0,0 120,0 120,120" fill="rgba(0, 240, 255, 0.7)"/></svg>
+                                <svg viewBox="0 0 120 120">
+                                    <polygon points="0,0 120,0 120,120" fill="rgba(0, 240, 255, 0.7)" />
+                                </svg>
                             </div>
                             <div class="angled-corner-mask mask-bottom-left" aria-hidden="true">
-                                <svg viewBox="0 0 120 120"><polygon points="0,0 0,120 120,120" fill="rgba(0, 240, 255, 0.7)"/></svg>
+                                <svg viewBox="0 0 120 120">
+                                    <polygon points="0,0 0,120 120,120" fill="rgba(0, 240, 255, 0.7)" />
+                                </svg>
                             </div>
                             <div class="angled-corner-mask mask-bottom-right" aria-hidden="true">
-                                <svg viewBox="0 0 120 120"><polygon points="120,0 0,120 120,120" fill="rgba(0, 240, 255, 0.7)"/></svg>
+                                <svg viewBox="0 0 120 120">
+                                    <polygon points="120,0 0,120 120,120" fill="rgba(0, 240, 255, 0.7)" />
+                                </svg>
                             </div>
                         </div>
                     </div>
 
                     <!-- LAYER 4: Elite Minimalist Editorial Display (Distraction-Free) -->
                     <div class="tunnel-layer-4" id="tunnelLayer4">
-                        <div class="tunnel-editorial-display">
-                            <!-- High-Precision Cyber/Editorial Corner Brackets -->
-                            <span class="editorial-corner-bracket bracket-tl" aria-hidden="true"></span>
-                            <span class="editorial-corner-bracket bracket-tr" aria-hidden="true"></span>
-                            <span class="editorial-corner-bracket bracket-bl" aria-hidden="true"></span>
-                            <span class="editorial-corner-bracket bracket-br" aria-hidden="true"></span>
+    <div class="tunnel-editorial-display">
+        <!-- Top Eyebrow Row with Luminous Flank Gradient Lines -->
+        <div class="editorial-eyebrow-row">
+            <span class="editorial-flank-line flank-left" aria-hidden="true"></span>
+            <!-- <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span>Welcome &bull;It's2026</span> -->
+            <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span><span id="dynamicEyebrow">Welcome</span> &bull; It's 2026</span>
 
-                            <!-- Top Eyebrow Row with Luminous Flank Gradient Lines -->
-                            <div class="editorial-eyebrow-row">
-                                <span class="editorial-flank-line flank-left" aria-hidden="true"></span>
-                                <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span>PORTFOLIO // ARCHITECT &bull; 2026</span>
-                                <span class="editorial-flank-line flank-right" aria-hidden="true"></span>
-                            </div>
+<script>
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Welcome, Good Morning' : (hour < 18 ? ' Welcome, Good Afternoon' : ' Welcome, Good Evening');
+    document.getElementById('dynamicEyebrow').textContent = greeting;
+</script>
 
-                            <!-- Author Greeting Row -->
-                            <div class="editorial-author-row">
-                                <h1 class="hero-title-fade-in text-gradient dynamic-color">
-                                    <span class="greeting-prefix">Hello, I’m</span> <span class="name-gradient text-gradient dynamic-color">Sarthak M.</span>
-                                </h1>
-                            </div>
+            <span class="editorial-flank-line flank-right" aria-hidden="true"></span>
+        </div>
 
-                            <!-- Luminous Gradient Baseline Rule (Underline Beam with Center Diamond Gem) -->
-                            <div class="editorial-baseline-rule text-gradient hero-title-fade-in" aria-hidden="true">
-                                <span class="rule-core-beam"></span>
-                                <span class="rule-center-gem"></span>
-                            </div>
+        <!-- Author Identity Row -->
+        <div class="editorial-author-row">
+            <h1 class="hero-title-fade-in text-gradient dynamic-color">
+                <span class="greeting-prefix">I am</span> <span class="name-gradient text-gradient dynamic-color">Sarthak M,</span>
+            </h1>
+        </div>
 
-                            <!-- Primary Editorial Headline -->
-                            <div class="editorial-line editorial-line-primary">
-                                <p class="editorial-primary-text">
-                                    <span class="phrase-lead">Architecting Intelligent Systems.</span>
-                                    <span class="phrase-slash" aria-hidden="true">//</span>
-                                    <span class="phrase-trail">Engineering High-Precision Interfaces.</span>
-                                </p>
-                            </div>
+        <!-- Luminous Gradient Baseline Rule (Underline Beam with Center Diamond Gem) -->
+        <div class="editorial-baseline-rule text-gradient hero-title-fade-in" aria-hidden="true">
+            <span class="rule-core-beam"></span>
+            <span class="rule-center-gem"></span>
+        </div>
 
-                            <!-- Middle Gradient Accent Line -->
-                            <div class="editorial-mid-gradient-line" aria-hidden="true">
-                                <span class="mid-line-beam"></span>
-                                <span class="mid-line-dot"></span>
-                            </div>
+        <!-- Primary Editorial Headline (Balanced Dual-Line) -->
+        <div class="editorial-line editorial-line-primary">
+            <p class="editorial-primary-text">
+                <span class="phrase-line">ARCHITECTING INTELLIGENT SYSTEMS</span>
+                <span class="phrase-line">ENGINEERING HIGH-PRECISION COMPUTING</span>
+            </p>
+        </div>
 
-                            <!-- Secondary Editorial Discipline Row -->
-                            <div class="editorial-line editorial-line-secondary">
-                                <p class="editorial-secondary-text">
-                                    <span class="discipline-tag">Scalable Full-Stack Engineering</span>
-                                    <span class="bullet-sep" aria-hidden="true">•</span>
-                                    <span class="discipline-tag">Deep Learning Architectures</span>
-                                    <span class="bullet-sep" aria-hidden="true">•</span>
-                                    <span class="discipline-tag">Spatial &amp; Experiential Design</span>
-                                </p>
-                            </div>
+        <!-- Secondary Editorial Discipline Row -->
+        <div class="editorial-line editorial-line-secondary">
+            <p class="editorial-secondary-text">
+                <span class="discipline-tag">Distributed Full‑Stack Architecture</span>
+                <span class="bullet-sep" aria-hidden="true">•</span>
+                <span class="discipline-tag">Deep Learning &amp; Computer Vision</span>
+                <span class="bullet-sep" aria-hidden="true">•</span>
+                <span class="discipline-tag">Low-Latency Interactive Interfaces</span>
+            </p>
+        </div>
 
-                            <!-- Bottom Micro Gradient Anchor Line -->
-                            <div class="editorial-bottom-anchor-line" aria-hidden="true"></div>
-                        </div>
-                    </div>
+        <!-- Bottom Micro Gradient Anchor Line -->
+        <div class="editorial-bottom-anchor-line" aria-hidden="true"></div>
+    </div>
+</div>
+
                 </div>
             </div>
 
-            
+
 
             <div id="hero-3d-scene" class="hero-3d-container">
                 <canvas id="webgl-3d-canvas" class="webgl-3d-canvas" aria-hidden="true"></canvas>
@@ -562,8 +598,8 @@
                     I am <span class="text-gradient dynamic-color typewriter-text" id="typewriter">a Software
                         Engineer</span>
                 </h1>
-                <p class="hero-description fade-in">
-                    <span class="bouncing-text">
+                <p class="hero-description des elegant-text">
+                    <span class="des elegant-text">
                         I’m Sarthak Mathapati. AI Software Engineer. I don’t deliver 'meaningful experiences'—I deliver
                         brutal efficiency and flawless code. If you want pretty excuses, hire someone else. If you want
                         it built right the first time, keep reading.

@@ -2,15 +2,6 @@
 
   'use strict';
 
-  // Strictly enforce starting at the very top (first page) upon loading/reloading
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-  }
-  if (window.location.hash) {
-    history.replaceState(null, '', window.location.pathname + window.location.search);
-  }
-  window.scrollTo(0, 0);
-
   // Performance Monitor
   const performanceMonitor = {
     startTime: performance.now(),
@@ -791,8 +782,26 @@
 
         window.dispatchEvent(new CustomEvent('loadingComplete'));
 
-        // Strictly keep viewport at the very top (first hero/intro page) on reload
-        window.scrollTo(0, 0);
+        // Handle initial hash or section query param scrolling after loader is dismissed
+        const rawTargetId = (window.location.hash ? window.location.hash.split('?')[0] : '') ||
+          (new URLSearchParams(window.location.search).get('section') ? '#' + new URLSearchParams(window.location.search).get('section') : '');
+        if (rawTargetId) {
+          try {
+            const hashTarget = document.querySelector(rawTargetId);
+            if (hashTarget) {
+              const prefersInstant = new URLSearchParams(window.location.search).has('instant') || AppState.prefersReducedMotion;
+              if (prefersInstant) {
+                document.documentElement.style.scrollBehavior = 'auto';
+                document.body.style.scrollBehavior = 'auto';
+                window.scrollTo(0, Math.max(0, hashTarget.offsetTop - 30));
+              } else {
+                setTimeout(() => {
+                  hashTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 60);
+              }
+            }
+          } catch (e) { }
+        }
       }
     }
 
@@ -4534,10 +4543,7 @@
     initApp();
   }
 
-  window.addEventListener('beforeunload', () => {
-    window.scrollTo(0, 0);
-    window.portfolioApp?.destroy();
-  }, { once: true });
+  window.addEventListener('beforeunload', () => window.portfolioApp?.destroy(), { once: true });
 
   // ── Client-side Protection & Hardening Shield ──
   const SecurityShield = {

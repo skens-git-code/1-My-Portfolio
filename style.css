@@ -384,15 +384,31 @@ button {
 }
 
 @keyframes ambientFloatSlow {
-    0% { transform: translate3d(0, 0, 0) scale(1); }
-    50% { transform: translate3d(-30px, 40px, 0) scale(1.08); }
-    100% { transform: translate3d(20px, -20px, 0) scale(0.96); }
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(-30px, 40px, 0) scale(1.08);
+    }
+
+    100% {
+        transform: translate3d(20px, -20px, 0) scale(0.96);
+    }
 }
 
 @keyframes ambientFloatSlow2 {
-    0% { transform: translate3d(0, 0, 0) scale(1); }
-    50% { transform: translate3d(35px, -35px, 0) scale(1.06); }
-    100% { transform: translate3d(-25px, 25px, 0) scale(0.95); }
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate3d(35px, -35px, 0) scale(1.06);
+    }
+
+    100% {
+        transform: translate3d(-25px, 25px, 0) scale(0.95);
+    }
 }
 
 /* Minimal celestial grid with soft center vignette */
@@ -537,22 +553,30 @@ button {
         transform: scale(0.0125);
         opacity: 0;
     }
+
     3% {
         opacity: 1;
     }
-    28% { /* 1.26s: scaled to 70vw x 70vh */
+
+    28% {
+        /* 1.26s: scaled to 70vw x 70vh */
         transform: scale(0.70);
         opacity: 1;
     }
-    42% { /* 1.89s */
+
+    42% {
+        /* 1.89s */
         transform: scale(1.65);
         opacity: 0.65;
     }
-    54% { /* 2.43s: pushed completely off-screen */
+
+    54% {
+        /* 2.43s: pushed completely off-screen */
         transform: scale(3.2);
         opacity: 0;
         visibility: hidden;
     }
+
     100% {
         transform: scale(3.5);
         opacity: 0;
@@ -582,33 +606,46 @@ button {
 }
 
 @keyframes tunnelLayer2Timeline {
-    0%, 18% {
+
+    0%,
+    18% {
         transform: scale(0.0125);
         opacity: 0;
         visibility: hidden;
     }
-    19% { /* 0.85s: emerges as seed */
+
+    19% {
+        /* 0.85s: emerges as seed */
         transform: scale(0.0125);
         opacity: 0.8;
         visibility: visible;
     }
-    35% { /* 1.57s */
+
+    35% {
+        /* 1.57s */
         transform: scale(0.40);
         opacity: 0.95;
     }
-    50% { /* 2.25s: fills frame */
+
+    50% {
+        /* 2.25s: fills frame */
         transform: scale(1.0);
         opacity: 1;
     }
-    66% { /* 2.97s: pushing outward */
+
+    66% {
+        /* 2.97s: pushing outward */
         transform: scale(1.9);
         opacity: 0.5;
     }
-    80% { /* 3.60s: pushed past viewport edges */
+
+    80% {
+        /* 3.60s: pushed past viewport edges */
         transform: scale(3.2);
         opacity: 0;
         visibility: hidden;
     }
+
     100% {
         transform: scale(3.5);
         opacity: 0;
@@ -649,10 +686,25 @@ button {
     animation: cornerMasksTimeline var(--tunnel-duration) var(--tunnel-expo-in-out) forwards;
 }
 
-.mask-top-left { top: 0; left: 0; }
-.mask-top-right { top: 0; right: 0; }
-.mask-bottom-left { bottom: 0; left: 0; }
-.mask-bottom-right { bottom: 0; right: 0; }
+.mask-top-left {
+    top: 0;
+    left: 0;
+}
+
+.mask-top-right {
+    top: 0;
+    right: 0;
+}
+
+.mask-bottom-left {
+    bottom: 0;
+    left: 0;
+}
+
+.mask-bottom-right {
+    bottom: 0;
+    right: 0;
+}
 
 .angled-corner-mask svg {
     width: 100%;
@@ -670,28 +722,39 @@ button {
 }
 
 @keyframes tunnelLayer3Timeline {
-    0%, 30% {
+
+    0%,
+    30% {
         transform: scale(0.0125);
         opacity: 0;
         visibility: hidden;
     }
-    31% { /* 1.39s: seeded */
+
+    31% {
+        /* 1.39s: seeded */
         transform: scale(0.0125);
         opacity: 0.65;
         visibility: visible;
     }
-    42% { /* 1.89s */
+
+    42% {
+        /* 1.89s */
         transform: scale(0.20);
         opacity: 0.85;
     }
-    48% { /* 2.16s: 40vw x 40vh */
+
+    48% {
+        /* 2.16s: 40vw x 40vh */
         transform: scale(0.40);
         opacity: 0.95;
     }
-    75% { /* 3.37s: expands to 100vw x 100vh full-bleed */
+
+    75% {
+        /* 3.37s: expands to 100vw x 100vh full-bleed */
         transform: scale(var(--tunnel-cover-scale, 1.05));
         opacity: 1;
     }
+
     100% {
         transform: scale(var(--tunnel-cover-scale, 1.05));
         opacity: 1;
@@ -701,19 +764,26 @@ button {
 
 /* Corner frames pushed past edges between 2.0s and 3.4s */
 @keyframes cornerMasksTimeline {
-    0%, 42% {
+
+    0%,
+    42% {
         transform: scale(1);
         opacity: 0.9;
     }
-    60% { /* 2.70s */
+
+    60% {
+        /* 2.70s */
         transform: scale(1.15);
         opacity: 0.7;
     }
-    76% { /* 3.42s: pushed past viewport edges */
+
+    76% {
+        /* 3.42s: pushed past viewport edges */
         transform: scale(1.8) translate3d(0, 0, 0);
         opacity: 0;
         visibility: hidden;
     }
+
     100% {
         transform: scale(2.2);
         opacity: 0;
@@ -842,10 +912,13 @@ button {
 }
 
 @keyframes beaconPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 0.8;
         transform: scale(0.9);
     }
+
     50% {
         opacity: 1;
         transform: scale(1.15);
@@ -1071,68 +1144,87 @@ button {
 }
 
 @keyframes bracketGlowReveal {
-    0%, 26% {
+
+    0%,
+    26% {
         opacity: 0;
         transform: scale(0.85);
     }
+
     34% {
         opacity: 0.85;
         transform: scale(1);
     }
+
     82% {
         opacity: 0.85;
         transform: scale(1);
     }
-    92%, 100% {
+
+    92%,
+    100% {
         opacity: 0;
         transform: scale(0.95);
     }
 }
 
 @keyframes eyebrowReveal {
-    0%, 28% {
+
+    0%,
+    28% {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     34% {
         opacity: 1;
         transform: translateY(0);
     }
+
     80% {
         opacity: 1;
         transform: translateY(0);
     }
-    90%, 100% {
+
+    90%,
+    100% {
         opacity: 0;
         transform: translateY(-16px);
     }
 }
 
 @keyframes editorialAuthorReveal {
-    0%, 32% {
+
+    0%,
+    32% {
         clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
         opacity: 0;
         transform: translateY(16px);
     }
+
     36% {
         opacity: 1;
         clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
     }
+
     54% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 1;
         transform: translateY(0);
     }
+
     78% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 1;
         transform: translateY(0);
     }
+
     90% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 0;
         transform: translateY(-22px) scale(0.97);
     }
+
     100% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 0;
@@ -1142,25 +1234,32 @@ button {
 }
 
 @keyframes baselineRuleExpand {
-    0%, 38% {
+
+    0%,
+    38% {
         opacity: 0;
         transform: scaleX(0);
     }
+
     44% {
         opacity: 0.6;
     }
+
     58% {
         opacity: 1;
         transform: scaleX(1);
     }
+
     78% {
         opacity: 1;
         transform: scaleX(1);
     }
+
     90% {
         opacity: 0;
         transform: scaleX(0.85);
     }
+
     100% {
         opacity: 0;
         transform: scaleX(0.85);
@@ -1169,30 +1268,37 @@ button {
 }
 
 @keyframes editorialPrimaryReveal {
-    0%, 44% {
+
+    0%,
+    44% {
         clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
         opacity: 0;
         transform: translateY(14px);
     }
+
     48% {
         opacity: 1;
         clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
     }
+
     64% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 1;
         transform: translateY(0);
     }
+
     80% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 1;
         transform: translateY(0);
     }
+
     92% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 0;
         transform: translateY(-20px) scale(0.97);
     }
+
     100% {
         clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         opacity: 0;
@@ -1202,44 +1308,57 @@ button {
 }
 
 @keyframes midLineExpand {
-    0%, 48% {
+
+    0%,
+    48% {
         opacity: 0;
         transform: scaleX(0);
     }
+
     54% {
         opacity: 0.8;
         transform: scaleX(1);
     }
+
     80% {
         opacity: 0.8;
         transform: scaleX(1);
     }
-    92%, 100% {
+
+    92%,
+    100% {
         opacity: 0;
         transform: scaleX(0.8);
     }
 }
 
 @keyframes editorialSecondaryReveal {
-    0%, 52% {
+
+    0%,
+    52% {
         opacity: 0;
         transform: translateY(12px);
     }
+
     56% {
         opacity: 0.3;
     }
+
     70% {
         opacity: 0.88;
         transform: translateY(0);
     }
+
     82% {
         opacity: 0.88;
         transform: translateY(0);
     }
+
     94% {
         opacity: 0;
         transform: translateY(-16px);
     }
+
     100% {
         opacity: 0;
         transform: translateY(-16px);
@@ -1248,19 +1367,25 @@ button {
 }
 
 @keyframes anchorLineReveal {
-    0%, 56% {
+
+    0%,
+    56% {
         opacity: 0;
         transform: scaleX(0);
     }
+
     64% {
         opacity: 0.5;
         transform: scaleX(1);
     }
+
     82% {
         opacity: 0.5;
         transform: scaleX(1);
     }
-    94%, 100% {
+
+    94%,
+    100% {
         opacity: 0;
         transform: scaleX(0.7);
     }
@@ -1410,27 +1535,33 @@ body.intro-completed .back-to-top {
         padding: 24px 18px;
         width: 95%;
     }
+
     .editorial-author-row h1,
     .editorial-heading,
     .editorial-author-row .hero-title-fade-in {
         font-size: clamp(2.2rem, 7.5vw, 3.6rem) !important;
     }
+
     .editorial-flank-line {
         max-width: 80px;
     }
+
     .editorial-eyebrow-tag {
         font-size: 0.62rem;
         letter-spacing: 0.16em;
         padding: 3px 10px;
     }
+
     .editorial-baseline-rule {
         margin: 14px auto 18px !important;
         width: 90% !important;
     }
+
     .editorial-primary-text {
         font-size: clamp(0.88rem, 3.0vw, 1.25rem);
         letter-spacing: 0.09em;
     }
+
     .editorial-secondary-text {
         font-size: clamp(0.66rem, 2.0vw, 0.80rem);
         letter-spacing: 0.10em;
@@ -1442,32 +1573,39 @@ body.intro-completed .back-to-top {
         width: 96%;
         padding: 18px 12px;
     }
+
     .editorial-author-row h1,
     .editorial-heading,
     .editorial-author-row .hero-title-fade-in {
         font-size: clamp(1.8rem, 7.2vw, 2.6rem) !important;
     }
+
     .editorial-flank-line {
         max-width: 40px;
     }
+
     .editorial-eyebrow-tag {
         font-size: 0.58rem;
         letter-spacing: 0.12em;
         padding: 3px 8px;
     }
+
     .editorial-baseline-rule {
         margin: 12px auto 15px !important;
         width: 92% !important;
     }
+
     .editorial-primary-text {
         font-size: clamp(0.80rem, 3.4vw, 0.98rem);
         letter-spacing: 0.07em;
         line-height: 1.35;
     }
+
     .editorial-mid-gradient-line {
         margin: 10px auto 12px;
         width: 60%;
     }
+
     .editorial-secondary-text {
         font-size: clamp(0.60rem, 2.6vw, 0.70rem);
         letter-spacing: 0.06em;
