@@ -171,57 +171,59 @@
 
 
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Initializing Skens.Space">
-    <div class="loader-ambient loader-ambient-one" aria-hidden="true"></div>
-    <div class="loader-ambient loader-ambient-two" aria-hidden="true"></div>
-    <div class="loader-shell">
-        <div class="loader-brand">
-            <span class="loader-monogram" aria-hidden="true">
-                <img src="favicon-32.png" width="28" height="28" alt=""
-                    style="display:block;border-radius:50%;object-fit:cover;">
-            </span>
-            <div class="loader-brand-copy">
-                <small>skens.space <i class="fab fa-microsoft"></i> </small>
-                <strong>Sarthak Mathapati</strong>
-                
-            </div>
-            <div class="loader-clarity-badge" title="Microsoft Clarity Active Telemetry">
-                <span class="clarity-dot"></span>
-                
-                <span>Online</span>
-            </div>
-        </div>
+    <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite"
+        aria-label="Initializing Skens.Space">
+        <div class="loader-ambient loader-ambient-one" aria-hidden="true"></div>
+        <div class="loader-ambient loader-ambient-two" aria-hidden="true"></div>
+        <div class="loader-shell">
+            <div class="loader-brand">
+                <span class="loader-monogram" aria-hidden="true">
+                    <img src="favicon-32.png" width="28" height="28" alt=""
+                        style="display:block;border-radius:50%;object-fit:cover;">
+                </span>
+                <div class="loader-brand-copy">
+                    <small>skens.space <i class="fab fa-microsoft"></i> </small>
+                    <strong>Sarthak Mathapati</strong>
 
-        <p class="loader-kicker">Complete ASI Engineering &amp; ASI Workspace</p>
-        <h1 class="loader-title" role="presentation">Locating At <span
-                class="text-gradient">skens.space</span></h1>
-        <p class="loader-subtitle">I architect scalable full‑stack systems, craft deep learning models, and design precision‑built interactive interfaces — all engineered for performance, clarity, and a touch of my own creative edge.</p>
-
-        <div class="loader-progress-row">
-            <div class="loader-progress-ring" aria-hidden="true">
-                <svg viewBox="0 0 100 100" role="presentation">
-                    <circle class="loader-ring-track" cx="50" cy="50" r="43"></circle>
-                    <circle class="loader-ring-value" id="progressRing" cx="50" cy="50" r="43"></circle>
-                </svg>
-                <span id="progressNumber">0%</span>
-            </div>
-            <div class="loader-progress-copy">
-                <div class="loading-percentage" id="loadingPercentage">
-                    <span>0%</span>
-                    <div>Synchronizing core modules, neural pipelines &amp; interface shaders…</div>
                 </div>
-                <div class="loader-progress-track" aria-hidden="true">
-                    <div class="progress-bar" id="progressBar"></div>
+                <div class="loader-clarity-badge" title="Microsoft Clarity Active Telemetry">
+                    <span class="clarity-dot"></span>
+
+                    <span>Online</span>
                 </div>
             </div>
-        </div>
 
-        <div class="loader-footer">
-            <span><i class="fas fa-satellite-dish" aria-hidden="true"></i>Core systems are nominal</span>
-            <span>skens.space</span>
+            <p class="loader-kicker">Complete ASI Engineering &amp; ASI Workspace</p>
+            <h1 class="loader-title" role="presentation">Locating At <span class="text-gradient">skens.space</span></h1>
+            <p class="loader-subtitle">I architect scalable full‑stack systems, craft deep learning models, and design
+                precision‑built interactive interfaces — all engineered for performance, clarity, and a touch of my own
+                creative edge.</p>
+
+            <div class="loader-progress-row">
+                <div class="loader-progress-ring" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" role="presentation">
+                        <circle class="loader-ring-track" cx="50" cy="50" r="43"></circle>
+                        <circle class="loader-ring-value" id="progressRing" cx="50" cy="50" r="43"></circle>
+                    </svg>
+                    <span id="progressNumber">0%</span>
+                </div>
+                <div class="loader-progress-copy">
+                    <div class="loading-percentage" id="loadingPercentage">
+                        <span>0%</span>
+                        <div>Synchronizing core modules, neural pipelines &amp; interface shaders…</div>
+                    </div>
+                    <div class="loader-progress-track" aria-hidden="true">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader-footer">
+                <span><i class="fas fa-satellite-dish" aria-hidden="true"></i>Core systems are nominal</span>
+                <span>skens.space</span>
+            </div>
         </div>
     </div>
-</div>
 
 
     <!-- Perfect Animated Background & Cinematic 3D Scene -->
@@ -528,58 +530,59 @@
 
                     <!-- LAYER 4: Elite Minimalist Editorial Display (Distraction-Free) -->
                     <div class="tunnel-layer-4" id="tunnelLayer4">
-    <div class="tunnel-editorial-display">
-        <!-- Top Eyebrow Row with Luminous Flank Gradient Lines -->
-        <div class="editorial-eyebrow-row">
-            <span class="editorial-flank-line flank-left" aria-hidden="true"></span>
-            <!-- <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span>Welcome &bull;It's2026</span> -->
-            <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span><span id="dynamicEyebrow">Welcome</span> &bull; It's 2026</span>
+                        <div class="tunnel-editorial-display">
+                            <!-- Top Eyebrow Row with Luminous Flank Gradient Lines -->
+                            <div class="editorial-eyebrow-row">
+                                <span class="editorial-flank-line flank-left" aria-hidden="true"></span>
+                                <!-- <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span>Welcome &bull;It's2026</span> -->
+                                <span class="editorial-eyebrow-tag"><span class="eyebrow-beacon"></span><span
+                                        id="dynamicEyebrow"> Welcome </span> &bull;  It's 2026</span>
+                                <script>
+                                    const hour = new Date().getHours();
+                                    const greeting = hour < 12 ? 'Good Morning, Welcome':(hour < 18 ? 'Good Afternoon, Welcome':'Good Evening, Welcome');
+                                    document.getElementById('dynamicEyebrow').textContent = greeting;
+                                </script>
 
-<script>
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Welcome, Good Morning' : (hour < 18 ? ' Welcome, Good Afternoon' : ' Welcome, Good Evening');
-    document.getElementById('dynamicEyebrow').textContent = greeting;
-</script>
+                                <span class="editorial-flank-line flank-right" aria-hidden="true"></span>
+                            </div>
 
-            <span class="editorial-flank-line flank-right" aria-hidden="true"></span>
-        </div>
+                            <!-- Author Identity Row -->
+                            <div class="editorial-author-row">
+                                <h1 class="hero-title-fade-in text-gradient dynamic-color">
+                                    <span class="greeting-prefix">I am</span> <span
+                                        class="name-gradient text-gradient dynamic-color">Sarthak M,</span>
+                                </h1>
+                            </div>
 
-        <!-- Author Identity Row -->
-        <div class="editorial-author-row">
-            <h1 class="hero-title-fade-in text-gradient dynamic-color">
-                <span class="greeting-prefix">I am</span> <span class="name-gradient text-gradient dynamic-color">Sarthak M,</span>
-            </h1>
-        </div>
+                            <!-- Luminous Gradient Baseline Rule (Underline Beam with Center Diamond Gem) -->
+                            <div class="editorial-baseline-rule text-gradient hero-title-fade-in" aria-hidden="true">
+                                <span class="rule-core-beam"></span>
+                                <span class="rule-center-gem"></span>
+                            </div>
 
-        <!-- Luminous Gradient Baseline Rule (Underline Beam with Center Diamond Gem) -->
-        <div class="editorial-baseline-rule text-gradient hero-title-fade-in" aria-hidden="true">
-            <span class="rule-core-beam"></span>
-            <span class="rule-center-gem"></span>
-        </div>
+                            <!-- Primary Editorial Headline (Balanced Dual-Line) -->
+                            <div class="editorial-line editorial-line-primary">
+                                <p class="editorial-primary-text">
+                                    <span class="phrase-line">ARCHITECTING INTELLIGENT SYSTEMS</span>
+                                    <span class="phrase-line">ENGINEERING HIGH-PRECISION COMPUTING</span>
+                                </p>
+                            </div>
 
-        <!-- Primary Editorial Headline (Balanced Dual-Line) -->
-        <div class="editorial-line editorial-line-primary">
-            <p class="editorial-primary-text">
-                <span class="phrase-line">ARCHITECTING INTELLIGENT SYSTEMS</span>
-                <span class="phrase-line">ENGINEERING HIGH-PRECISION COMPUTING</span>
-            </p>
-        </div>
+                            <!-- Secondary Editorial Discipline Row -->
+                            <div class="editorial-line editorial-line-secondary">
+                                <p class="editorial-secondary-text">
+                                    <span class="discipline-tag">Distributed Full‑Stack Architecture</span>
+                                    <span class="bullet-sep" aria-hidden="true">•</span>
+                                    <span class="discipline-tag">Deep Learning &amp; Computer Vision</span>
+                                    <span class="bullet-sep" aria-hidden="true">•</span>
+                                    <span class="discipline-tag">Low-Latency Interactive Interfaces</span>
+                                </p>
+                            </div>
 
-        <!-- Secondary Editorial Discipline Row -->
-        <div class="editorial-line editorial-line-secondary">
-            <p class="editorial-secondary-text">
-                <span class="discipline-tag">Distributed Full‑Stack Architecture</span>
-                <span class="bullet-sep" aria-hidden="true">•</span>
-                <span class="discipline-tag">Deep Learning &amp; Computer Vision</span>
-                <span class="bullet-sep" aria-hidden="true">•</span>
-                <span class="discipline-tag">Low-Latency Interactive Interfaces</span>
-            </p>
-        </div>
-
-        <!-- Bottom Micro Gradient Anchor Line -->
-        <div class="editorial-bottom-anchor-line" aria-hidden="true"></div>
-    </div>
-</div>
+                            <!-- Bottom Micro Gradient Anchor Line -->
+                            <div class="editorial-bottom-anchor-line" aria-hidden="true"></div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
