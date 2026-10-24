@@ -366,6 +366,27 @@ npx serve
 php -S localhost:8000
 ```
 
+### 📂 **Project Structure**
+
+```
+portfolio/
+├── assets/
+│   └── icons/              # Favicons, Apple Touch icons & brand marks
+├── css/
+│   └── style.css           # Design system tokens, layouts & responsive styling
+├── js/
+│   └── main.js             # Modular managers, Three.js 3D engine & interactions
+├── studio/                 # Sanity Content Studio (Headless CMS)
+│   ├── schemaTypes/        # Document definitions & content schemas
+│   ├── sanity.cli.ts       # Sanity CLI configuration
+│   └── sanity.config.ts    # Sanity Studio project configuration
+├── favicon.ico             # Fallback root browser favicon
+├── index.html              # Main HTML5 portfolio application
+├── package.json            # Root workspace scripts & project metadata
+├── robots.txt              # Search crawler policies
+└── sitemap.xml             # XML sitemap for SEO indexing
+```
+
 ### 🔧 **Configuration**
 
 ```javascript

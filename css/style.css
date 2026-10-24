@@ -3,14 +3,14 @@
    Professional • Futuristic • Optimised
    ============================================================ */
 
-/* ------------------------------------------------------------
-   0.  GOOGLE FONTS  (already in <head> — mirror here for IDE)
-   ------------------------------------------------------------ */
+/* ============================================================
+   00. GOOGLE FONTS
+   ============================================================ */
 /* Fonts are loaded once in index.html to avoid duplicate network requests. */
 
-/* ------------------------------------------------------------
-   1.  DESIGN TOKENS & VARIABLES
-   ------------------------------------------------------------ */
+/* ============================================================
+   01. DESIGN TOKENS & CSS VARIABLES
+   ============================================================ */
 :root {
     /* ── TRUE COMPLETE BLACK OLED CORE PALETTE ── */
     --c-bg: #000000;
@@ -115,29 +115,6 @@
     --size: 80%;
 }
 
-/* ============================================================
-   [OLD LIGHT THEME DEFINITION - COMMENTED OUT]
-   ============================================================
-[data-theme="light"] {
-    --c-bg: #f0f4fb;
-    --c-bg-alt: #e3e9f5;
-    --c-surface: rgba(255, 255, 255, .75);
-    --c-surface-solid: #ffffff;
-    --c-border: rgba(0, 136, 204, .18);
-    --c-border-glow: rgba(0, 136, 204, .45);
-    --clr-primary: #0088cc;
-    --clr-primary-lt: #00b4ff;
-    --clr-glow: rgba(0, 136, 204, .22);
-    --text: #0f172a;
-    --text-color: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --glass-bg: rgba(255, 255, 255, .70);
-    --glass-border: 1px solid rgba(0, 136, 204, .15);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, .08);
-}
-============================================================ */
-
 /* NEW ENHANCED LIGHT THEME TOKENS */
 [data-theme="light"],
 body.light-theme {
@@ -198,9 +175,9 @@ body.high-contrast {
     --blur: none !important;
 }
 
-/* ------------------------------------------------------------
-   2.  MODERN RESET
-   ------------------------------------------------------------ */
+/* ============================================================
+   02. MODERN CSS RESET & BASE STYLES
+   ============================================================ */
 *,
 *::before,
 *::after {
@@ -343,9 +320,9 @@ button {
     border: 0;
 }
 
-/* ------------------------------------------------------------
-   3. REDESIGNED MINIMAL AESTHETIC BACKGROUND (ZERO LAG)
-   ------------------------------------------------------------ */
+/* ============================================================
+   03. MINIMAL AESTHETIC BACKGROUND (ZERO LAG)
+   ============================================================ */
 .animated-bg {
     position: fixed;
     inset: 0;
@@ -1702,26 +1679,7 @@ body.intro-completed .back-to-top.visible {
     }
 }
 
-/* ============================================================
-   [OLD DECORATIVE PARTICLES / STARS CODE - COMMENTED OUT]
-   ============================================================
-.particles,
-.falling-stars {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-
-.particle,
-.star {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    opacity: .55;
-}
-============================================================ */
-
-/* Upper decorative dots and particles removed for clean, uncluttered layout */
+/* ── Background Particles & Falling Stars (Hidden for zero lag) ── */
 .particles,
 .particle,
 .falling-stars,
@@ -1776,226 +1734,8 @@ body.hovering .cursor-outline {
     border-color: var(--clr-primary-lt);
 }
 
-/* ------------------------------------------------------------
-   4.  NAV / HEADER
-   ------------------------------------------------------------ */
-
 /* ============================================================
-   [OLD NAVBAR / HEADER & PORTFOLIO CODE - COMMENTED OUT]
-   ============================================================
-header,
-.navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: var(--z-nav);
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-    transition: padding var(--t-mid);
-    background: transparent;
-}
-
-header.scrolled,
-.navbar.scrolled {
-    padding: 10px 20px;
-}
-
-// (Header Inner Wrapper)
-.header-inner {
-    width: 100%;
-    max-width: 1280px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.mobile-brand {
-    display: none !important;
-}
-
-.desktop-brand {
-    display: inline-flex !important;
-}
-
-.drawer-header {
-    display: none;
-}
-
-.drawer-footer {
-    display: none;
-}
-
-.nav-actions {
-    display: flex !important;
-    align-items: center;
-    gap: 6px;
-    margin-left: 6px;
-    z-index: 1;
-}
-
-.nav-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 10px;
-    border-radius: 50px;
-    background: var(--glass-bg);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    border: var(--glass-border);
-    box-shadow: var(--glass-shadow), 0 0 24px var(--clr-glow);
-    transition: var(--t-mid);
-}
-
-.nav-container:hover {
-    border-color: var(--c-border-glow);
-    box-shadow: var(--glass-shadow), 0 0 40px var(--clr-glow);
-}
-
-// (Gliding active pill)
-.nav-indicator {
-    position: absolute;
-    top: 6px;
-    height: calc(100% - 12px);
-    background: var(--clr-grad);
-    border-radius: 30px;
-    z-index: 0;
-    transition: left .34s cubic-bezier(.23, 1, .32, 1), width .34s cubic-bezier(.23, 1, .32, 1), opacity .28s ease;
-    box-shadow: 0 0 18px var(--clr-glow);
-    opacity: 0;
-    will-change: left, width, opacity;
-    pointer-events: none;
-}
-
-.brand-logo-svg {
-    display: inline-block;
-    vertical-align: middle;
-    flex-shrink: 0;
-    filter: drop-shadow(0 0 6px rgba(0, 212, 255, .6));
-    transition: transform .3s ease;
-}
-
-.port:hover .brand-logo-svg {
-    transform: rotate(30deg) scale(1.1);
-}
-
-.port {
-    font-family: 'Space Grotesk', 'Orbitron', system-ui, sans-serif;
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--clr-primary);
-    padding: 0 14px;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-shadow: 0 0 14px var(--clr-glow);
-    transition: color .25s ease, transform .25s var(--ease-spring);
-}
-
-.nav-link {
-    position: relative;
-    z-index: 1;
-    color: var(--text-secondary);
-    font-size: .88rem;
-    font-weight: 500;
-    padding: 9px 18px;
-    min-height: 44px;
-    border-radius: 30px;
-    white-space: nowrap;
-    transition: color .25s ease, transform .25s var(--ease-spring);
-    user-select: none;
-}
-
-.nav-link:hover,
-.nav-link.active {
-    color: #fff;
-}
-
-.nav-link.active {
-    font-weight: 600;
-}
-
-.nav-link::after {
-    display: none;
-}
-
-// (Theme toggle)
-.theme-toggle,
-#highContrastToggle {
-    background: rgba(255, 255, 255, .06);
-    border: 1px solid var(--c-border);
-    color: var(--text);
-    font-size: 1rem;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--t-mid);
-    cursor: pointer;
-}
-
-.theme-toggle:hover,
-#highContrastToggle:hover {
-    background: var(--clr-primary);
-    color: #000;
-    box-shadow: 0 0 16px var(--clr-glow);
-    transform: scale(1.08) rotate(8deg);
-}
-
-// (Mobile hamburger)
-.mobile-menu-toggle {
-    display: none;
-    background: rgba(255, 255, 255, .06);
-    border: 1px solid var(--c-border);
-    color: var(--text);
-    font-size: 1.2rem;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: var(--blur);
-    transition: var(--t-mid);
-    z-index: var(--z-nav);
-    cursor: pointer;
-}
-
-.mobile-menu-toggle:hover {
-    background: var(--clr-primary);
-    color: #000;
-    box-shadow: 0 0 16px var(--clr-glow);
-}
-
-body.nav-open {
-    overflow: hidden;
-}
-
-body.nav-open::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: calc(var(--z-modal) - 1);
-    background: rgba(2, 5, 14, .68);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-body.nav-open header,
-body.nav-open .navbar {
-    z-index: var(--z-modal);
-}
-============================================================ */
-
-/* ============================================================
-   NEW MODERN NAVBAR / HEADER & PORTFOLIO BRAND STYLING
+   05. NAVIGATION & HEADER
    ============================================================ */
 
 /* Header Root & Floating Wrapper */
@@ -2399,9 +2139,9 @@ body.light-theme #highContrastToggle {
     color: #1e293b;
 }
 
-/* ------------------------------------------------------------
-   5.  HERO
-   ------------------------------------------------------------ */
+/* ============================================================
+   06. HERO SECTION
+   ============================================================ */
 .hero {
     min-height: 100vh;
     min-height: 100dvh;
@@ -2428,21 +2168,6 @@ body.light-theme #highContrastToggle {
     z-index: 1;
 }
 
-/* ============================================================
-   [OLD WEBGL 3D CANVAS OPACITY - COMMENTED OUT]
-   ============================================================
-.webgl-3d-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-    transition: opacity 0.4s ease;
-}
-
-[data-theme="light"] .webgl-3d-canvas,
-body.light-theme .webgl-3d-canvas {
-    opacity: 0.38;
-}
-============================================================ */
 /* NEW SUBTLE AMBIENT 3D BACKGROUND CANVAS */
 .webgl-3d-canvas {
     width: 100% !important;
@@ -2457,69 +2182,6 @@ body.light-theme .webgl-3d-canvas {
 body.light-theme .webgl-3d-canvas {
     opacity: 0.28;
 }
-
-/* ============================================================
-   [OLD HERO CONTENT & DESCRIPTION STYLING - COMMENTED OUT]
-   ============================================================
-.hero-content {
-    max-width: 960px;
-    text-align: center;
-    z-index: 2;
-}
-
-.hero-subtitle,
-.fade-in:not(.hero-description):not(.hero-buttons):not(.skills-carousel):not(.profile-container) {
-    display: inline-block;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    font-size: clamp(.82rem, .78rem + .36vw, 1.05rem);
-    color: var(--clr-primary);
-    font-weight: 600;
-    padding: 6px 20px;
-    border-radius: 30px;
-    background: rgba(0, 212, 255, .08);
-    border: 1px solid rgba(0, 212, 255, .22);
-    box-shadow: 0 0 22px rgba(0, 212, 255, .10);
-    margin-bottom: 20px;
-}
-
-.hero-title-fade-in {
-    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
-    font-size: var(--fs-4xl);
-    line-height: 1.14;
-    margin-bottom: 24px;
-    color: var(--text);
-    animation: fadeUp .8s var(--ease-spring) both;
-}
-
-.hero-description {
-    font-size: clamp(1.02rem, .94rem + .40vw, 1.28rem);
-    max-width: 760px;
-    margin: 0 auto 36px;
-    color: var(--text-secondary);
-    line-height: 1.72;
-}
-
-.bouncing-text {
-    display: inline-block;
-}
-============================================================ */
-
-/* ============================================================
-   [OLD HERO CONTENT TRANSPARENCY RULES - COMMENTED OUT]
-   ============================================================
-.hero-content.glass-card,
-.hero-content.testimonial-card,
-.hero-buttons.glass-card,
-.hero-buttons.testimonial-card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    padding: 0 !important;
-}
-============================================================ */
 
 /* RESTORED PREMIUM CENTERED HERO CARD (MATCHING REFERENCE IMAGE 5) */
 .hero-content {
@@ -3049,16 +2711,6 @@ body.light-theme .hero-buttons .hero-btn:not(.primary) {
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
 }
 
-/* ============================================================
-   [OLD SKILLS TRACK - COMMENTED OUT]
-   ============================================================
-.skills-track {
-    display: flex;
-    gap: 14px;
-    width: max-content;
-    animation: ticker 26s linear infinite;
-}
-============================================================ */
 /* Hardware-Accelerate Moving Layers (Zero Visual Change) */
 .ticker-track,
 .carousel-track {
@@ -3113,21 +2765,10 @@ body.light-theme .hero-buttons .hero-btn:not(.primary) {
     box-shadow: 0 6px 16px var(--clr-glow);
 }
 
-/* ------------------------------------------------------------
-   6.  SECTIONS — SHARED
-   ------------------------------------------------------------ */
 /* ============================================================
-   [OLD SECTION PADDING - COMMENTED OUT]
-   ============================================================
-section,
-.section-transition {
-    padding: 88px 20px;
-    position: relative;
-    scroll-margin-top: 112px;
-    content-visibility: auto;
-    contain-intrinsic-size: 1200px;
-}
-============================================================ */
+   07. SHARED SECTION STYLES & LAYOUT
+   ============================================================ */
+
 section,
 .section-transition {
     padding: clamp(48px, 6vw, 70px) 20px;
@@ -3155,35 +2796,6 @@ section:has(.case-study-modal.active) {
     margin: 0 auto;
     padding: 0 20px;
 }
-
-/* ============================================================
-   [OLD SECTION WRAPPER CARD STYLING - COMMENTED OUT]
-   ============================================================
-.testimonial-card.glass-card {
-    padding: clamp(20px, 3.2vw, 36px);
-}
-============================================================ */
-/* ============================================================
-   [OLD UNBOXED SECTION CONTAINER - COMMENTED OUT]
-   ============================================================
-.container.testimonial-card.glass-card,
-.section-transition > .container.testimonial-card.glass-card,
-section > .container.testimonial-card.glass-card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-radius: 0 !important;
-    padding: 0 20px !important;
-}
-
-.container.testimonial-card.glass-card::before,
-.section-transition > .container.testimonial-card.glass-card::before,
-section > .container.testimonial-card.glass-card::before {
-    display: none !important;
-}
-============================================================ */
 
 /* RESTORED UNIVERSAL SECTION CONTAINER (MATCHING REFERENCE IMAGE 3)
    Wraps every section in an elegant, elevated card container with consistent
@@ -3357,20 +2969,7 @@ body.light-theme .container.testimonial-card.glass-card .p-lg.m-md.text-center {
 }
 
 /* Headings */
-/* ============================================================
-   [OLD HEADING MARGIN - COMMENTED OUT]
-   ============================================================
-.modern-heading,
-.section-title {
-    font-family: 'Orbitron', 'Space Grotesk', sans-serif;
-    font-size: var(--fs-3xl);
-    text-align: center;
-    margin-bottom: clamp(32px, 4.5vw, 60px);
-    font-weight: 700;
-    letter-spacing: .8px;
-    color: var(--text);
-}
-============================================================ */
+
 .modern-heading,
 .section-title {
     font-family: 'Orbitron', 'Space Grotesk', sans-serif;
@@ -3701,9 +3300,9 @@ img.loaded {
     opacity: 1;
 }
 
-/* ------------------------------------------------------------
-   7.  ABOUT & BENTO GRID
-   ------------------------------------------------------------ */
+/* ============================================================
+   08. ABOUT ME & BENTO GRID
+   ============================================================ */
 .about-mission-banner {
     display: flex;
     align-items: center;
@@ -3970,9 +3569,9 @@ img.loaded {
     margin: 0 !important;
 }
 
-/* ------------------------------------------------------------
-   8.  ROUTINE & GOALS
-   ------------------------------------------------------------ */
+/* ============================================================
+   09. DAILY ROUTINE & FUTURE GOALS
+   ============================================================ */
 .routine-intro {
     max-width: 660px;
     margin: 0 auto 32px;
@@ -4208,9 +3807,9 @@ img.loaded {
     color: var(--text-secondary);
 }
 
-/* ------------------------------------------------------------
-   9.  TECH STACK
-   ------------------------------------------------------------ */
+/* ============================================================
+   10. TECH STACK & AI ECOSYSTEM
+   ============================================================ */
 .tech-stack-intro {
     max-width: 660px;
     margin: 0 auto 32px;
@@ -5038,35 +4637,15 @@ body.light-theme .tech-item:hover {
     opacity: 1;
 }
 
-/* ------------------------------------------------------------
-   10.  SERVICES
-   ------------------------------------------------------------ */
+/* ============================================================
+   11. SERVICES & OFFERINGS
+   ============================================================ */
 .services-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
     gap: 22px;
 }
 
-/* ============================================================
-   [OLD SERVICE CARD STYLING - COMMENTED OUT]
-   ============================================================
-.service-card,
-.service-link .service-card {
-    padding: 38px 26px;
-    text-align: center;
-    border-radius: var(--card-radius);
-    background: var(--glass-bg);
-    border: var(--glass-border);
-    border-bottom: 4px solid var(--clr-primary);
-    transition: var(--t-mid);
-}
-
-.service-card:hover {
-    transform: translateY(-8px);
-    border-bottom-color: var(--clr-magenta);
-    box-shadow: 0 18px 44px -8px var(--clr-glow);
-}
-============================================================ */
 .service-card,
 .service-link .service-card {
     padding: 28px 22px;
@@ -5142,9 +4721,9 @@ body.light-theme .tech-item:hover {
     font-size: 1.1rem;
 }
 
-/* ------------------------------------------------------------
-   11.  PROJECTS
-   ------------------------------------------------------------ */
+/* ============================================================
+   12. FEATURED PROJECTS & PORTFOLIO
+   ============================================================ */
 .projects-intro {
     max-width: 660px;
     margin: 0 auto 30px;
@@ -5702,9 +5281,9 @@ body.light-theme .tech-item:hover {
     font-size: var(--fs-lg);
 }
 
-/* ------------------------------------------------------------
-   12.  STATS
-   ------------------------------------------------------------ */
+/* ============================================================
+   13. IMPACT & STATISTICS
+   ============================================================ */
 .stats-grid,
 #open-source .stats-grid {
     display: grid;
@@ -5759,9 +5338,9 @@ body.light-theme .tech-item:hover {
     font-size: var(--fs-xl);
 }
 
-/* ------------------------------------------------------------
-   13.  OPEN SOURCE
-   ------------------------------------------------------------ */
+/* ============================================================
+   14. OPEN SOURCE CONTRIBUTIONS
+   ============================================================ */
 .opensource-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -5857,46 +5436,15 @@ body.light-theme .tech-item:hover {
     color: var(--clr-primary);
 }
 
-/* ------------------------------------------------------------
-   14.  SPEAKING / TALKS
-   ------------------------------------------------------------ */
+/* ============================================================
+   15. SPEAKING & WORKSHOPS
+   ============================================================ */
 .talks-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 22px;
 }
 
-/* ============================================================
-   [OLD TALK CARD WITH HARSH MAGENTA BORDER & BADGE - COMMENTED OUT]
-   ============================================================
-.talk-card.glass-card {
-    padding-top: 52px;
-    position: relative;
-    border-left: 3px solid var(--clr-magenta);
-    transition: transform var(--t-mid), border-color var(--t-mid), box-shadow var(--t-mid);
-}
-
-.talk-card.glass-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 36px -6px rgba(255, 0, 128, .20);
-    border-left-color: var(--clr-magenta);
-}
-
-.talk-date {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    background: var(--clr-magenta);
-    color: #fff;
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: .78rem;
-    font-weight: 700;
-    letter-spacing: .6px;
-    text-transform: uppercase;
-    box-shadow: 0 4px 14px rgba(255, 0, 128, .30);
-}
-============================================================ */
 /* NEW REFINED & BALANCED TALK CARD */
 .talk-card.glass-card {
     padding: 24px 24px 22px;
@@ -5994,40 +5542,15 @@ body.light-theme .talk-date {
     margin-bottom: 18px;
 }
 
-/* ------------------------------------------------------------
-   15.  PUBLICATIONS
-   ------------------------------------------------------------ */
+/* ============================================================
+   16. PUBLICATIONS & RESOURCES
+   ============================================================ */
 .publications-list {
     display: flex;
     flex-direction: column;
     gap: 22px;
 }
 
-/* ============================================================
-   [OLD PUBLICATION CARD & TYPE - COMMENTED OUT]
-   ============================================================
-.publication-card.glass-card {
-    padding: 28px;
-    transition: transform var(--t-mid), border-color var(--t-mid), box-shadow var(--t-mid);
-}
-
-.publication-card.glass-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--c-border-glow);
-    box-shadow: 0 16px 36px -6px rgba(0, 212, 255, .20);
-}
-
-.publication-type {
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    font-size: .72rem;
-    font-weight: 700;
-    color: var(--clr-violet);
-    border: 1px solid var(--clr-violet);
-    padding: .2rem .6rem;
-    border-radius: 5px;
-}
-============================================================ */
 /* NEW REFINED & BALANCED PUBLICATION CARD */
 .publication-card.glass-card {
     padding: clamp(20px, 2.8vw, 30px);
@@ -6132,9 +5655,9 @@ body.light-theme .publication-type {
     color: var(--clr-primary);
 }
 
-/* ------------------------------------------------------------
-   16.  COLLABORATE
-   ------------------------------------------------------------ */
+/* ============================================================
+   17. COLLABORATION OPTIONS
+   ============================================================ */
 .collaboration-options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -6160,13 +5683,6 @@ body.light-theme .publication-type {
     border-top-color: var(--clr-magenta);
 }
 
-/* ============================================================
-   [OLD COLLAB OPTION HOVER - COMMENTED OUT]
-   ============================================================
-.collab-option.glass-card:hover {
-    transform: translateY(-6px);
-}
-============================================================ */
 .collab-option.glass-card:hover {
     transform: translateY(-4px);
 }
@@ -6214,9 +5730,9 @@ body.light-theme .publication-type {
     font-weight: 700;
 }
 
-/* ------------------------------------------------------------
-   17.  CERTIFICATES & EXPERIENCE (extra sections)
-   ------------------------------------------------------------ */
+/* ============================================================
+   18. WORK EXPERIENCE & JOURNEY
+   ============================================================ */
 .experience-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -6267,15 +5783,6 @@ body.light-theme .publication-type {
     padding: 24px;
 }
 
-/* ============================================================
-   [OLD CERTIFICATE CARD HOVER - COMMENTED OUT]
-   ============================================================
-.certificate-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 32px rgba(0, 212, 255, .15);
-    border-color: rgba(0, 212, 255, .3);
-}
-============================================================ */
 .certificate-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 24px rgba(0, 212, 255, .15);
@@ -6291,9 +5798,9 @@ body.light-theme .publication-type {
     transform: scale(1.1) rotate(5deg);
 }
 
-/* ------------------------------------------------------------
-   18.  PROCESS TIMELINE
-   ------------------------------------------------------------ */
+/* ============================================================
+   19. PROCESS TIMELINE
+   ============================================================ */
 .process-timeline {
     position: relative;
     max-width: 900px;
@@ -6349,9 +5856,9 @@ body.light-theme .publication-type {
     color: var(--text-secondary);
 }
 
-/* ------------------------------------------------------------
-   19.  CONTACT
-   ------------------------------------------------------------ */
+/* ============================================================
+   20. CONTACT SECTION & FORM
+   ============================================================ */
 .contact-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -6444,23 +5951,6 @@ body.light-theme .publication-type {
     font-size: .82rem;
 }
 
-/* ============================================================
-   [OLD FORM INPUT STYLING - COMMENTED OUT]
-   ============================================================
-.form-input,
-.form-textarea,
-.form-control,
-.newsletter-input {
-    width: 100%;
-    padding: 13px 17px;
-    background: rgba(255, 255, 255, .04);
-    border: 1px solid var(--c-border);
-    border-radius: 12px;
-    color: var(--text);
-    font-size: .94rem;
-    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
-}
-============================================================ */
 .form-input,
 .form-textarea,
 .form-control,
@@ -6622,9 +6112,9 @@ body.light-theme .newsletter-input {
     font-size: .90rem;
 }
 
-/* ------------------------------------------------------------
-   20.  FOOTER
-   ------------------------------------------------------------ */
+/* ============================================================
+   21. FOOTER
+   ============================================================ */
 footer {
     padding: 60px 20px 28px;
     background: var(--c-bg-alt);
@@ -6841,9 +6331,9 @@ body.light-theme footer .copyright p {
     color: #64748b !important;
 }
 
-/* ------------------------------------------------------------
-   20b. BLOG & EDITORIAL CARDS
-   ------------------------------------------------------------ */
+/* ============================================================
+   22. ARTICLES & BLOG SECTION
+   ============================================================ */
 .blog-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6924,9 +6414,9 @@ body.light-theme footer .copyright p {
     color: var(--clr-primary);
 }
 
-/* ------------------------------------------------------------
-   21.  CHAT WIDGET
-   ------------------------------------------------------------ */
+/* ============================================================
+   23. CHAT WIDGET & ASSISTANT
+   ============================================================ */
 .chat-widget {
     position: fixed;
     bottom: 24px;
@@ -7105,9 +6595,9 @@ body.light-theme footer .copyright p {
     color: #000;
 }
 
-/* ------------------------------------------------------------
-   22.  COMMAND PALETTE
-   ------------------------------------------------------------ */
+/* ============================================================
+   24. COMMAND PALETTE MODAL
+   ============================================================ */
 .command-palette-overlay {
     position: fixed;
     inset: 0;
@@ -7220,61 +6710,9 @@ body.light-theme footer .copyright p {
     font-size: .88rem;
 }
 
-/* ------------------------------------------------------------
-   23.  LOADING SCREEN
-   ------------------------------------------------------------ */
 /* ============================================================
-   [OLD NAVY & VIOLET LOADING SCREEN - COMMENTED OUT]
-   ============================================================
-.loading-screen {
-    position: fixed;
-    inset: 0;
-    isolation: isolate;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    z-index: var(--z-loader);
-    background:
-        radial-gradient(circle at 15% 20%, rgba(0, 212, 255, .16), transparent 32%),
-        radial-gradient(circle at 86% 82%, rgba(111, 0, 255, .20), transparent 36%),
-        #04060f;
-    transition: opacity .45s ease, visibility .45s ease;
-}
-
-.loader-ambient-two {
-    right: -16rem;
-    bottom: -18rem;
-    background: var(--clr-violet);
-    animation-delay: -3s;
-}
-
-.loader-shell {
-    width: min(92vw, 680px);
-    padding: clamp(28px, 5vw, 56px);
-    border: 1px solid rgba(124, 233, 255, .25);
-    border-radius: 28px;
-    background: linear-gradient(145deg, rgba(14, 21, 41, .88), rgba(7, 10, 24, .72));
-    box-shadow: 0 34px 90px rgba(0, 0, 0, .48), 0 0 0 1px rgba(255, 255, 255, .04) inset, 0 0 80px rgba(0, 212, 255, .12);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    animation: loaderReveal .7s var(--ease-spring) both;
-}
-
-.loader-monogram {
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    border: 1px solid rgba(124, 233, 255, .45);
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(0, 212, 255, .22), rgba(111, 0, 255, .28));
-    color: #fff;
-    font: 700 .82rem 'Orbitron', sans-serif;
-    letter-spacing: .08em;
-    box-shadow: 0 0 24px rgba(0, 212, 255, .18);
-}
-============================================================ */
+   25. LOADING SCREEN & PRELOADER
+   ============================================================ */
 
 /* ── TRUE COMPLETE BLACK OLED LOADING SCREEN ── */
 .loading-screen {
@@ -7708,9 +7146,9 @@ body.light-theme .loading-screen .loader-footer {
     color: #64748b !important;
 }
 
-/* ------------------------------------------------------------
-   24.  SCROLL INDICATORS & SECTION NAV
-   ------------------------------------------------------------ */
+/* ============================================================
+   26. SCROLL INDICATORS & SECTION NAVIGATION
+   ============================================================ */
 .scroll-indicator,
 .scroll-progress-bar {
     position: fixed;
@@ -7755,15 +7193,6 @@ body.light-theme .loading-screen .loader-footer {
     visibility: visible;
 }
 
-/* ============================================================
-   [OLD BACK TO TOP HOVER - COMMENTED OUT]
-   ============================================================
-.back-to-top:hover {
-    background: var(--clr-primary);
-    color: #000;
-    transform: translateY(-5px);
-}
-============================================================ */
 .back-to-top:hover {
     background: var(--clr-primary);
     color: #000;
@@ -7990,9 +7419,9 @@ body.light-theme .cookie-banner .cookie-decline-btn:hover {
     transform: translate(-50%, 0);
 }
 
-/* ------------------------------------------------------------
-   25.  SKELETON, IMAGE UTILITIES
-   ------------------------------------------------------------ */
+/* ============================================================
+   27. SKELETON LOADERS & IMAGE UTILITIES
+   ============================================================ */
 .skeleton {
     background: linear-gradient(90deg, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .10) 37%, rgba(255, 255, 255, .05) 63%);
     background-size: 400% 100%;
@@ -8032,9 +7461,9 @@ img.skeleton-loading {
     min-height: 0;
 }
 
-/* ------------------------------------------------------------
-   26.  UTILITY CLASSES
-   ------------------------------------------------------------ */
+/* ============================================================
+   28. UTILITY CLASSES & HELPERS
+   ============================================================ */
 .text-center {
     text-align: center;
 }
@@ -8226,9 +7655,9 @@ img.skeleton-loading {
     white-space: pre;
 }
 
-/* ------------------------------------------------------------
-   27.  KEYFRAME ANIMATIONS
-   ------------------------------------------------------------ */
+/* ============================================================
+   29. KEYFRAME ANIMATIONS
+   ============================================================ */
 @keyframes orbFloat1 {
     0% {
         transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
@@ -8475,9 +7904,9 @@ body.high-contrast .stat-number {
     background: none;
 }
 
-/* ------------------------------------------------------------
-   28.  RESPONSIVE
-   ------------------------------------------------------------ */
+/* ============================================================
+   30. RESPONSIVE MEDIA QUERIES & MOBILE BREAKPOINTS
+   ============================================================ */
 @media (max-width:1280px) {
     .footer-content {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -8524,80 +7953,6 @@ body.high-contrast .stat-number {
     .section-transition {
         scroll-margin-top: 76px;
     }
-
-    /* ============================================================
-       [OLD MOBILE HERO, FILTER & COOKIE BANNER SIZING - COMMENTED OUT]
-       ============================================================
-    .hero-subtitle,
-    .hero-subtitle.fade-in {
-        letter-spacing: 1px !important;
-        padding: 5px 14px !important;
-        font-size: 0.72rem !important;
-        max-width: 90% !important;
-        white-space: nowrap !important;
-        text-align: center !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-
-    .hero-title-fade-in {
-        font-size: clamp(1.8rem, 1.3rem + 2.5vw, 2.4rem);
-        line-height: 1.22;
-        overflow-wrap: break-word;
-        word-break: break-word;
-    }
-
-    .section-title,
-    .modern-heading {
-        font-size: clamp(1.45rem, 1.15rem + 1.8vw, 2.1rem) !important;
-        padding: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        display: block !important;
-        text-align: center !important;
-    }
-
-    .project-filters {
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding: 4px 8px 12px;
-        gap: 8px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-    }
-
-    .project-filters::-webkit-scrollbar {
-        display: none;
-    }
-
-    .filter-btn {
-        white-space: nowrap;
-        flex-shrink: 0;
-        padding: 8px 16px;
-        font-size: 0.82rem;
-        min-height: 44px;
-    }
-
-    .cookie-banner {
-        left: 14px;
-        right: 14px;
-        max-width: calc(100% - 28px);
-        bottom: calc(85px + env(safe-area-inset-bottom, 16px));
-        padding: 16px 18px;
-    }
-
-    .cookie-banner .hero-btn {
-        min-height: 40px;
-        flex: 1;
-    }
-
-    footer {
-        padding-bottom: calc(90px + env(safe-area-inset-bottom, 16px)) !important;
-    }
-    ============================================================ */
 
     /* ============================================================
        NEW REFINED & BALANCED MOBILE SIZING & RESPONSIVENESS
@@ -8844,59 +8199,8 @@ body.high-contrast .stat-number {
     }
 
     /* ============================================================
-       [OLD MOBILE NAVBAR / HEADER CODE - COMMENTED OUT]
-       ============================================================
-    header,
-    .navbar {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: calc(10px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
-        background: var(--glass-bg);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border-bottom: 1px solid var(--c-border);
-        transition: background-color var(--t-mid), border-color var(--t-mid);
-    }
-
-    .header-inner {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-
-    .mobile-brand {
-        display: inline-flex !important;
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        font-size: 1.25rem;
-    }
-
-    .desktop-brand {
-        display: none !important;
-    }
-
-    .nav-actions {
-        display: none !important;
-    }
-
-    .mobile-menu-toggle {
-        display: none !important;
-    }
-
-    .nav-container {
-        display: none !important;
-    }
-    ============================================================ */
-
-    /* ============================================================
-       NEW MODERN MOBILE NAVBAR / HEADER & PORTFOLIO BRAND STYLING
-       ============================================================ */
-    /* ============================================================
-       NEW MODERN MOBILE FLOATING TOP NAVBAR & DRAWER
-       ============================================================ */
+   MOBILE FLOATING TOP BAR & DRAWER NAVIGATION
+   ============================================================ */
     header,
     .navbar {
         display: flex;
@@ -9444,19 +8748,6 @@ body.high-contrast .stat-number {
         padding-top: 28px;
     }
 
-    /* ============================================================
-       [OLD MOBILE SECTION & CARD PADDING - COMMENTED OUT]
-       ============================================================
-    section,
-    .section-transition {
-        padding: 60px 16px;
-    }
-
-    .glass-card,
-    .testimonial-card.glass-card {
-        padding: var(--sp-md);
-    }
-    ============================================================ */
     section,
     .section-transition {
         padding: 42px 14px;
@@ -9617,23 +8908,6 @@ body.high-contrast .stat-number {
 }
 
 @media (max-width:480px) {
-    /* ============================================================
-       [OLD 480px HERO & BUTTON SIZING - COMMENTED OUT]
-       ============================================================
-    .hero {
-        padding: 100px 14px 40px;
-    }
-
-    .hero-buttons {
-        flex-direction: column;
-    }
-
-    .hero-btn,
-    .cta-button {
-        width: 100%;
-        justify-content: center;
-    }
-    ============================================================ */
 
     /* NEW REFINED 480px HERO & COMPACT BUTTON SIZING */
     .hero {
@@ -9775,9 +9049,9 @@ body.high-contrast .stat-number {
     }
 }
 
-/* ------------------------------------------------------------
-   29.  ACCESSIBILITY & PRINT
-   ------------------------------------------------------------ */
+/* ============================================================
+   31. ACCESSIBILITY, PRINT & HIGH-CONTRAST MODES
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
 
     html {
@@ -9796,108 +9070,7 @@ body.high-contrast .stat-number {
 }
 
 /* ============================================================
-   FLOATING BOTTOM NAV – MOBILE
-   ============================================================ */
-
-/* ============================================================
-   [OLD BOTTOM NAV MOBILE STYLING - COMMENTED OUT]
-   ============================================================
-.bottom-nav-mobile {
-    position: fixed;
-    bottom: max(16px, env(safe-area-inset-bottom, 16px));
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: calc(var(--z-modal) + 10);
-    display: none;
-    background: var(--glass-bg);
-    backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    border: var(--glass-border);
-    border-radius: 28px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 212, 255, 0.08);
-    padding: 6px 8px;
-    max-width: 480px;
-    width: calc(100% - 32px);
-    transition: transform 0.35s cubic-bezier(.16, 1, .30, 1),
-                opacity 0.35s cubic-bezier(.16, 1, .30, 1),
-                bottom 0.3s ease;
-}
-
-.bottom-nav-link,
-.bottom-nav-more {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    padding: 6px 2px;
-    min-width: 0;
-    border-radius: 18px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 0.65rem;
-    font-weight: 500;
-    cursor: pointer !important;
-    z-index: 99999 !important;
-    position: relative !important;
-    touch-action: manipulation;
-    transition: color 0.25s ease, background 0.25s ease, transform 0.25s ease;
-    text-decoration: none;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    flex: 1 1 0;
-}
-
-.bottom-nav-link i,
-.bottom-nav-more i {
-    font-size: 1.25rem;
-    transition: transform 0.3s ease;
-}
-
-.bottom-nav-link span,
-.bottom-nav-more span {
-    font-size: 0.62rem;
-    letter-spacing: 0.3px;
-    line-height: 1;
-}
-
-.bottom-nav-link.active {
-    color: var(--clr-primary);
-    background: rgba(0, 212, 255, 0.10);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
-}
-
-.bottom-nav-link.active i {
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 8px var(--clr-glow));
-}
-
-.bottom-nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 16px;
-    height: 3px;
-    border-radius: 4px;
-    background: var(--clr-grad);
-    box-shadow: 0 0 12px var(--clr-glow);
-}
-
-.bottom-nav-more {
-    color: var(--text-secondary);
-}
-
-.bottom-nav-more.active {
-    color: var(--clr-primary);
-    background: rgba(0, 212, 255, 0.10);
-}
-============================================================ */
-
-/* ============================================================
-   NEW REFINED & COMPACT BOTTOM NAV MOBILE STYLING
+   FLOATING BOTTOM NAVIGATION (MOBILE) - FALLBACK STYLING
    ============================================================ */
 .bottom-nav-mobile {
     position: fixed;
@@ -9906,18 +9079,7 @@ body.high-contrast .stat-number {
     transform: translateX(-50%);
     z-index: calc(var(--z-modal) + 10);
     display: none;
-    /* ============================================================
-       [OLD NAVY MOBILE BOTTOM NAV - COMMENTED OUT]
-       ============================================================
-    background: rgba(10, 16, 32, 0.78);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(0, 212, 255, 0.20);
-    border-radius: 22px;
-    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.55),
-                0 0 24px rgba(0, 212, 255, 0.08),
-                inset 0 1px 1px 0 rgba(255, 255, 255, 0.14);
-    ============================================================ */
+
     background: rgba(8, 8, 8, 0.88);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -10219,20 +9381,6 @@ body.light-theme .bottom-nav-more.active span {
         scroll-margin-bottom: 90px;
     }
 
-    /* ============================================================
-       [OLD MOBILE SECTION CONTAINER UNBOXING - COMMENTED OUT]
-       ============================================================
-    .container.testimonial-card.glass-card {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        padding: 0 4px !important;
-        border-radius: 0 !important;
-    }
-    ============================================================ */
-
     /* RESTORED RESPONSIVE MOBILE SECTION CONTAINER */
     .container.testimonial-card.glass-card {
         width: calc(100% - 24px) !important;
@@ -10257,25 +9405,6 @@ body.light-theme .bottom-nav-more.active span {
 }
 
 @media (max-width: 420px) {
-    /* ============================================================
-       [OLD 420px BOTTOM NAV SIZES - COMMENTED OUT]
-       ============================================================
-    .bottom-nav-link span,
-    .bottom-nav-more span {
-        font-size: 0.55rem;
-    }
-
-    .bottom-nav-link i,
-    .bottom-nav-more i {
-        font-size: 1.1rem;
-    }
-
-    .bottom-nav-link,
-    .bottom-nav-more {
-        padding: 6px 4px;
-        min-width: 38px;
-    }
-    ============================================================ */
 
     .bottom-nav-mobile {
         display: none !important;

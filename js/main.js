@@ -2,7 +2,9 @@
 
   'use strict';
 
-  // Performance Monitor
+  /* ==========================================================================
+     01. PERFORMANCE MONITOR & METRICS
+     ========================================================================== */
   const performanceMonitor = {
     startTime: performance.now(),
     marks: new Map(),
@@ -23,7 +25,9 @@
 
   performanceMonitor.mark('script_start');
 
-  // Configuration
+  /* ==========================================================================
+     02. RUNTIME CONFIGURATION
+     ========================================================================== */
   const CONFIG = {
     loading: {
       minDisplayTime: 6000,
@@ -50,6 +54,9 @@
     }
   };
 
+  /* ==========================================================================
+     03. STORAGE & APPLICATION STATE
+     ========================================================================== */
   // Storage can be unavailable in private mode or locked-down browsers.
   const Storage = {
     get(key) {
@@ -97,7 +104,9 @@
   // Active smooth scroll animation frame tracker
   let activeScrollAnimationId = null;
 
-  // Utility functions
+  /* ==========================================================================
+     04. CORE UTILITIES & DOM HELPERS
+     ========================================================================== */
   const Utils = {
     // Robust throttle with leading & trailing edge execution
     throttle(func, limit) {
@@ -212,7 +221,9 @@
     }
   };
 
-  // Analytics & Microsoft Clarity Telemetry Helper
+  /* ==========================================================================
+     05. TELEMETRY & ANALYTICS TRACKING
+     ========================================================================== */
   const AnalyticsTracker = {
     initialized: false,
     perfTracked: false,
@@ -563,7 +574,9 @@
   // Run early telemetry bootstrap
   AnalyticsTracker.init();
 
-  // Loading Manager
+  /* ==========================================================================
+     06. LOADING SCREEN & PRELOADER
+     ========================================================================== */
   class LoadingManager {
     constructor() {
       this.loadingScreen = document.getElementById('loadingScreen');
@@ -886,7 +899,9 @@
     initLoadingManager();
   }
 
-  // Background Effects Manager
+  /* ==========================================================================
+     07. BACKGROUND EFFECTS & AMBIENT PARTICLES
+     ========================================================================== */
   class BackgroundEffects {
     constructor() {
       this.particlesContainer = document.getElementById('particles');
@@ -1022,7 +1037,9 @@
     }
   }
 
-  // Navigation Manager - Enhanced with Sliding Pill & Magnetic Physics
+  /* ==========================================================================
+     08. NAVIGATION SYSTEM & SCROLL SPY
+     ========================================================================== */
   class NavigationManager {
     constructor() {
       this.sectionNav = document.getElementById('sectionNav');
@@ -1120,7 +1137,6 @@
 
     init() {
       this.initMobileMenu();
-      this.initBottomNav();
       this.initThemeToggle();
       this.initBackToTop();
       this.initHeaderScrollEffect();
@@ -1225,8 +1241,6 @@
         this.moveIndicator(matchedLink);
       }
 
-      this.setActiveBottomNav(sectionId);
-
       this.sectionDots.forEach(dot => {
         const isCurrent = dot.getAttribute('data-section') === sectionId;
         dot.classList.toggle('active', isCurrent);
@@ -1262,162 +1276,6 @@
         }
       }
       document.body.classList.remove('nav-open');
-    }
-
-    initBottomNav() {
-      this.bottomNavLinks = document.querySelectorAll('.bottom-nav-link');
-      this.bottomNavDropdownLinks = document.querySelectorAll('.bottom-nav-dropdown-link:not(#bottomThemeToggle):not(#bottomContrastToggle)');
-      this.bottomNavMore = document.getElementById('bottomNavMore');
-      this.bottomNavDropdown = document.getElementById('bottomNavDropdown');
-      this.bottomNavBackdrop = document.getElementById('bottomNavBackdrop');
-      this.bottomThemeToggle = document.getElementById('bottomThemeToggle');
-      this.bottomContrastToggle = document.getElementById('bottomContrastToggle');
-      this.lastScrollY = window.scrollY || 0;
-
-      const scrollToSection = (targetId) => {
-        if (!targetId) return;
-        const target = document.getElementById(targetId);
-        if (target) {
-          if (typeof target.scrollIntoView === 'function') {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } else {
-            Utils.smoothScrollTo(target);
-          }
-        }
-      };
-
-      // Bottom Nav Tabs Click Handlers
-      this.bottomNavLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const targetId = link.getAttribute('data-section') || (link.getAttribute('href') || '').replace('#', '');
-          scrollToSection(targetId);
-          this.closeBottomDropdown();
-          this.setActiveBottomNav(targetId);
-        });
-      });
-
-      // Dropdown Links Click Handlers
-      this.bottomNavDropdownLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const targetId = link.getAttribute('data-section') || (link.getAttribute('href') || '').replace('#', '');
-          scrollToSection(targetId);
-          this.closeBottomDropdown();
-          this.setActiveBottomNav(targetId);
-        });
-      });
-
-      // More Button Toggle
-      if (this.bottomNavMore && this.bottomNavDropdown) {
-        this.bottomNavMore.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isOpen = this.bottomNavDropdown.classList.toggle('open');
-          this.bottomNavMore.classList.toggle('active', isOpen);
-          this.bottomNavMore.setAttribute('aria-expanded', String(isOpen));
-          this.bottomNavBackdrop?.classList.toggle('active', isOpen);
-        });
-      }
-
-      // Tap on backdrop closes dropdown
-      if (this.bottomNavBackdrop) {
-        this.bottomNavBackdrop.addEventListener('click', () => {
-          this.closeBottomDropdown();
-        });
-      }
-
-      // Close dropdown when clicking outside
-      this.boundHandlers.bottomDropdownClick = (e) => {
-        if (this.bottomNavDropdown && this.bottomNavDropdown.classList.contains('open')) {
-          const isInside = this.bottomNavDropdown.contains(e.target) ||
-            (this.bottomNavMore && this.bottomNavMore.contains(e.target));
-          if (!isInside) {
-            this.closeBottomDropdown();
-          }
-        }
-      };
-      document.addEventListener('click', this.boundHandlers.bottomDropdownClick);
-
-      // Theme Toggle in Bottom Nav (closes dropdown upon toggle)
-      this.bottomThemeToggle?.addEventListener('click', () => {
-        this.closeBottomDropdown();
-      });
-
-      // Contrast Toggle in Bottom Nav (closes dropdown upon toggle)
-      this.bottomContrastToggle?.addEventListener('click', () => {
-        this.closeBottomDropdown();
-      });
-
-      // Auto-hide on scroll
-      this.initBottomNavScrollHide();
-    }
-
-    setActiveBottomNav(sectionId) {
-      if (!sectionId || !this.bottomNavLinks) return;
-      let matchedInTabs = false;
-      this.bottomNavLinks.forEach(link => {
-        const isActive = link.getAttribute('data-section') === sectionId;
-        link.classList.toggle('active', isActive);
-        link.setAttribute('aria-current', isActive ? 'true' : 'false');
-        if (isActive) matchedInTabs = true;
-      });
-
-      // If active section is inside the "More" dropdown, highlight More button
-      if (this.bottomNavMore) {
-        const isDropdownSection = ['tech-stack', 'routine', 'open-source', 'experience'].includes(sectionId);
-        if (isDropdownSection && !matchedInTabs) {
-          this.bottomNavMore.classList.add('active');
-        } else if (!this.bottomNavDropdown?.classList.contains('open')) {
-          this.bottomNavMore.classList.remove('active');
-        }
-      }
-    }
-
-    closeBottomDropdown() {
-      if (this.bottomNavDropdown) {
-        this.bottomNavDropdown.classList.remove('open');
-      }
-      if (this.bottomNavMore) {
-        this.bottomNavMore.classList.remove('active');
-        this.bottomNavMore.setAttribute('aria-expanded', 'false');
-      }
-      if (this.bottomNavBackdrop) {
-        this.bottomNavBackdrop.classList.remove('active');
-      }
-    }
-
-    initBottomNavScrollHide() {
-      const bottomNav = document.getElementById('bottomNav');
-      if (!bottomNav) return;
-
-      let ticking = false;
-      this.boundHandlers.bottomNavScroll = () => {
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY || window.pageYOffset || 0;
-          const scrollDelta = currentScrollY - this.lastScrollY;
-
-          if (scrollDelta > 25 && currentScrollY > 100) {
-            // Scrolling down – hide nav and close dropdown
-            bottomNav.classList.add('hidden');
-            this.closeBottomDropdown();
-          } else if (scrollDelta < -15) {
-            // Scrolling up – show nav
-            bottomNav.classList.remove('hidden');
-          }
-
-          // If at top of page, always show
-          if (currentScrollY < 60) {
-            bottomNav.classList.remove('hidden');
-          }
-
-          this.lastScrollY = currentScrollY;
-          ticking = false;
-        });
-      };
-
-      window.addEventListener('scroll', this.boundHandlers.bottomNavScroll, { passive: true });
     }
 
     initThemeToggle() {
@@ -1520,19 +1378,15 @@
       if (this.boundHandlers.navMouseLeave && this.mainNav) {
         this.mainNav.removeEventListener('mouseleave', this.boundHandlers.navMouseLeave);
       }
-      if (this.boundHandlers.bottomDropdownClick) {
-        document.removeEventListener('click', this.boundHandlers.bottomDropdownClick);
-      }
-      if (this.boundHandlers.bottomNavScroll) {
-        window.removeEventListener('scroll', this.boundHandlers.bottomNavScroll);
-      }
       if (this.sectionObserver) {
         this.sectionObserver.disconnect();
       }
     }
   }
 
-  // Animation Manager
+  /* ==========================================================================
+     09. SCROLL ANIMATIONS & INTERSECTION OBSERVERS
+     ========================================================================== */
   class AnimationManager {
     constructor() {
       this.observer = null;
@@ -1717,7 +1571,9 @@
     }
   }
 
-  // Interactive Elements Manager
+  /* ==========================================================================
+     10. INTERACTIVE ELEMENTS & CONTACT FORM
+     ========================================================================== */
   class InteractiveElementsManager {
     constructor() {
       this.caseStudyModal = document.getElementById('caseStudyModal');
@@ -2136,7 +1992,9 @@
     }
   }
 
-  // Carousel Manager (Embla Lightweight Engine)
+  /* ==========================================================================
+     11. FEATURED PROJECTS CAROUSEL (EMBLA ENGINE)
+     ========================================================================== */
   class SwiperManager {
     constructor() {
       this.emblaApi = null;
@@ -2252,7 +2110,9 @@
     }
   }
 
-  // Phase 2 Manager
+  /* ==========================================================================
+     12. HIGH-CONTRAST CONTROLLER & SKELETON PRELOADER
+     ========================================================================== */
   class Phase2Manager {
     init() {
       this.initCookieBanner();
@@ -2303,7 +2163,7 @@
         document.body.classList.add('high-contrast');
       }
 
-      const contrastButtons = document.querySelectorAll('#highContrastToggle, #bottomContrastToggle, #mobileHighContrastBtn, .mobile-contrast-btn, [aria-label*="High Contrast"]');
+      const contrastButtons = document.querySelectorAll('#highContrastToggle, #mobileHighContrastBtn, .mobile-contrast-btn, [aria-label*="High Contrast"]');
       contrastButtons.forEach(toggle => {
         toggle.setAttribute('aria-pressed', String(isHighContrast));
         toggle.addEventListener('click', () => {
@@ -2316,7 +2176,9 @@
     }
   }
 
-  // Typewriter
+  /* ==========================================================================
+     13. HERO TYPEWRITER ENGINE
+     ========================================================================== */
   class Typewriter {
     constructor(elementId, words, wait = 2600) {
       this.txtElement = document.getElementById(elementId);
@@ -2384,7 +2246,9 @@
     }
   }
 
-  // Command Palette Manager
+  /* ==========================================================================
+     14. COMMAND PALETTE MODAL
+     ========================================================================== */
   class CommandPaletteManager {
     constructor() {
       this.overlay = document.getElementById('commandPalette');
@@ -2612,7 +2476,9 @@
     }
   }
 
-  // Image Carousel
+  /* ==========================================================================
+     15. HERO IMAGE CAROUSEL
+     ========================================================================== */
   class ImageCarousel {
     constructor(container) {
       this.container = container;
@@ -2807,133 +2673,16 @@
     }
   }
 
-  // Pro Features Manager (Custom Cursor & Scroll Progress)
-  // Pro Features Manager (Custom Cursor & Scroll Progress)
+  /* ==========================================================================
+     16. SCROLL PROGRESS BAR CONTROLLER
+     ========================================================================== */
   class ProFeaturesManager {
     constructor() {
-      this.cursorDot = document.querySelector('[data-cursor-dot]');
-      this.cursorOutline = document.querySelector('[data-cursor-outline]');
       this.scrollProgress = document.getElementById('scrollProgress');
       this.ticking = false;
       this.scrollProgressHandler = null;
-      this.cursorRafId = null;
 
       this.initScrollProgress();
-    }
-
-    initCustomCursor() {
-      if (!this.cursorDot || !this.cursorOutline) return;
-      // Skip custom cursor completely on touch / mobile devices
-      if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
-        if (this.cursorDot) this.cursorDot.style.display = 'none';
-        if (this.cursorOutline) this.cursorOutline.style.display = 'none';
-        return;
-      }
-
-      this.cursorDot.style.opacity = '0';
-      this.cursorOutline.style.opacity = '0';
-
-      let mouseX = 0, mouseY = 0;
-      let outlineX = 0, outlineY = 0;
-      let cursorVisible = false;
-      let isMoving = false;
-      let currentScale = 1;
-
-      window.addEventListener('touchstart', () => {
-        if (this.cursorDot) this.cursorDot.style.display = 'none';
-        if (this.cursorOutline) this.cursorOutline.style.display = 'none';
-        document.body.style.cursor = 'auto';
-      }, { once: true });
-
-      const animateOutline = () => {
-        const dx = mouseX - outlineX;
-        const dy = mouseY - outlineY;
-        outlineX += dx * 0.18;
-        outlineY += dy * 0.18;
-
-        if (this.cursorOutline) {
-          this.cursorOutline.style.transform = `translate3d(${outlineX}px, ${outlineY}px, 0) translate(-50%, -50%) scale(${currentScale})`;
-        }
-
-        // Auto-pause RAF when resting to save CPU/GPU and battery
-        if (Math.abs(dx) > 0.15 || Math.abs(dy) > 0.15) {
-          this.cursorRafId = requestAnimationFrame(animateOutline);
-        } else {
-          isMoving = false;
-          this.cursorRafId = null;
-        }
-      };
-
-      const startCursorAnimation = () => {
-        if (!isMoving) {
-          isMoving = true;
-          this.cursorRafId = requestAnimationFrame(animateOutline);
-        }
-      };
-
-      window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-
-        if (!cursorVisible) {
-          this.cursorDot.style.opacity = '1';
-          this.cursorOutline.style.opacity = '1';
-          cursorVisible = true;
-        }
-
-        // GPU-accelerated transform instead of top/left layout reflows
-        this.cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
-        startCursorAnimation();
-      }, { passive: true });
-
-      document.addEventListener('mousedown', () => {
-        currentScale = 0.8;
-        startCursorAnimation();
-      }, { passive: true });
-
-      document.addEventListener('mouseup', () => {
-        currentScale = document.body.classList.contains('hovering') ? 1.5 : 1;
-        startCursorAnimation();
-      }, { passive: true });
-
-      document.addEventListener('mouseout', (e) => {
-        if (!e.relatedTarget) {
-          if (this.cursorDot) this.cursorDot.style.opacity = '0';
-          if (this.cursorOutline) this.cursorOutline.style.opacity = '0';
-          cursorVisible = false;
-        }
-      });
-
-      // Efficient delegated event handling replacing thousands of per-element listeners
-      document.addEventListener('mouseover', (e) => {
-        const target = e.target;
-        if (!target || !target.closest) return;
-        if (target.closest('a, button, .card, .nav-link, .hero-btn, .image-carousel, .project-card, .service-card')) {
-          document.body.classList.add('hovering');
-          currentScale = 1.5;
-          startCursorAnimation();
-        } else if (target.closest('input, textarea, select')) {
-          document.body.classList.add('input-mode');
-        } else if (target.closest('p, h1, h2, h3, h4, h5, h6, span, li, blockquote')) {
-          document.body.classList.add('text-mode');
-          if (this.cursorDot) this.cursorDot.style.opacity = '0';
-        }
-      }, { passive: true });
-
-      document.addEventListener('mouseout', (e) => {
-        const target = e.target;
-        if (!target || !target.closest) return;
-        if (target.closest('a, button, .card, .nav-link, .hero-btn, .image-carousel, .project-card, .service-card')) {
-          document.body.classList.remove('hovering');
-          currentScale = 1;
-          startCursorAnimation();
-        } else if (target.closest('input, textarea, select')) {
-          document.body.classList.remove('input-mode');
-        } else if (target.closest('p, h1, h2, h3, h4, h5, h6, span, li, blockquote')) {
-          document.body.classList.remove('text-mode');
-          if (this.cursorDot) this.cursorDot.style.opacity = '1';
-        }
-      }, { passive: true });
     }
 
     initScrollProgress() {
@@ -2966,13 +2715,12 @@
       if (this.scrollProgressHandler) {
         window.removeEventListener('scroll', this.scrollProgressHandler);
       }
-      if (this.cursorRafId) {
-        cancelAnimationFrame(this.cursorRafId);
-      }
     }
   }
 
-  // 3D Tilt Effect for Profile Image
+  /* ==========================================================================
+     17. 3D CARD & PROFILE TILT PHYSICS
+     ========================================================================== */
   class TiltEffect {
     constructor() {
       this.container = document.querySelector('.profile-container');
@@ -3047,10 +2795,9 @@
     }
   }
 
-  // 3D Interactive Hero Feature
-  // ═══════════════════════════════════════════════════════════════════
-  // ═══  NEXUS CINEMATIC 3D EXPERIENCE — World-Class WebGL Engine  ═══
-  // ═══════════════════════════════════════════════════════════════════
+  /* ==========================================================================
+     18. CINEMATIC 3D WEBGL ENGINE (THREE.JS)
+     ========================================================================== */
   class Cinematic3DExperience {
     constructor() {
       this.canvas = document.getElementById('webgl-3d-canvas');
@@ -4223,7 +3970,9 @@
     }
   }
 
-  // Immersive Project Manager
+  /* ==========================================================================
+     19. PROJECT MODALS & CASE STUDIES
+     ========================================================================== */
   class ProjectManager {
     constructor() {
       this.modal = document.getElementById('projectModal');
@@ -4287,7 +4036,7 @@
         return;
       }
 
-      // If #projectModal is not in DOM (commented out), delegate to matching case study
+      // Delegate to matching case study modal when #projectModal is absent
       const titleLower = title.toLowerCase();
       let projectKey = '';
       if (titleLower.includes('commerce')) projectKey = 'ecommerce';
@@ -4334,9 +4083,9 @@
       this.closeModal();
     }
   }
-  // ═══════════════════════════════════════════════════════════════════
-  // ═══  HERO BACKGROUND ZOOM-TUNNEL INTRO CONTROLLER (5.0 SECONDS) ═══
-  // ═══════════════════════════════════════════════════════════════════
+  /* ==========================================================================
+     20. HERO ZOOM-TUNNEL INTRO CONTROLLER
+     ========================================================================== */
   class HeroTunnelIntro {
     constructor() {
       this.stage = document.getElementById('heroTunnelStage');
@@ -4486,7 +4235,9 @@
     }
   }
 
-  // Main Portfolio App
+  /* ==========================================================================
+     21. APPLICATION LIFECYCLE ORCHESTRATOR
+     ========================================================================== */
   class PortfolioApp {
     constructor() {
       this.loadingManager = window.loadingManager || new LoadingManager();
@@ -4634,7 +4385,9 @@
 
   window.addEventListener('beforeunload', () => window.portfolioApp?.destroy(), { once: true });
 
-  // ── Client-side Protection & Hardening Shield ──
+  /* ==========================================================================
+     22. CLIENT-SIDE PROTECTION & HARDENING SHIELD
+     ========================================================================== */
   const SecurityShield = {
     init() {
       // 1. Prevent context menu (right click) globally
