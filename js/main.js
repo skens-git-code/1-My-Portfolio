@@ -1471,14 +1471,6 @@
     initBackToTop() {
       if (!this.backToTop) return;
 
-      this.boundHandlers.updateBackToTop = Utils.throttle(() => {
-        const currentScroll = window.scrollY || window.pageYOffset || 0;
-        this.backToTop.classList.toggle('visible', currentScroll > 300);
-      }, CONFIG.animations.scrollThrottle);
-
-      window.addEventListener('scroll', this.boundHandlers.updateBackToTop, { passive: true });
-      this.boundHandlers.updateBackToTop();
-
       this.backToTop.addEventListener('click', () => {
         window.scrollTo({
           top: 0,
@@ -1489,11 +1481,16 @@
 
     initHeaderScrollEffect() {
       const header = document.querySelector('header');
-      if (!header) return;
+      if (!header && !this.backToTop) return;
 
       this.boundHandlers.updateHeader = Utils.throttle(() => {
         const currentScroll = window.scrollY || window.pageYOffset || 0;
-        header.classList.toggle('scrolled', currentScroll > 50);
+        if (header) {
+          header.classList.toggle('scrolled', currentScroll > 50);
+        }
+        if (this.backToTop) {
+          this.backToTop.classList.toggle('visible', currentScroll > 300);
+        }
       }, CONFIG.animations.scrollThrottle);
 
       window.addEventListener('scroll', this.boundHandlers.updateHeader, { passive: true });
@@ -1564,8 +1561,9 @@
           const scrollTop = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
           const maxScroll = Math.max(1, documentHeight - windowHeight);
           const scrollPercent = Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100));
-          if (scrollIndicator) scrollIndicator.style.width = `${scrollPercent}%`;
-          if (scrollProgress) scrollProgress.style.width = `${scrollPercent}%`;
+          const scale = scrollPercent / 100;
+          if (scrollIndicator) scrollIndicator.style.transform = `scaleX(${scale})`;
+          if (scrollProgress) scrollProgress.style.transform = `scaleX(${scale})`;
           ticking = false;
         });
       };
@@ -2269,18 +2267,20 @@
 
       if (!banner) return;
 
-      if (!Storage.get('cookieConsent')) {
+      const consent = Storage.get('cookieConsent');
+      if (!consent) {
         setTimeout(() => {
           banner.classList.add('show');
         }, 2000);
       }
 
       acceptBtn?.addEventListener('click', () => {
-        Storage.set('cookieConsent', 'true');
+        Storage.set('cookieConsent', 'accepted');
         banner.classList.remove('show');
       });
 
       declineBtn?.addEventListener('click', () => {
+        Storage.set('cookieConsent', 'declined');
         banner.classList.remove('show');
       });
     }
@@ -2409,9 +2409,6 @@
         // Theme commands
         { name: 'Toggle Dark Mode', action: () => this.toggleTheme(), icon: 'fa-moon', category: 'Theme' },
         { name: 'Toggle High Contrast', action: () => this.toggleHighContrast(), icon: 'fa-adjust', category: 'Theme' },
-
-        // Language & Translation
-        { name: 'Translate Page / Language', action: () => this.openTranslate(), icon: 'fa-language', category: 'Language' },
 
         // Actions
         { name: 'Open Chat', action: () => this.openChat(), icon: 'fa-comments', category: 'Actions' },
@@ -2581,10 +2578,6 @@
     toggleHighContrast() {
       const btn = document.getElementById('highContrastToggle') || document.querySelector('.mobile-contrast-btn');
       btn?.click();
-    }
-
-    openTranslate() {
-      window.portfolioApp?.translationManager?.openModal();
     }
 
     openChat() {
@@ -2815,6 +2808,7 @@
   }
 
   // Pro Features Manager (Custom Cursor & Scroll Progress)
+  // Pro Features Manager (Custom Cursor & Scroll Progress)
   class ProFeaturesManager {
     constructor() {
       this.cursorDot = document.querySelector('[data-cursor-dot]');
@@ -2822,12 +2816,19 @@
       this.scrollProgress = document.getElementById('scrollProgress');
       this.ticking = false;
       this.scrollProgressHandler = null;
+      this.cursorRafId = null;
 
       this.initScrollProgress();
     }
 
     initCustomCursor() {
       if (!this.cursorDot || !this.cursorOutline) return;
+      // Skip custom cursor completely on touch / mobile devices
+      if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+        if (this.cursorDot) this.cursorDot.style.display = 'none';
+        if (this.cursorOutline) this.cursorOutline.style.display = 'none';
+        return;
+      }
 
       this.cursorDot.style.opacity = '0';
       this.cursorOutline.style.opacity = '0';
@@ -2835,12 +2836,40 @@
       let mouseX = 0, mouseY = 0;
       let outlineX = 0, outlineY = 0;
       let cursorVisible = false;
+      let isMoving = false;
+      let currentScale = 1;
 
       window.addEventListener('touchstart', () => {
         if (this.cursorDot) this.cursorDot.style.display = 'none';
         if (this.cursorOutline) this.cursorOutline.style.display = 'none';
         document.body.style.cursor = 'auto';
       }, { once: true });
+
+      const animateOutline = () => {
+        const dx = mouseX - outlineX;
+        const dy = mouseY - outlineY;
+        outlineX += dx * 0.18;
+        outlineY += dy * 0.18;
+
+        if (this.cursorOutline) {
+          this.cursorOutline.style.transform = `translate3d(${outlineX}px, ${outlineY}px, 0) translate(-50%, -50%) scale(${currentScale})`;
+        }
+
+        // Auto-pause RAF when resting to save CPU/GPU and battery
+        if (Math.abs(dx) > 0.15 || Math.abs(dy) > 0.15) {
+          this.cursorRafId = requestAnimationFrame(animateOutline);
+        } else {
+          isMoving = false;
+          this.cursorRafId = null;
+        }
+      };
+
+      const startCursorAnimation = () => {
+        if (!isMoving) {
+          isMoving = true;
+          this.cursorRafId = requestAnimationFrame(animateOutline);
+        }
+      };
 
       window.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
@@ -2852,24 +2881,20 @@
           cursorVisible = true;
         }
 
-        this.cursorDot.style.left = `${mouseX}px`;
-        this.cursorDot.style.top = `${mouseY}px`;
-      });
+        // GPU-accelerated transform instead of top/left layout reflows
+        this.cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+        startCursorAnimation();
+      }, { passive: true });
 
       document.addEventListener('mousedown', () => {
-        if (this.cursorOutline) {
-          this.cursorOutline.style.transform = 'translate(-50%, -50%) scale(0.8)';
-        }
-      });
+        currentScale = 0.8;
+        startCursorAnimation();
+      }, { passive: true });
 
       document.addEventListener('mouseup', () => {
-        if (this.cursorOutline) {
-          this.cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
-          if (document.body.classList.contains('hovering')) {
-            this.cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.5)';
-          }
-        }
-      });
+        currentScale = document.body.classList.contains('hovering') ? 1.5 : 1;
+        startCursorAnimation();
+      }, { passive: true });
 
       document.addEventListener('mouseout', (e) => {
         if (!e.relatedTarget) {
@@ -2879,42 +2904,36 @@
         }
       });
 
-      const animateOutline = () => {
-        outlineX += (mouseX - outlineX) * 0.15;
-        outlineY += (mouseY - outlineY) * 0.15;
-
-        if (this.cursorOutline) {
-          this.cursorOutline.style.left = `${outlineX}px`;
-          this.cursorOutline.style.top = `${outlineY}px`;
-        }
-        requestAnimationFrame(animateOutline);
-      };
-      requestAnimationFrame(animateOutline);
-
-      const hoverSelectors = 'a, button, .card, .nav-link, .hero-btn, .image-carousel, .project-card, .service-card';
-      const textSelectors = 'p, h1, h2, h3, h4, h5, h6, span, li, blockquote';
-      const inputSelectors = 'input, textarea, select';
-
-      document.querySelectorAll(hoverSelectors).forEach(el => {
-        el.addEventListener('mouseover', () => document.body.classList.add('hovering'));
-        el.addEventListener('mouseout', () => document.body.classList.remove('hovering'));
-      });
-
-      document.querySelectorAll(textSelectors).forEach(el => {
-        el.addEventListener('mouseover', () => {
+      // Efficient delegated event handling replacing thousands of per-element listeners
+      document.addEventListener('mouseover', (e) => {
+        const target = e.target;
+        if (!target || !target.closest) return;
+        if (target.closest('a, button, .card, .nav-link, .hero-btn, .image-carousel, .project-card, .service-card')) {
+          document.body.classList.add('hovering');
+          currentScale = 1.5;
+          startCursorAnimation();
+        } else if (target.closest('input, textarea, select')) {
+          document.body.classList.add('input-mode');
+        } else if (target.closest('p, h1, h2, h3, h4, h5, h6, span, li, blockquote')) {
           document.body.classList.add('text-mode');
           if (this.cursorDot) this.cursorDot.style.opacity = '0';
-        });
-        el.addEventListener('mouseout', () => {
+        }
+      }, { passive: true });
+
+      document.addEventListener('mouseout', (e) => {
+        const target = e.target;
+        if (!target || !target.closest) return;
+        if (target.closest('a, button, .card, .nav-link, .hero-btn, .image-carousel, .project-card, .service-card')) {
+          document.body.classList.remove('hovering');
+          currentScale = 1;
+          startCursorAnimation();
+        } else if (target.closest('input, textarea, select')) {
+          document.body.classList.remove('input-mode');
+        } else if (target.closest('p, h1, h2, h3, h4, h5, h6, span, li, blockquote')) {
           document.body.classList.remove('text-mode');
           if (this.cursorDot) this.cursorDot.style.opacity = '1';
-        });
-      });
-
-      document.querySelectorAll(inputSelectors).forEach(el => {
-        el.addEventListener('mouseover', () => document.body.classList.add('input-mode'));
-        el.addEventListener('mouseout', () => document.body.classList.remove('input-mode'));
-      });
+        }
+      }, { passive: true });
     }
 
     initScrollProgress() {
@@ -2933,7 +2952,7 @@
           );
           const progress = Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100));
           if (this.scrollProgress) {
-            this.scrollProgress.style.width = `${progress}%`;
+            this.scrollProgress.style.transform = `scaleX(${progress / 100})`;
           }
           this.ticking = false;
         });
@@ -2946,6 +2965,9 @@
     destroy() {
       if (this.scrollProgressHandler) {
         window.removeEventListener('scroll', this.scrollProgressHandler);
+      }
+      if (this.cursorRafId) {
+        cancelAnimationFrame(this.cursorRafId);
       }
     }
   }
@@ -3143,8 +3165,8 @@
       this.motionScale = isMobile ? 0.58 : isTablet ? 0.78 : 1;
       const particleCount = [48, 160, 420][this.tier];
       const maxPixelRatio = [1.0, 1.0, 1.2][this.tier];
-      // Adapt frame rate to device tier: 45fps on low-end/mobile saves huge GPU/battery, v-sync on high-end desktop
-      this.frameInterval = isLowEndDevice ? (1000 / 45) : (isMobile ? (1000 / 60) : 0);
+      // Adapt frame rate to device tier: 30fps on low-end/mobile saves huge GPU/battery, v-sync on high-end desktop
+      this.frameInterval = isLowEndDevice ? (1000 / 30) : (isMobile ? (1000 / 30) : 0);
 
       try {
         // 1. Scene Setup
@@ -4464,406 +4486,6 @@
     }
   }
 
-  // Translation Manager - Google Inbuilt Page Translation System
-  class TranslationManager {
-    constructor() {
-      this.modalOverlay = document.getElementById('translateModal');
-      this.closeBtn = document.getElementById('translateCloseBtn');
-      this.resetBtn = document.getElementById('btnResetLanguage');
-      this.currentLabel = document.getElementById('currentLanguageLabel');
-      this.quickGrid = document.getElementById('quickLangGrid');
-      this.translateToggles = document.querySelectorAll('.translate-toggle, #translateToggle, #mobileTranslateQuickToggle, #drawerTranslateBtn');
-      this.currentLang = 'en';
-      this.languages = [
-        { code: 'en', name: 'English', native: 'English', flag: '🇺🇸' },
-        { code: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
-        { code: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
-        { code: 'de', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
-        { code: 'hi', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳' },
-        { code: 'ja', name: 'Japanese', native: '日本語', flag: '🇯🇵' },
-        { code: 'zh-CN', name: 'Chinese', native: '简体中文', flag: '🇨🇳' },
-        { code: 'ar', name: 'Arabic', native: 'العربية', flag: '🇸🇦' },
-        { code: 'ru', name: 'Russian', native: 'Русский', flag: '🇷🇺' },
-        { code: 'pt', name: 'Portuguese', native: 'Português', flag: '🇧🇷' },
-        { code: 'it', name: 'Italian', native: 'Italiano', flag: '🇮🇹' },
-        { code: 'ko', name: 'Korean', native: '한국어', flag: '🇰🇷' },
-        { code: 'nl', name: 'Dutch', native: 'Nederlands', flag: '🇳🇱' },
-        { code: 'tr', name: 'Turkish', native: 'Türkçe', flag: '🇹🇷' },
-        { code: 'vi', name: 'Vietnamese', native: 'Tiếng Việt', flag: '🇻🇳' },
-        { code: 'mr', name: 'Marathi', native: 'मराठी', flag: '🇮🇳' }
-      ];
-      this.isOpen = false;
-      this.previousActiveElement = null;
-    }
-
-    init() {
-      this.initLayoutShiftProtection();
-      this.detectCurrentLanguage();
-      this.renderQuickGrid();
-      this.bindEvents();
-      this.observeGoogleCombo();
-      
-      // Listen for custom ready event
-      window.addEventListener('googleTranslateReady', () => {
-        this.observeGoogleCombo();
-        // If a language was previously selected, ensure it is applied
-        if (this.currentLang && this.currentLang !== 'en') {
-          this.triggerGoogleCombo(this.currentLang);
-        }
-      });
-    }
-
-    /* Prevent Google Translate from injecting top: 40px layout shifts across all browser engines */
-    initLayoutShiftProtection() {
-      const resetTop = () => {
-        if (document.body && document.body.style.top && document.body.style.top !== '0px') {
-          document.body.style.setProperty('top', '0px', 'important');
-        }
-        if (document.documentElement && document.documentElement.style.top && document.documentElement.style.top !== '0px') {
-          document.documentElement.style.setProperty('top', '0px', 'important');
-        }
-      };
-
-      resetTop();
-
-      try {
-        const observer = new MutationObserver(resetTop);
-        if (document.body) {
-          observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-        if (document.documentElement) {
-          observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
-        }
-      } catch (_) {}
-    }
-
-    /* Cross-browser Cookie Setting (Safari ITP, Firefox ETP, Chrome, Edge) */
-    setGoogleTransCookie(langCode) {
-      const val = `/en/${langCode}`;
-      const host = window.location.hostname;
-      const expireDate = new Date(Date.now() + 30 * 864e5).toUTCString();
-
-      // Raw unencoded value is strictly required by Google Translate element.js
-      document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; SameSite=Lax`;
-
-      if (host && host !== 'localhost' && !/^[0-9.]+$/.test(host)) {
-        document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; domain=${host}; SameSite=Lax`;
-        document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; domain=.${host}; SameSite=Lax`;
-
-        const parts = host.split('.');
-        if (parts.length > 2) {
-          const rootDomain = parts.slice(-2).join('.');
-          document.cookie = `googtrans=${val}; expires=${expireDate}; path=/; domain=.${rootDomain}; SameSite=Lax`;
-        }
-      }
-
-      try {
-        localStorage.setItem('googtrans_pref', langCode);
-      } catch (_) {}
-    }
-
-    clearGoogleTransCookie() {
-      const expire = 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
-      document.cookie = `googtrans=; ${expire}`;
-
-      const host = window.location.hostname;
-      if (host && host !== 'localhost' && !/^[0-9.]+$/.test(host)) {
-        document.cookie = `googtrans=; domain=${host}; ${expire}`;
-        document.cookie = `googtrans=; domain=.${host}; ${expire}`;
-
-        const parts = host.split('.');
-        if (parts.length > 2) {
-          const rootDomain = parts.slice(-2).join('.');
-          document.cookie = `googtrans=; domain=.${rootDomain}; ${expire}`;
-        }
-      }
-
-      try {
-        localStorage.removeItem('googtrans_pref');
-      } catch (_) {}
-    }
-
-    getGoogleTransCookie() {
-      // 1. Check URL hash first (#googtrans(en|target))
-      if (window.location.hash && window.location.hash.includes('googtrans')) {
-        const match = window.location.hash.match(/googtrans\((?:en\||\/en\/)?([a-zA-Z-]+)\)/);
-        if (match && match[1]) {
-          return match[1];
-        }
-      }
-
-      // 2. Check googtrans cookie
-      const match = document.cookie.match(/(?:^|;\s*)googtrans=([^;]*)/);
-      if (match && match[1]) {
-        const raw = decodeURIComponent(match[1]);
-        const parts = raw.split('/');
-        if (parts.length >= 3 && parts[2]) {
-          return parts[2];
-        }
-      }
-
-      // 3. Check localStorage
-      try {
-        return localStorage.getItem('googtrans_pref') || 'en';
-      } catch (_) {
-        return 'en';
-      }
-    }
-
-    detectCurrentLanguage() {
-      const detected = this.getGoogleTransCookie();
-      if (detected) {
-        this.currentLang = detected;
-      }
-      const isRTL = ['ar', 'he', 'fa', 'ur'].includes(this.currentLang);
-      document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-      this.updateStatusDisplay();
-    }
-
-    renderQuickGrid() {
-      if (!this.quickGrid) return;
-      this.quickGrid.innerHTML = this.languages.map(lang => {
-        const isActive = this.currentLang === lang.code;
-        return `
-          <button type="button" class="lang-btn ${isActive ? 'active' : ''}" data-code="${lang.code}" aria-pressed="${isActive}">
-            <span class="lang-flag" aria-hidden="true">${lang.flag}</span>
-            <div class="lang-names">
-              <span class="lang-name-primary notranslate">${lang.native}</span>
-              <span class="lang-name-secondary notranslate">${lang.name}</span>
-            </div>
-          </button>
-        `;
-      }).join('');
-    }
-
-    bindEvents() {
-      this.translateToggles.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.toggleModal();
-        });
-      });
-
-      this.closeBtn?.addEventListener('click', () => this.closeModal());
-
-      this.modalOverlay?.addEventListener('click', (e) => {
-        if (e.target === this.modalOverlay) {
-          this.closeModal();
-        }
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && this.isOpen) {
-          this.closeModal();
-        }
-      });
-
-      this.resetBtn?.addEventListener('click', () => {
-        this.resetToOriginal();
-      });
-
-      this.quickGrid?.addEventListener('click', (e) => {
-        const btn = e.target.closest('.lang-btn');
-        if (!btn) return;
-        const code = btn.getAttribute('data-code');
-        if (code) {
-          this.changeLanguage(code);
-        }
-      });
-    }
-
-    observeGoogleCombo() {
-      const checkAndBind = () => {
-        const combo = document.querySelector('.goog-te-combo');
-        if (combo && !combo.dataset.bound) {
-          combo.dataset.bound = 'true';
-          combo.addEventListener('change', () => {
-            if (combo.value) {
-              this.currentLang = combo.value;
-              this.setGoogleTransCookie(combo.value);
-              try {
-                window.location.hash = `#googtrans(en|${combo.value})`;
-              } catch (_) {}
-              this.updateStatusDisplay();
-              this.updateActiveGridBtn(combo.value);
-            } else {
-              this.resetToOriginal();
-            }
-          });
-          // If we had a preferred language, sync it to the combo
-          if (this.currentLang && this.currentLang !== 'en' && combo.value !== this.currentLang) {
-            this.triggerGoogleCombo(this.currentLang);
-          }
-          return true;
-        }
-        return false;
-      };
-
-      if (!checkAndBind()) {
-        const checkInterval = setInterval(() => {
-          if (checkAndBind()) {
-            clearInterval(checkInterval);
-          }
-        }, 300);
-        setTimeout(() => clearInterval(checkInterval), 15000);
-      }
-    }
-
-    /* Triple-event dispatch ensures translation fires in Safari, Firefox, Chrome, and Edge */
-    triggerGoogleCombo(langCode) {
-      const combo = document.querySelector('.goog-te-combo');
-      if (!combo) return false;
-
-      combo.value = langCode;
-
-      // 1. Standard HTML5 Custom/UI Event
-      try {
-        combo.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-      } catch (_) {}
-
-      // 2. Direct onchange invocation (required by some Google Translate builds)
-      if (typeof combo.onchange === 'function') {
-        try {
-          combo.onchange();
-        } catch (_) {}
-      }
-
-      // 3. Legacy WebKit / DOM Level 2 Event for older Safari versions
-      try {
-        const evt = document.createEvent('HTMLEvents');
-        evt.initEvent('change', true, true);
-        combo.dispatchEvent(evt);
-      } catch (_) {}
-
-      return true;
-    }
-
-    changeLanguage(langCode) {
-      if (!langCode || langCode === 'en') {
-        this.resetToOriginal();
-        return;
-      }
-
-      this.currentLang = langCode;
-      this.setGoogleTransCookie(langCode);
-
-      try {
-        localStorage.setItem('googtrans_pref', langCode);
-      } catch (_) {}
-
-      // Dual-protocol: Set hash for Google's element.js engine
-      try {
-        window.location.hash = `#googtrans(en|${langCode})`;
-      } catch (_) {}
-
-      this.updateStatusDisplay();
-      this.updateActiveGridBtn(langCode);
-
-      // Attempt live combo trigger
-      this.triggerGoogleCombo(langCode);
-
-      // Close modal smoothly
-      this.closeModal();
-
-      // Trigger seamless reload so Google Translate translates all nodes across all browsers
-      setTimeout(() => {
-        window.location.reload();
-      }, 160);
-    }
-
-    resetToOriginal() {
-      this.currentLang = 'en';
-      this.clearGoogleTransCookie();
-      this.setGoogleTransCookie('en');
-
-      try {
-        localStorage.removeItem('googtrans_pref');
-      } catch (_) {}
-
-      // Remove googtrans from hash cleanly
-      if (window.location.hash.includes('googtrans')) {
-        history.replaceState(null, '', window.location.pathname + window.location.search);
-      }
-
-      this.updateStatusDisplay();
-      this.updateActiveGridBtn('en');
-
-      this.triggerGoogleCombo('');
-
-      try {
-        const bannerFrame = document.querySelector('.goog-te-banner-frame');
-        if (bannerFrame && bannerFrame.contentWindow) {
-          const closeBtn = bannerFrame.contentWindow.document.querySelector('.goog-close-link, [id*="close"], [id*="restore"]');
-          if (closeBtn) closeBtn.click();
-        }
-      } catch (_) {}
-
-      this.closeModal();
-
-      // Clean reload to restore untranslated English DOM
-      setTimeout(() => {
-        window.location.reload();
-      }, 160);
-    }
-
-    updateActiveGridBtn(code) {
-      if (!this.quickGrid) return;
-      this.quickGrid.querySelectorAll('.lang-btn').forEach(btn => {
-        const isActive = btn.getAttribute('data-code') === code;
-        btn.classList.toggle('active', isActive);
-        btn.setAttribute('aria-pressed', String(isActive));
-      });
-    }
-
-    updateStatusDisplay() {
-      const found = this.languages.find(l => l.code === this.currentLang);
-      const label = found ? `${found.native} (${found.name})` : (this.currentLang === 'en' ? 'English (Original)' : this.currentLang.toUpperCase());
-      if (this.currentLabel) {
-        this.currentLabel.textContent = label;
-      }
-      this.translateToggles.forEach(toggle => {
-        toggle.classList.toggle('is-active', this.currentLang !== 'en');
-        toggle.setAttribute('aria-expanded', String(this.isOpen));
-      });
-    }
-
-    openModal() {
-      if (!this.modalOverlay) return;
-      this.previousActiveElement = document.activeElement;
-      this.modalOverlay.classList.add('active');
-      this.modalOverlay.setAttribute('aria-hidden', 'false');
-      this.isOpen = true;
-      document.body.style.overflow = 'hidden';
-      this.updateStatusDisplay();
-      this.updateActiveGridBtn(this.currentLang);
-
-      setTimeout(() => {
-        const firstFocus = this.modalOverlay.querySelector('.lang-btn.active, .lang-btn, button');
-        firstFocus?.focus();
-      }, 60);
-
-      if (window.AnalyticsTracker) {
-        AnalyticsTracker.sendEvent('translate_modal_open');
-      }
-    }
-
-    closeModal() {
-      if (!this.modalOverlay) return;
-      this.modalOverlay.classList.remove('active');
-      this.modalOverlay.setAttribute('aria-hidden', 'true');
-      this.isOpen = false;
-      document.body.style.overflow = '';
-
-      if (this.previousActiveElement && typeof this.previousActiveElement.focus === 'function') {
-        this.previousActiveElement.focus();
-      }
-    }
-
-    toggleModal() {
-      this.isOpen ? this.closeModal() : this.openModal();
-    }
-  }
-
   // Main Portfolio App
   class PortfolioApp {
     constructor() {
@@ -4880,7 +4502,6 @@
       this.cinematic3D = new Cinematic3DExperience();
       this.projectManager = new ProjectManager();
       this.heroTunnel = new HeroTunnelIntro();
-      this.translationManager = new TranslationManager();
       this.typewriter = null;
     }
 
@@ -4933,7 +4554,6 @@
 
         this.backgroundEffects.init();
         this.navigationManager.init();
-        this.translationManager.init();
         this.animationManager.init();
         this.interactiveManager.init();
         this.swiperManager.init();
@@ -5017,50 +4637,67 @@
   // ── Client-side Protection & Hardening Shield ──
   const SecurityShield = {
     init() {
-      // 1. Prevent context menu (right click) except inside input fields
-      document.addEventListener('contextmenu', (e) => {
-        const target = e.target;
-        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-          return true; // Allow user to paste/cut in forms
-        }
+      // 1. Prevent context menu (right click) globally
+      const blockContextMenu = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         return false;
-      }, { capture: true });
+      };
+      document.addEventListener('contextmenu', blockContextMenu, { capture: true });
+      window.addEventListener('contextmenu', blockContextMenu, { capture: true });
 
-      // 2. Block drag-and-drop of images and media onto the desktop
-      document.addEventListener('dragstart', (e) => {
-        if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'PICTURE' || e.target.tagName === 'SVG')) {
+      // 2. Prevent text selection / highlighting globally (allow only in form input/textarea)
+      document.addEventListener('selectstart', (e) => {
+        const tag = e.target?.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
           e.preventDefault();
           return false;
         }
       }, { capture: true });
 
-      // 3. Block developer tools, inspection, and view-source shortcuts
+      // 3. Block drag-and-drop of images, links, and elements
+      const blockDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      document.addEventListener('dragstart', blockDrag, { capture: true });
+      window.addEventListener('dragstart', blockDrag, { capture: true });
+      document.ondragstart = () => false;
+      window.ondragstart = () => false;
+
+      // 4. Block developer tools, inspection, view-source, save, print, and copy shortcuts
       document.addEventListener('keydown', (e) => {
         const isMac = navigator.platform && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+        const ctrlOrCmd = e.ctrlKey || e.metaKey;
         const shiftKey = e.shiftKey;
         const altKey = e.altKey;
         const key = (e.key || '').toLowerCase();
         const keyCode = e.keyCode || e.which;
+        const isInputTarget = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
 
-        // F12 or F12 keycode
+        // F12 (DevTools)
         if (key === 'f12' || keyCode === 123) {
           e.preventDefault();
           e.stopPropagation();
           return false;
         }
 
-        // Ctrl/Cmd + Shift + I (Inspect)
+        // Ctrl/Cmd + Shift + I (Inspect Element)
         // Ctrl/Cmd + Shift + J (Console)
-        // Ctrl/Cmd + Shift + C (Element Inspector)
-        if (ctrlKey && shiftKey && (key === 'i' || key === 'j' || key === 'c' || keyCode === 73 || keyCode === 74 || keyCode === 67)) {
+        // Ctrl/Cmd + Shift + C (Element Selector)
+        // Ctrl/Cmd + Shift + K (Firefox Console)
+        // Ctrl/Cmd + Shift + E (Network Tab)
+        if (ctrlOrCmd && shiftKey && (
+          key === 'i' || key === 'j' || key === 'c' || key === 'k' || key === 'e' ||
+          keyCode === 73 || keyCode === 74 || keyCode === 67 || keyCode === 75 || keyCode === 69
+        )) {
           e.preventDefault();
           e.stopPropagation();
           return false;
         }
 
-        // Mac shortcut: Cmd + Option + I / Cmd + Option + J / Cmd + Option + C / Cmd + Option + U
+        // Mac Safari / Chrome: Cmd + Option + I / Cmd + Option + J / Cmd + Option + C / Cmd + Option + U
         if (isMac && e.metaKey && altKey && (key === 'i' || key === 'j' || key === 'c' || key === 'u')) {
           e.preventDefault();
           e.stopPropagation();
@@ -5068,16 +4705,38 @@
         }
 
         // Ctrl/Cmd + U (View Source)
-        if (ctrlKey && (key === 'u' || keyCode === 85)) {
+        if (ctrlOrCmd && (key === 'u' || keyCode === 85)) {
           e.preventDefault();
           e.stopPropagation();
           return false;
         }
 
-        // Ctrl/Cmd + S (Save webpage)
-        if (ctrlKey && (key === 's' || keyCode === 83)) {
-          // Allow in text inputs if needed, otherwise block full-page saving
-          if (!e.target || (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA')) {
+        // Ctrl/Cmd + S (Save Page)
+        if (ctrlOrCmd && (key === 's' || keyCode === 83)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Ctrl/Cmd + P (Print)
+        if (ctrlOrCmd && (key === 'p' || keyCode === 80)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Ctrl/Cmd + C (Copy) outside active input/textarea
+        if (ctrlOrCmd && (key === 'c' || keyCode === 67)) {
+          if (!isInputTarget) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
+
+        // Ctrl/Cmd + A (Select All) outside active input/textarea
+        if (ctrlOrCmd && (key === 'a' || keyCode === 65)) {
+          if (!isInputTarget) {
             e.preventDefault();
             e.stopPropagation();
             return false;
@@ -5085,16 +4744,28 @@
         }
       }, { capture: true });
 
-      // 4. Prevent copying text outside of designated copy/form zones
+      // 5. Intercept clipboard copy and cut events globally outside inputs
       document.addEventListener('copy', (e) => {
-        const target = e.target;
-        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.closest('.contact-item'))) {
-          return true; // Allow legitimate copying of contact emails or inputs
+        const tag = e.target?.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
         }
-        // Block bulk copying of site copy
-        if (!window.getSelection().toString().trim()) return;
+      }, { capture: true });
+
+      document.addEventListener('cut', (e) => {
+        const tag = e.target?.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      }, { capture: true });
+
+      // 6. Block print dialog
+      window.addEventListener('beforeprint', (e) => {
         e.preventDefault();
-        return false;
       });
     }
   };
