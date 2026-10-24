@@ -1398,6 +1398,23 @@ button {
    3. Main card & initial UI components revealed ONLY after animation finishes
    ============================================================ */
 
+/* SCROLL LOCK: Prevent all scrolling while loader or intro animation is playing.
+   Covers mouse wheel, scrollbar drag, touch/swipe, and keyboard (arrow keys, space, Page Down).
+   The lock is released when body.intro-completed is added by HeroTunnelIntro.revealMainComponents(). */
+html:not(.intro-scroll-unlocked),
+body:not(.intro-completed) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+}
+
+/* Once intro completes, restore natural scrolling */
+html.intro-scroll-unlocked,
+body.intro-completed {
+    overflow: visible !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: auto !important;
+}
+
 /* While loader or intro animation is running: keep main card & initial UI strictly hidden */
 body:not(.intro-completed) .hero-content,
 .hero-content:not(.card-revealed) {
@@ -7218,17 +7235,20 @@ body.light-theme footer .copyright p {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     z-index: 10001;
-    display: none;
+    display: flex;
+    visibility: hidden;
+    pointer-events: none;
     justify-content: center;
     align-items: center;
     padding: 16px;
     opacity: 0;
-    transition: opacity .25s ease;
+    transition: opacity .25s ease, visibility .25s ease;
 }
 
 .translate-modal-overlay.active {
-    display: flex;
+    visibility: visible;
     opacity: 1;
+    pointer-events: auto;
 }
 
 .translate-modal {

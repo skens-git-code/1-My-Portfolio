@@ -4323,10 +4323,18 @@
       this.duration = 5000;
       this.completionTimer = null;
       this.resizeHandler = this.onResize.bind(this);
+
+      // Scroll-lock handlers (bound so we can remove them later)
+      this._blockKeyScroll = this._blockKeyScroll.bind(this);
+      this._blockWheel = (e) => e.preventDefault();
+      this._blockTouch = (e) => e.preventDefault();
     }
 
     init() {
       if (!this.stage) return;
+
+      // Engage scroll lock immediately on init (covers loader + tunnel phases)
+      this._engageScrollLock();
 
       this.onResize();
       window.addEventListener('resize', this.resizeHandler, { passive: true });
@@ -4347,6 +4355,50 @@
         window.addEventListener('loadingForced', onLoadingFinished, { once: true });
       }
     }
+
+    /* ── Scroll-Lock Engine ──────────────────────────────────── */
+
+    /** Lock all scroll inputs: wheel, keyboard arrows/space/pgup/pgdn, touch drag */
+    _engageScrollLock() {
+      // Force scroll position to top
+      window.scrollTo(0, 0);
+
+      // Block mouse wheel / trackpad
+      window.addEventListener('wheel', this._blockWheel, { passive: false });
+
+      // Block keyboard scroll keys
+      window.addEventListener('keydown', this._blockKeyScroll, { passive: false });
+
+      // Block touch-drag scrolling on mobile
+      document.addEventListener('touchmove', this._blockTouch, { passive: false });
+    }
+
+    /** Release all scroll locks and restore natural page scrolling */
+    _releaseScrollLock() {
+      window.removeEventListener('wheel', this._blockWheel);
+      window.removeEventListener('keydown', this._blockKeyScroll);
+      document.removeEventListener('touchmove', this._blockTouch);
+
+      // Add CSS unlock class to <html> (mirrors body.intro-completed)
+      document.documentElement.classList.add('intro-scroll-unlocked');
+
+      // Final scroll reset to prevent any drift accumulated during the lock
+      window.scrollTo(0, 0);
+    }
+
+    /** Suppress keys that cause scrolling: arrows, space, Page Up/Down, Home, End */
+    _blockKeyScroll(e) {
+      const scrollKeys = [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        ' ', 'Space', 'PageUp', 'PageDown', 'Home', 'End',
+        'Tab'
+      ];
+      if (scrollKeys.includes(e.key) || scrollKeys.includes(e.code)) {
+        e.preventDefault();
+      }
+    }
+
+    /* ── Intro Animation ──────────────────────────────────── */
 
     onResize() {
       const vW = window.innerWidth;
@@ -4389,6 +4441,9 @@
     }
 
     revealMainComponents() {
+      // ── Release scroll lock first ──
+      this._releaseScrollLock();
+
       document.body.classList.add('intro-completed');
       const heroCard = document.querySelector('.hero-content');
       if (heroCard) {
@@ -4404,6 +4459,8 @@
     destroy() {
       if (this.completionTimer) clearTimeout(this.completionTimer);
       window.removeEventListener('resize', this.resizeHandler);
+      // Clean up scroll locks if destroyed early
+      this._releaseScrollLock();
     }
   }
 
@@ -4527,6 +4584,15 @@
     }
 
     getGoogleTransCookie() {
+      // 1. Check URL hash first (#googtrans(en|target))
+      if (window.location.hash && window.location.hash.includes('googtrans')) {
+        const match = window.location.hash.match(/googtrans\((?:en\||\/en\/)?([a-zA-Z-]+)\)/);
+        if (match && match[1]) {
+          return match[1];
+        }
+      }
+
+      // 2. Check googtrans cookie
       const match = document.cookie.match(/(?:^|;\s*)googtrans=([^;]*)/);
       if (match && match[1]) {
         const raw = decodeURIComponent(match[1]);
@@ -4535,6 +4601,8 @@
           return parts[2];
         }
       }
+
+      // 3. Check localStorage
       try {
         return localStorage.getItem('googtrans_pref') || 'en';
       } catch (_) {
@@ -4547,6 +4615,8 @@
       if (detected) {
         this.currentLang = detected;
       }
+      const isRTL = ['ar', 'he', 'fa', 'ur'].includes(this.currentLang);
+      document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
       this.updateStatusDisplay();
     }
 
@@ -4611,8 +4681,13 @@
             if (combo.value) {
               this.currentLang = combo.value;
               this.setGoogleTransCookie(combo.value);
+              try {
+                window.location.hash = `#googtrans(en|${combo.value})`;
+              } catch (_) {}
               this.updateStatusDisplay();
               this.updateActiveGridBtn(combo.value);
+            } else {
+              this.resetToOriginal();
             }
           });
           // If we had a preferred language, sync it to the combo
@@ -4664,7 +4739,7 @@
     }
 
     changeLanguage(langCode) {
-      if (langCode === 'en') {
+      if (!langCode || langCode === 'en') {
         this.resetToOriginal();
         return;
       }
@@ -4672,33 +4747,43 @@
       this.currentLang = langCode;
       this.setGoogleTransCookie(langCode);
 
+      try {
+        localStorage.setItem('googtrans_pref', langCode);
+      } catch (_) {}
+
+      // Dual-protocol: Set hash for Google's element.js engine
+      try {
+        window.location.hash = `#googtrans(en|${langCode})`;
+      } catch (_) {}
+
       this.updateStatusDisplay();
       this.updateActiveGridBtn(langCode);
 
-      const triggered = this.triggerGoogleCombo(langCode);
-      if (!triggered) {
-        // If combo is not yet injected, wait for it or reload cleanly with the cookie
-        let attempts = 0;
-        const poll = setInterval(() => {
-          attempts++;
-          if (this.triggerGoogleCombo(langCode)) {
-            clearInterval(poll);
-          } else if (attempts > 25) {
-            clearInterval(poll);
-            window.location.reload();
-          }
-        }, 120);
-      }
+      // Attempt live combo trigger
+      this.triggerGoogleCombo(langCode);
 
+      // Close modal smoothly
+      this.closeModal();
+
+      // Trigger seamless reload so Google Translate translates all nodes across all browsers
       setTimeout(() => {
-        this.closeModal();
-      }, 280);
+        window.location.reload();
+      }, 160);
     }
 
     resetToOriginal() {
       this.currentLang = 'en';
       this.clearGoogleTransCookie();
       this.setGoogleTransCookie('en');
+
+      try {
+        localStorage.removeItem('googtrans_pref');
+      } catch (_) {}
+
+      // Remove googtrans from hash cleanly
+      if (window.location.hash.includes('googtrans')) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
 
       this.updateStatusDisplay();
       this.updateActiveGridBtn('en');
@@ -4713,14 +4798,12 @@
         }
       } catch (_) {}
 
+      this.closeModal();
+
+      // Clean reload to restore untranslated English DOM
       setTimeout(() => {
-        this.closeModal();
-        if (document.documentElement.classList.contains('translated-ltr') ||
-            document.documentElement.classList.contains('translated-rtl') ||
-            document.querySelector('font[color]')) {
-          window.location.reload();
-        }
-      }, 300);
+        window.location.reload();
+      }, 160);
     }
 
     updateActiveGridBtn(code) {
@@ -4871,6 +4954,9 @@
 
     handleInitializationError(error) {
       this.loadingManager?.forceHide();
+      this.heroTunnel?.destroy?.();
+      document.documentElement.classList.add('intro-scroll-unlocked');
+      document.body.classList.add('intro-completed');
       if (!document || typeof document.createElement !== 'function') return;
       const errorElement = document.createElement('div');
       errorElement.style.cssText = `
