@@ -1671,7 +1671,7 @@
         AnalyticsTracker.sendEvent('contact_form_submit', { timestamp: Date.now() });
         AnalyticsTracker.upgradeSession('contact_form_submission');
 
-        btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending to skens.code@gmail.com...</span>';
+        btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Sending to sarthak_m@skens.space...</span>';
         btn.disabled = true;
         btn.style.opacity = '0.85';
         if (status) {
@@ -1683,7 +1683,7 @@
           // Prepare form data for FormSubmit API
           const formData = new FormData(form);
 
-          const response = await fetch('https://formsubmit.co/ajax/skens.code@gmail.com', {
+          const response = await fetch('https://formsubmit.co/ajax/sarthak_m@skens.space', {
             method: 'POST',
             headers: {
               'Accept': 'application/json'
@@ -1700,7 +1700,7 @@
             btn.style.color = '#ffffff';
 
             if (status) {
-              status.textContent = '✅ Thank you! Your message was delivered directly to skens.code@gmail.com.';
+              status.textContent = '✅ Thank you! Your message was delivered directly to sarthak_m@skens.space.';
               status.style.color = '#00E676';
             }
 
@@ -1717,17 +1717,17 @@
         } catch (err) {
           console.warn('FormSubmit API fallback triggered:', err);
 
-          // Direct fallback: opens user's email client directly to skens.code@gmail.com
+          // Direct fallback: opens user's email client directly to sarthak_m@skens.space
           const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
           const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-          window.location.href = `mailto:skens.code@gmail.com?subject=${subject}&body=${body}`;
+          window.location.href = `mailto:sarthak_m@skens.space?subject=${subject}&body=${body}`;
 
           btn.innerHTML = '<span><i class="fas fa-envelope-open-text"></i> Mail App Opened</span>';
           btn.style.background = 'linear-gradient(135deg, #00d4ff 0%, #3a7bd5 100%)';
           btn.style.color = '#000';
 
           if (status) {
-            status.textContent = '📬 Prepared in your email client for skens.code@gmail.com. Just click send!';
+            status.textContent = '📬 Prepared in your email client for sarthak_m@skens.space. Just click send!';
             status.style.color = 'var(--clr-primary, #00d4ff)';
           }
         } finally {
