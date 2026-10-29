@@ -1682,6 +1682,7 @@
         try {
           const formData = new FormData(form);
           let sent = false;
+          let activationPending = false;
 
           // Primary active delivery: ShipMyForm
           try {
@@ -1693,18 +1694,18 @@
               body: formData
             });
 
-            if (shipResponse.ok) {
-              const shipResult = await shipResponse.json().catch(() => ({}));
-              if (shipResult.ok === true || shipResult.success === true) {
-                sent = true;
-              }
+            const shipResult = await shipResponse.json().catch(() => ({}));
+            if (shipResponse.ok && (shipResult.ok === true || shipResult.success === true)) {
+              sent = true;
+            } else if (shipResult.error === 'activation_pending') {
+              activationPending = true;
             }
           } catch (shipErr) {
             console.warn('ShipMyForm submission failed, trying fallback...', shipErr);
           }
 
           // Secondary delivery fallback: FormSubmit AJAX
-          if (!sent) {
+          if (!sent && !activationPending) {
             try {
               const fsResponse = await fetch('https://formsubmit.co/ajax/sarthak_m@skens.space', {
                 method: 'POST',
@@ -1742,6 +1743,16 @@
             if (container) {
               container.style.boxShadow = '0 0 24px rgba(0, 200, 81, 0.4)';
               setTimeout(() => { container.style.boxShadow = ''; }, 3000);
+            }
+          } else if (activationPending) {
+            btn.innerHTML = '<span><i class="fas fa-envelope"></i> Activation Pending</span>';
+            btn.style.background = 'linear-gradient(135deg, #00d4ff 0%, #3a7bd5 100%)';
+            btn.style.borderColor = '#00d4ff';
+            btn.style.color = '#000';
+
+            if (status) {
+              status.textContent = '📬 Almost done! Please check sarthak_m@skens.space and click the confirmation link to activate incoming messages.';
+              status.style.color = 'var(--clr-primary, #00d4ff)';
             }
           } else {
             throw new Error('Message transmission could not be completed.');
