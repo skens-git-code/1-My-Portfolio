@@ -1680,20 +1680,52 @@
         }
 
         try {
-          // Prepare form data for FormSubmit API
           const formData = new FormData(form);
+          let sent = false;
 
-          const response = await fetch('https://formsubmit.co/ajax/sarthak_m@skens.space', {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json'
-            },
-            body: formData
-          });
+          // Primary active delivery: ShipMyForm
+          try {
+            const shipResponse = await fetch('https://shipmyform.com/to/sarthak_m@skens.space', {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json'
+              },
+              body: formData
+            });
 
-          const result = await response.json();
+            if (shipResponse.ok) {
+              const shipResult = await shipResponse.json().catch(() => ({}));
+              if (shipResult.ok === true || shipResult.success === true) {
+                sent = true;
+              }
+            }
+          } catch (shipErr) {
+            console.warn('ShipMyForm submission failed, trying fallback...', shipErr);
+          }
 
-          if (response.ok && (result.success === 'true' || result.success === true || result.message)) {
+          // Secondary delivery fallback: FormSubmit AJAX
+          if (!sent) {
+            try {
+              const fsResponse = await fetch('https://formsubmit.co/ajax/sarthak_m@skens.space', {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json'
+                },
+                body: formData
+              });
+
+              if (fsResponse.ok) {
+                const fsResult = await fsResponse.json().catch(() => ({}));
+                if (fsResult.success === 'true' || fsResult.success === true || fsResult.message) {
+                  sent = true;
+                }
+              }
+            } catch (fsErr) {
+              console.warn('FormSubmit fallback failed:', fsErr);
+            }
+          }
+
+          if (sent) {
             btn.innerHTML = '<span><i class="fas fa-check-circle"></i> Message Sent!</span>';
             btn.style.background = 'linear-gradient(135deg, #00C851 0%, #007E33 100%)';
             btn.style.borderColor = '#00C851';
@@ -1712,23 +1744,20 @@
               setTimeout(() => { container.style.boxShadow = ''; }, 3000);
             }
           } else {
-            throw new Error(result.message || 'Submission failed');
+            throw new Error('Message transmission could not be completed.');
           }
         } catch (err) {
-          console.warn('FormSubmit API fallback triggered:', err);
+          console.error('Contact form submission error:', err);
 
-          // Direct fallback: opens user's email client directly to sarthak_m@skens.space
-          const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
-          const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-          window.location.href = `mailto:sarthak_m@skens.space?subject=${subject}&body=${body}`;
-
-          btn.innerHTML = '<span><i class="fas fa-envelope-open-text"></i> Mail App Opened</span>';
-          btn.style.background = 'linear-gradient(135deg, #00d4ff 0%, #3a7bd5 100%)';
-          btn.style.color = '#000';
+          // In-place failure feedback — NEVER open the mailbox app
+          btn.innerHTML = '<span><i class="fas fa-exclamation-triangle"></i> Transmission Failed</span>';
+          btn.style.background = 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)';
+          btn.style.borderColor = '#ff4444';
+          btn.style.color = '#fff';
 
           if (status) {
-            status.textContent = '📬 Prepared in your email client for sarthak_m@skens.space. Just click send!';
-            status.style.color = 'var(--clr-primary, #00d4ff)';
+            status.textContent = '❌ Unable to send your message automatically right now. Please try again or email sarthak_m@skens.space directly.';
+            status.style.color = '#ff5252';
           }
         } finally {
           setTimeout(() => {
