@@ -42,9 +42,9 @@ console.log('\x1b[1m\x1b[36m===================================================\
 
 // 1. Root Directory Isolation Checks
 console.log('\x1b[1m[1] Root Directory Structure Integrity\x1b[0m');
-check('Root contains only index.html, style.css, script.js, and stuff folder', () => {
+check('Root contains only index.html, style.css, script.js, package.json, and stuff folder', () => {
   const rootEntries = fs.readdirSync(ROOT_DIR).filter(f => !f.startsWith('.'));
-  const allowed = ['index.html', 'style.css', 'script.js', 'stuff'];
+  const allowed = ['index.html', 'style.css', 'script.js', 'package.json', 'stuff'];
   const unexpected = rootEntries.filter(f => !allowed.includes(f));
   if (unexpected.length > 0) {
     throw new Error(`Unexpected entries found in root: ${unexpected.join(', ')}`);
@@ -62,6 +62,15 @@ check('Root style.css exists and is accessible', () => {
 
 check('Root script.js exists and is accessible', () => {
   return fs.existsSync(path.join(ROOT_DIR, 'script.js'));
+});
+
+check('Root package.json exists and defines start and backend scripts', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
+  return Boolean(pkg.scripts && pkg.scripts.start && pkg.scripts.backend);
+});
+
+check('stuff/start.sh exists and is accessible', () => {
+  return fs.existsSync(path.join(STUFF_DIR, 'start.sh'));
 });
 
 // 2. JavaScript Syntax Validation

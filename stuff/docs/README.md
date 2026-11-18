@@ -403,16 +403,23 @@ portfolio/
 ### ⚡ **Running Scripts & Development**
 
 ```bash
-# Serve the portfolio from root directly (Zero config)
-npx serve .
-# Or using Python
-python3 -m http.server 8000
+# Launch the frontend HTML application (auto-opens browser at http://localhost:3000)
+npm start
+# Or using the helper script:
+./stuff/start.sh
+
+# Launch the backend Sanity Content Studio (auto-opens browser at http://localhost:3333)
+npm run backend
+# Or using the helper script:
+./stuff/start.sh backend
+
+# Launch both frontend and backend concurrently
+npm run all
+# Or:
+./stuff/start.sh all
 
 # Run integrity validation test suite
-node stuff/utilities/verify-integrity.js
-
-# Launch Sanity CMS Content Studio
-npm --prefix stuff/backend run dev
+npm test
 ```
 
 ### 🔧 **Configuration**
