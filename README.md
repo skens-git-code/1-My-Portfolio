@@ -79,44 +79,141 @@ Engineered across **6,000+ lines of modular ES6+ JavaScript, CSS3 custom tokens,
 
 ## 🏛️ Interactive System Architecture
 
-GitHub natively renders the **Mermaid.js** architecture diagram below, illustrating how user inputs flow through the Presentation, Controller, and Data/AI layers:
+The platform follows a modular, five-layer architecture designed to separate presentation, application logic, AI integrations, data persistence, and cross-cutting system concerns.
 
 ```mermaid
 flowchart TB
-    subgraph L1["Layer 1 · Multimodal Presentation & UX"]
-        direction LR
-        UI["Glassmorphism 2.0 UI"]
-        WGL["Three.js 3D Icosahedron"]
-        CUR["Magnetic Custom Cursor"]
-        CMD["⌘K Command Palette"]
-        VUI["Voice Waveform HUD"]
+
+    %% =====================================================
+    %% PRODUCTION-GRADE INTERACTIVE AI SYSTEM ARCHITECTURE
+    %% =====================================================
+
+    classDef presentation fill:#111827,stroke:#60a5fa,stroke-width:1.5px,color:#f8fafc
+    classDef controller fill:#17152b,stroke:#a78bfa,stroke-width:1.5px,color:#f5f3ff
+    classDef service fill:#092c35,stroke:#22d3ee,stroke-width:1.5px,color:#ecfeff
+    classDef storage fill:#29200d,stroke:#fbbf24,stroke-width:1.5px,color:#fffbeb
+    classDef security fill:#301820,stroke:#fb7185,stroke-width:1.5px,color:#fff1f2
+    classDef infrastructure fill:#172b22,stroke:#4ade80,stroke-width:1.5px,color:#f0fdf4
+
+    %% 01 - PRESENTATION LAYER
+    subgraph L1["01 · PRESENTATION & EXPERIENCE LAYER"]
+        direction TB
+
+        subgraph UI1["Visual Interface"]
+            direction LR
+            UI["Glassmorphism 2.0 Interface"]
+            WGL["Three.js 3D Rendering Engine"]
+            CUR["Magnetic Cursor & Motion Effects"]
+        end
+
+        subgraph UI2["Interaction Interface"]
+            direction LR
+            CMD["⌘K Command Palette"]
+            VUI["Voice Waveform HUD"]
+            NAV["Navigation & Responsive Components"]
+        end
     end
 
-    subgraph L2["Layer 2 · 15-Controller ES6+ Engine (js/main.js)"]
-        direction LR
-        STM["StateManager<br/>(Theme / Motion / Section)"]
-        ANM["AnimationManager<br/>(IntersectionObserver)"]
-        INT["InteractiveElements<br/>(3D Tilt / Modals / Filters)"]
-        CHT["ChatWidget Controller<br/>(Markdown & Context)"]
-        VCT["VoiceControl Router<br/>(15+ Speech Commands)"]
+    %% 02 - APPLICATION ENGINE
+    subgraph L2["02 · APPLICATION & CONTROLLER ENGINE"]
+        direction TB
+
+        STM["StateManager<br/>Global State · Theme · Preferences"]
+        ANM["AnimationManager<br/>IntersectionObserver · Motion · Stagger"]
+        INT["InteractiveElements<br/>3D Tilt · Modals · Filters"]
+        CHT["ChatWidget<br/>Conversation · Markdown · Context"]
+        VCT["VoiceControl<br/>Speech Recognition · Command Routing"]
+
+        ORC["Application Orchestrator<br/>Events · Lifecycle · Controller Coordination"]
+
+        STM & ANM & INT & CHT & VCT --> ORC
     end
 
-    subgraph L3["Layer 3 · External AI, CMS & Persistence"]
-        direction LR
-        GEM[["Google Gemini 2.5 Flash<br/>REST API"]]
-        SPH[["Web Speech API<br/>(en-US Recognizer)"]]
-        SAN[("Sanity Content Studio<br/>(/studio Schemas)")]
-        LOC[("Browser Persistence<br/>(localStorage / Session)")]
+    %% 03 - AI & INTEGRATION SERVICES
+    subgraph L3["03 · AI & INTEGRATION SERVICES"]
+        direction TB
+
+        subgraph AI["AI & Language Services"]
+            direction LR
+            GEM[["Gemini API<br/>AI Inference · Responses"]]
+            SPH[["Web Speech API<br/>Speech Recognition · Synthesis"]]
+        end
+
+        subgraph CMS["Content Services"]
+            direction LR
+            SAN[("Sanity CMS<br/>Structured Content · Schemas")]
+            API["Content Delivery API<br/>Queries · Serialization"]
+        end
     end
 
-    UI & CUR & WGL --> STM & ANM & INT
-    CMD --> STM
-    VUI --> VCT
-    CHT <-->|"Context-Enriched JSON"| GEM
-    VCT <-->|"0.8 Confidence Threshold"| SPH
-    STM <-->|"Theme & A11y Prefs"| LOC
-    SAN -.->|"Structured Content"| UI
+    %% 04 - DATA & PERSISTENCE
+    subgraph L4["04 · DATA & PERSISTENCE"]
+        direction LR
+
+        LOC[("localStorage<br/>Persistent Preferences")]
+        SES[("sessionStorage<br/>Session-Scoped State")]
+        CACHE[("Runtime Cache<br/>Temporary Application Data")]
+    end
+
+    %% 05 - CROSS-CUTTING CONCERNS
+    subgraph L5["05 · CROSS-CUTTING CONCERNS"]
+        direction LR
+
+        SEC["Security<br/>API Key Protection · Input Validation"]
+        A11Y["Accessibility<br/>Keyboard · ARIA · Reduced Motion"]
+        ERR["Resilience<br/>Error Handling · Timeouts · Fallbacks"]
+    end
+
+    %% PRIMARY DATA FLOWS
+    L1 -->|"User Events"| L2
+    ORC -->|"UI Updates"| L1
+
+    CHT <-->|"HTTPS · Context / Responses"| GEM
+    VCT <-->|"Speech Events"| SPH
+
+    API <-->|"Content Queries"| SAN
+    API -->|"Validated Content"| L1
+
+    STM <-->|"Preferences & State"| LOC
+    STM <-->|"Temporary Session Data"| SES
+    ORC <-->|"Runtime Data"| CACHE
+
+    %% GOVERNANCE & SYSTEM-WIDE CONCERNS
+    SEC -.-> ORC
+    SEC -.-> GEM
+    A11Y -.-> L1
+    A11Y -.-> L2
+    ERR -.-> L2
+    ERR -.-> L3
+
+    %% COMPONENT CLASSIFICATION
+    class UI,WGL,CUR,CMD,VUI,NAV presentation
+    class STM,ANM,INT,CHT,VCT,ORC controller
+    class GEM,SPH,API service
+    class SAN,LOC,SES,CACHE storage
+    class SEC security
+    class A11Y,ERR infrastructure
+
+    %% LAYER STYLING
+    style L1 fill:#0b1220,stroke:#3b82f6,stroke-width:2px,color:#e2e8f0
+    style L2 fill:#100e20,stroke:#8b5cf6,stroke-width:2px,color:#e2e8f0
+    style L3 fill:#071e28,stroke:#06b6d4,stroke-width:2px,color:#e2e8f0
+    style L4 fill:#211b0c,stroke:#f59e0b,stroke-width:2px,color:#e2e8f0
+    style L5 fill:#102019,stroke:#22c55e,stroke-width:2px,color:#e2e8f0
+
+    %% CONNECTION STYLING
+    linkStyle default stroke:#64748b,stroke-width:1.5px
 ```
+
+### Architecture Overview
+
+| Layer | Responsibility |
+|:------|:---------------|
+| **01 · Presentation** | Glassmorphism 2.0 UI, Three.js 3D rendering, navigation, and multimodal interactions |
+| **02 · Application** | State management, scroll animations, chat orchestration, and voice controllers |
+| **03 · Services** | Google Gemini 2.5 Flash AI, Web Speech API, and Sanity Content Delivery API |
+| **04 · Persistence** | `localStorage` preferences, `sessionStorage` state, and runtime memory caching |
+| **05 · Cross-Cutting** | API security, WCAG 2.1 AA accessibility, and graceful error/timeout resilience |
 
 ## 🧠 Modular 15-Controller Engine
 
