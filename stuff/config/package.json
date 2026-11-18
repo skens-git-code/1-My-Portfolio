@@ -1,0 +1,34 @@
+{
+  "name": "1-my-portfolio",
+  "version": "1.0.0",
+  "description": "Sarthak Mathapati - AI Software Engineer & Web Developer Portfolio",
+  "main": "../../index.html",
+  "scripts": {
+    "dev": "npx -y serve ../.. -l 3000",
+    "start": "npx -y serve ../.. -l 3000",
+    "test": "node ../utilities/verify-integrity.js",
+    "backend:dev": "npm --prefix ../backend run dev",
+    "backend:build": "npm --prefix ../backend run build",
+    "backend:deploy": "npm --prefix ../backend run deploy",
+    "studio:dev": "npm --prefix ../backend run dev",
+    "studio:build": "npm --prefix ../backend run build",
+    "studio:deploy": "npm --prefix ../backend run deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skens-git-code/1-My-Portfolio.git"
+  },
+  "keywords": [
+    "portfolio",
+    "developer",
+    "ai-engineer",
+    "threejs",
+    "web-development"
+  ],
+  "author": "Sarthak Mathapati",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skens-git-code/1-My-Portfolio/issues"
+  },
+  "homepage": "https://portfolioskens.vercel.app/"
+}
