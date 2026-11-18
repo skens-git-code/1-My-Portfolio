@@ -12,7 +12,8 @@
     "backend:deploy": "npm --prefix ../backend run deploy",
     "studio:dev": "npm --prefix ../backend run dev",
     "studio:build": "npm --prefix ../backend run build",
-    "studio:deploy": "npm --prefix ../backend run deploy"
+    "studio:deploy": "npm --prefix ../backend run deploy",
+    "studio:deploy:external": "npm --prefix ../backend run deploy:external"
   },
   "repository": {
     "type": "git",
