@@ -1,101 +1,100 @@
-import {defineType, defineField} from 'sanity'
+import {defineType, defineField, defineArrayMember} from 'sanity'
+import {TimelineIcon} from '@sanity/icons/Timeline'
+import {CalendarIcon} from '@sanity/icons/Calendar'
+import {DocumentTextIcon} from '@sanity/icons/DocumentText'
 
 export default defineType({
   name: 'experience',
   title: 'Work Experience',
   type: 'document',
-  fieldsets: [
-    {
-      name: 'roleInfo',
-      title: '💼 Role & Company',
-      options: {collapsible: false, collapsed: false},
-    },
-    {
-      name: 'dates',
-      title: '📅 Duration & Timeline',
-      options: {collapsible: true, collapsed: false},
-    },
-    {
-      name: 'responsibilities',
-      title: '📋 Responsibilities & Impact',
-      options: {collapsible: true, collapsed: false},
-    },
+  icon: TimelineIcon,
+  groups: [
+    {name: 'role', title: 'Role & Company', icon: TimelineIcon, default: true},
+    {name: 'dates', title: 'Timeline & Status', icon: CalendarIcon},
+    {name: 'responsibilities', title: 'Responsibilities', icon: DocumentTextIcon},
   ],
   fields: [
+    // --- Role Group ---
     defineField({
       name: 'role',
-      title: 'Role / Job Title',
+      title: 'Job Title / Position',
       type: 'string',
-      fieldset: 'roleInfo',
-      placeholder: 'e.g. AI Software Engineer, Full Stack Developer',
+      group: 'role',
+      placeholder: 'e.g. AI Software Engineer, Full Stack Architect',
       validation: (Rule) => Rule.required().min(2),
     }),
     defineField({
       name: 'company',
       title: 'Company / Organization',
       type: 'string',
-      fieldset: 'roleInfo',
-      placeholder: 'e.g. Newton School, Tech Corp',
+      group: 'role',
+      placeholder: 'e.g. Newton School of Technology',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'companyUrl',
-      title: 'Company Website',
+      title: 'Company Website URL',
       type: 'url',
-      fieldset: 'roleInfo',
+      group: 'role',
       placeholder: 'https://example.com',
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ['http', 'https'],
+        }),
     }),
     defineField({
       name: 'companyLogo',
       title: 'Company Logo',
       type: 'image',
-      fieldset: 'roleInfo',
+      group: 'role',
       options: {hotspot: true},
     }),
     defineField({
       name: 'employmentType',
       title: 'Employment Type',
       type: 'string',
-      fieldset: 'roleInfo',
+      group: 'role',
       options: {
         list: [
           {title: 'Full-time', value: 'full-time'},
           {title: 'Part-time', value: 'part-time'},
-          {title: 'Internship', value: 'internship'},
           {title: 'Contract / Freelance', value: 'contract'},
+          {title: 'Internship', value: 'internship'},
         ],
+        layout: 'dropdown',
       },
       initialValue: 'full-time',
     }),
     defineField({
       name: 'location',
-      title: 'Location',
+      title: 'Work Location',
       type: 'string',
-      fieldset: 'roleInfo',
+      group: 'role',
       placeholder: 'Delhi, India / Remote',
       initialValue: 'Remote',
     }),
 
-    // --- Dates & Timeline ---
+    // --- Dates Group ---
     defineField({
       name: 'startDate',
       title: 'Start Date',
       type: 'date',
-      fieldset: 'dates',
+      group: 'dates',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'isCurrent',
       title: 'Currently Working Here',
       type: 'boolean',
-      fieldset: 'dates',
+      group: 'dates',
+      description: 'Toggle on if this is your active role (end date will be hidden and labeled "Present")',
       initialValue: false,
     }),
     defineField({
       name: 'endDate',
       title: 'End Date',
       type: 'date',
-      fieldset: 'dates',
+      group: 'dates',
       hidden: ({parent}) => parent?.isCurrent === true,
       validation: (Rule) =>
         Rule.custom((endDate, context) => {
@@ -110,36 +109,36 @@ export default defineType({
     }),
     defineField({
       name: 'order',
-      title: 'Display Priority Order',
+      title: 'Display Order Priority',
       type: 'number',
-      fieldset: 'dates',
+      group: 'dates',
       description: 'Lower number appears first (e.g., 1 for most recent)',
       initialValue: 1,
     }),
 
-    // --- Responsibilities & Achievements ---
+    // --- Responsibilities Group ---
     defineField({
       name: 'summary',
-      title: 'Brief Overview',
+      title: 'Role Summary',
       type: 'text',
       rows: 3,
-      fieldset: 'responsibilities',
-      placeholder: 'Summarize your core mission and contributions at this company...',
+      group: 'responsibilities',
+      placeholder: 'Core mission, team scope, and primary engineering objectives...',
     }),
     defineField({
       name: 'achievements',
-      title: 'Key Achievements & Highlights',
+      title: 'Key Highlights & Achievements',
       type: 'array',
-      fieldset: 'responsibilities',
+      group: 'responsibilities',
       description: 'Bullet points displayed on your experience card',
-      of: [{type: 'string'}],
+      of: [defineArrayMember({type: 'string'})],
     }),
     defineField({
       name: 'technologies',
-      title: 'Technologies Used',
+      title: 'Technologies Used (Tags)',
       type: 'array',
-      fieldset: 'responsibilities',
-      of: [{type: 'string'}],
+      group: 'responsibilities',
+      of: [defineArrayMember({type: 'string'})],
       options: {layout: 'tags'},
     }),
   ],
@@ -158,7 +157,7 @@ export default defineType({
       return {
         title: `${role || 'Untitled Role'} at ${company || 'Unknown Company'}`,
         subtitle: `${startDate ? startDate.substring(0, 7) : ''} — ${endStr}`,
-        media,
+        media: media || TimelineIcon,
       }
     },
   },

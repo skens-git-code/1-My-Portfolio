@@ -1,147 +1,142 @@
-import {defineType, defineField} from 'sanity'
+import {defineType, defineField, defineArrayMember} from 'sanity'
+import {UserIcon} from '@sanity/icons/User'
+import {SparklesIcon} from '@sanity/icons/Sparkles'
+import {DocumentTextIcon} from '@sanity/icons/DocumentText'
+import {EnvelopeIcon} from '@sanity/icons/Envelope'
+import {LinkIcon} from '@sanity/icons/Link'
+import {DocumentPdfIcon} from '@sanity/icons/DocumentPdf'
 
 export default defineType({
   name: 'profile',
   title: 'Personal Profile',
   type: 'document',
-  fieldsets: [
-    {
-      name: 'identity',
-      title: '👤 Identity & Branding',
-      options: {collapsible: false, collapsed: false},
-    },
-    {
-      name: 'hero',
-      title: '🚀 Hero Headline & Typing Phrases',
-      options: {collapsible: true, collapsed: false},
-    },
-    {
-      name: 'narrative',
-      title: '📝 Bio & Philosophy',
-      options: {collapsible: true, collapsed: false},
-    },
-    {
-      name: 'contact',
-      title: '📬 Contact & Availability',
-      options: {collapsible: true, collapsed: false},
-    },
-    {
-      name: 'socials',
-      title: '🌐 Social Profiles',
-      options: {collapsible: true, collapsed: false},
-    },
-    {
-      name: 'documents',
-      title: '📄 Resume & Documents',
-      options: {collapsible: true, collapsed: true},
-    },
+  icon: UserIcon,
+  groups: [
+    {name: 'identity', title: 'Identity & Status', icon: UserIcon, default: true},
+    {name: 'hero', title: 'Hero & Headlines', icon: SparklesIcon},
+    {name: 'narrative', title: 'Bio & Story', icon: DocumentTextIcon},
+    {name: 'contact', title: 'Contact Details', icon: EnvelopeIcon},
+    {name: 'socials', title: 'Social Channels', icon: LinkIcon},
+    {name: 'documents', title: 'Resume / CV', icon: DocumentPdfIcon},
   ],
   fields: [
+    // --- Identity Group ---
     defineField({
       name: 'fullName',
       title: 'Full Name',
       type: 'string',
-      fieldset: 'identity',
+      group: 'identity',
       placeholder: 'Sarthak Mathapati',
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().min(2),
       initialValue: 'Sarthak Mathapati',
     }),
     defineField({
       name: 'brandName',
       title: 'Brand / Domain Handle',
       type: 'string',
-      fieldset: 'identity',
+      group: 'identity',
+      description: 'Used for logo text, terminal prompts, and footer credits',
       placeholder: 'skens.space',
       initialValue: 'skens.space',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'status',
-      title: 'Availability Status',
+      title: 'Live Work Availability',
       type: 'string',
-      fieldset: 'identity',
-      description: 'Pill badge shown on the hero section',
+      group: 'identity',
+      description: 'Indicator badge shown on the hero section and mobile header',
       options: {
         list: [
           {title: '🟢 Open to Opportunities / Available for Hire', value: 'available'},
-          {title: '🟡 In Contract / High Demand', value: 'busy'},
-          {title: '🔴 Closed for New Work', value: 'unavailable'},
+          {title: '🟡 High Demand / Selective Contracts Only', value: 'busy'},
+          {title: '🔴 Currently Booked / Unavailable', value: 'unavailable'},
         ],
+        layout: 'radio',
       },
       initialValue: 'available',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'statusCustomText',
-      title: 'Custom Status Message',
+      title: 'Custom Status Message (Optional)',
       type: 'string',
-      fieldset: 'identity',
-      description: 'Custom text to display on the live availability indicator',
-      placeholder: 'Open for Full-Time & High-Impact Contracts',
+      group: 'identity',
+      description: 'Override the default status text with a custom announcement',
+      placeholder: 'Open for Full-Time AI & High-Impact Web Engineering',
     }),
     defineField({
       name: 'avatar',
-      title: 'Profile Picture / Avatar',
+      title: 'Profile Picture / Headshot',
       type: 'image',
-      fieldset: 'identity',
+      group: 'identity',
+      description: 'Personal portrait shown in the About section and metadata',
       options: {hotspot: true},
       fields: [
-        {
+        defineField({
           name: 'alt',
+          title: 'Alternative Text',
           type: 'string',
-          title: 'Alt Text',
+          description: 'Accessibility description for screen readers',
           initialValue: 'Sarthak Mathapati - Profile Picture',
-        },
+        }),
       ],
     }),
 
-    // --- Hero Headline & Roles ---
+    // --- Hero Group ---
     defineField({
       name: 'headline',
-      title: 'Primary Professional Headline',
+      title: 'Primary Professional Title',
       type: 'string',
-      fieldset: 'hero',
+      group: 'hero',
+      description: 'The main hero title headline (e.g. AI Software Engineer & Full-Stack Architect)',
       placeholder: 'AI Software Engineer & Full-Stack Architect',
       initialValue: 'AI Software Engineer & Full-Stack Architect',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'typingPhrases',
-      title: 'Rotating Typing Phrases',
+      title: 'Hero Animated Typing Phrases',
       type: 'array',
-      fieldset: 'hero',
-      description: 'Phrases that dynamically cycle in the hero typing animation',
-      of: [{type: 'string'}],
+      group: 'hero',
+      description: 'Rotating phrases that cycle through the hero text typewriter animation',
+      of: [defineArrayMember({type: 'string'})],
       initialValue: [
         'Disciplina - Execução - Foco',
         'Building With Innovation 🚀',
         'Turning Ideas Into Reality',
         'Code. Create. Innovate.',
       ],
+      validation: (Rule) => Rule.min(1).warning('Add at least 2 phrases for the typing animation.'),
     }),
-
-    // --- Narrative Bio ---
     defineField({
       name: 'shortBio',
       title: 'Short Introduction (Hero Section)',
       type: 'text',
-      fieldset: 'narrative',
+      group: 'hero',
       rows: 3,
+      description: 'Crisp elevator pitch displayed right under your headline in the hero',
       placeholder: 'Turning ideas into sleek, responsive, and meaningful digital experiences...',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'aboutBio',
-      title: 'Detailed Biography (About Section)',
-      type: 'blockContent',
-      fieldset: 'narrative',
-      description: 'Rich story about your journey, engineering philosophy, and values',
+      initialValue: 'Turning ideas into sleek, responsive, and meaningful digital experiences through AI and full-stack engineering.',
+      validation: (Rule) => Rule.required().min(20).max(300),
     }),
 
-    // --- Contact Details ---
+    // --- Narrative Group ---
+    defineField({
+      name: 'aboutBio',
+      title: 'Full Narrative (About Section)',
+      type: 'blockContent',
+      group: 'narrative',
+      description: 'Comprehensive story about your background, journey, engineering philosophy, and passions',
+    }),
+
+    // --- Contact Group ---
     defineField({
       name: 'email',
       title: 'Email Address',
       type: 'string',
-      fieldset: 'contact',
+      group: 'contact',
+      description: 'Primary inquiry and contact form destination',
       placeholder: 'sarthakmathapati4@gmail.com',
       validation: (Rule) => Rule.required().email(),
       initialValue: 'sarthakmathapati4@gmail.com',
@@ -150,41 +145,48 @@ export default defineType({
       name: 'phone',
       title: 'Phone Number',
       type: 'string',
-      fieldset: 'contact',
+      group: 'contact',
       placeholder: '+91 93567 07688',
       initialValue: '+91 93567 07688',
     }),
     defineField({
       name: 'location',
-      title: 'Location / Base',
+      title: 'Location & Base',
       type: 'string',
-      fieldset: 'contact',
-      placeholder: 'Newton School of Technology, Delhi, India',
-      initialValue: 'Delhi, India',
+      group: 'contact',
+      placeholder: 'Delhi, India / Remote',
+      initialValue: 'Newton School of Technology, Delhi · Remote Available',
     }),
 
-    // --- Social Links ---
+    // --- Socials Group ---
     defineField({
       name: 'socialLinks',
-      title: 'Social Network Profiles',
+      title: 'Social & Developer Profiles',
       type: 'array',
-      fieldset: 'socials',
-      of: [{type: 'socialLink'}],
+      group: 'socials',
+      description: 'Manage links to GitHub, LinkedIn, Twitter/X, Discord, etc.',
+      of: [defineArrayMember({type: 'socialLink'})],
     }),
 
-    // --- Resume & CV ---
+    // --- Documents Group ---
     defineField({
       name: 'resumeFile',
-      title: 'Resume Document (PDF)',
+      title: 'Downloadable Resume (PDF)',
       type: 'file',
-      fieldset: 'documents',
+      group: 'documents',
+      description: 'Upload your latest CV/Resume PDF for instant download on the site',
       options: {accept: '.pdf,.docx'},
     }),
     defineField({
       name: 'resumeUrl',
-      title: 'External Resume URL (Google Drive / Notion)',
+      title: 'External Resume Link (Google Drive / Notion / LinkedIn)',
       type: 'url',
-      fieldset: 'documents',
+      group: 'documents',
+      description: 'Alternative web link if you host your resume externally',
+      validation: (Rule) =>
+        Rule.uri({
+          scheme: ['http', 'https'],
+        }),
     }),
   ],
 
@@ -196,9 +198,9 @@ export default defineType({
     },
     prepare({title, subtitle, media}) {
       return {
-        title: title || 'Profile',
-        subtitle: subtitle || 'Personal Portfolio Information',
-        media,
+        title: title || 'Sarthak Mathapati',
+        subtitle: subtitle || 'AI Software Engineer & Full-Stack Architect',
+        media: media || UserIcon,
       }
     },
   },
